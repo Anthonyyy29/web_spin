@@ -8,7 +8,7 @@
                 </svg>
             </button>
             <a href="{{ url('/dashboard') }}" class="text-xl font-bold text-indigo-600">
-                {{ config('app.name', 'MyApp') }}
+                Dashboard HR
             </a>
         </div>
 
@@ -34,12 +34,12 @@
                 <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-100">Profil Saya</a>
                 <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-100">Pengaturan</a>
                 <hr class="my-1">
-                {{-- <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
                         Keluar
                     </button>
-                </form> --}}
+                </form>
             </div>
         </div>
     </header>
