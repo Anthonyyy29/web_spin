@@ -22,3 +22,5 @@ class isHr
         return $next($request);
     }
 }
+
+

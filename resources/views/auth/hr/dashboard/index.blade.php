@@ -1,4 +1,4 @@
-@extends('auth.hr.layout.app')
+@extends('auth.hr.layout')
 
 @section('title', 'Dashboard')
 
