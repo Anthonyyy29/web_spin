@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\auth\announcer;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class AnnouncerController extends Controller
 {
@@ -10,5 +10,4 @@ class AnnouncerController extends Controller
     {
         return view('auth.announcer.dashboard.index');
     }
-
 }

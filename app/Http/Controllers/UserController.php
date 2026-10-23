@@ -15,11 +15,11 @@ class UserController extends Controller
             $request->session()->regenerate();
             if (Auth::user()->role === 'hr') {
                 return redirect()->intended(route('hr.dashboard'));
-            } elseif (Auth::user()->role === 'admin') {
-                return redirect()->intended(route('admin.dashboard'));
-            } elseif (Auth::user()->role === 'announcer') {
-                return redirect()->intended(route('user.dashboard'));
-            } else {
+                } elseif (Auth::user()->role === 'announcer') {
+                    return redirect()->intended(route('announcer.dashboard'));
+                } elseif (Auth::user()->role === 'admin') {
+                        return redirect()->intended(route('admin.dashboard'));
+                } else {
                 return redirect()->intended('/');
             }
         } 

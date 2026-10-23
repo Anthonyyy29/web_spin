@@ -23,9 +23,9 @@ class DatabaseSeeder extends Seeder
             'role' => 'hr',
         ]);
         User::create([
-            'username' => 'user',
-            'password' => 'user',
-            'role' => 'user',
+            'username' => 'announcer',
+            'password' => 'announcer',
+            'role' => 'announcer',
         ]);
 
     }
