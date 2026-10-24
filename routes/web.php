@@ -49,6 +49,7 @@ Route::group(['prefix' => 'so', 'middleware' => ['auth', 'role:kadiv_sound_opera
 Route::group(['middleware' => ['auth', 'role:kadiv_announcer,announcer,kadiv_sound_operator,sound_operator,kadiv_human_resource,human_resource']], function () {
     Route::get('/profil', [ProfilController::class, 'edit'])->name('profil.edit');
     Route::put('/profil', [ProfilController::class, 'update'])->name('profil.update');
+    Route::put('/profil/password', [ProfilController::class, 'updatePassword'])->name('profil.password');
 });
 
 Route::view('/belum-tersedia', 'auth.belum-tersedia')->middleware('auth')->name('unavailable');

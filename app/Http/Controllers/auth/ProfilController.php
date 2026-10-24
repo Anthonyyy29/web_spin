@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\auth\PasswordRequest;
 use App\Http\Requests\auth\ProfilRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -37,5 +38,12 @@ class ProfilController extends Controller
         $user->update($attributes);
 
         return redirect()->route('profil.edit')->with('status', 'Profil disimpan.');
+    }
+
+    public function updatePassword(PasswordRequest $request): RedirectResponse
+    {
+        $request->user()->update(['password' => $request->validated('password')]);
+
+        return redirect()->route('profil.edit')->with('status', 'Password diganti.');
     }
 }

@@ -96,3 +96,33 @@ it('renders the stored photo with a url from the public disk', function () {
         ->assertOk()
         ->assertSee(Storage::disk('public')->url($path), false);
 });
+
+it('changes the password and lets the user log in with it', function () {
+    $this->actingAs($this->user)->put(route('profil.password'), [
+        'current_password' => 'lama', 'password' => 'baru', 'password_confirmation' => 'baru',
+    ])->assertRedirect(route('profil.edit'))->assertSessionHas('status', 'Password diganti.');
+
+    auth()->logout();
+    $this->post(route('login'), ['username' => 'Ani Lestari', 'password' => 'baru'])->assertRedirect(route('announcer.dashboard'));
+});
+
+it('rejects a wrong current password only in the password form', function () {
+    $this->actingAs($this->user)->put(route('profil.password'), [
+        'current_password' => 'salah', 'password' => 'baru', 'password_confirmation' => 'baru',
+    ])->assertSessionHasErrorsIn('password', ['current_password' => 'Password saat ini salah.']);
+
+    expect(session('errors')->getBag('default')->isEmpty())->toBeTrue();
+    expect(Hash::check('lama', $this->user->fresh()->password))->toBeTrue();
+});
+
+it('rejects a new password that does not match its confirmation', function () {
+    $this->actingAs($this->user)->put(route('profil.password'), [
+        'current_password' => 'lama', 'password' => 'baru', 'password_confirmation' => 'beda',
+    ])->assertSessionHasErrorsIn('password', ['password' => 'Konfirmasi password baru tidak cocok.']);
+});
+
+it('accepts a short new password', function () {
+    $this->actingAs($this->user)->put(route('profil.password'), [
+        'current_password' => 'lama', 'password' => '1', 'password_confirmation' => '1',
+    ])->assertSessionHasNoErrors();
+});

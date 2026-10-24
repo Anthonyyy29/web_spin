@@ -41,4 +41,34 @@
 
         <button type="submit" class="rounded-md bg-signal-strong px-4 py-2 text-sm font-medium text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Simpan profil</button>
     </form>
+
+    <h2 class="mb-3 mt-8 text-lg font-semibold tracking-tight">Ganti password</h2>
+
+    <form method="POST" action="{{ route('profil.password') }}" class="max-w-md space-y-5 rounded-lg border border-line bg-white p-5">
+        @csrf
+        @method('PUT')
+
+        <div>
+            <label for="current_password" class="mb-1.5 block text-sm font-medium">Password saat ini</label>
+            <input type="password" id="current_password" name="current_password" required autocomplete="current-password" class="{{ $fieldClass }}" @error('current_password', 'password') aria-invalid="true" aria-describedby="current_password-error" @enderror>
+            @error('current_password', 'password')
+                <p id="current_password-error" class="mt-1.5 text-sm text-danger">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div>
+            <label for="password" class="mb-1.5 block text-sm font-medium">Password baru</label>
+            <input type="password" id="password" name="password" required autocomplete="new-password" class="{{ $fieldClass }}" @error('password', 'password') aria-invalid="true" aria-describedby="password-error" @enderror>
+            @error('password', 'password')
+                <p id="password-error" class="mt-1.5 text-sm text-danger">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div>
+            <label for="password_confirmation" class="mb-1.5 block text-sm font-medium">Konfirmasi password baru</label>
+            <input type="password" id="password_confirmation" name="password_confirmation" required autocomplete="new-password" class="{{ $fieldClass }}">
+        </div>
+
+        <button type="submit" class="rounded-md bg-signal-strong px-4 py-2 text-sm font-medium text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ganti password</button>
+    </form>
 @endsection
