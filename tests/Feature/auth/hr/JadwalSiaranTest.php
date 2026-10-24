@@ -40,9 +40,59 @@ it('rejects a schedule that overlaps another for the same announcer and date', f
             'start_time' => '08:30',
             'end_time' => '09:30',
         ]))
-        ->assertSessionHasErrors('start_time');
+        ->assertSessionHasErrors([
+            'start_time' => 'Jadwal bentrok dengan jadwal lain milik announcer ini.',
+        ]);
 
     expect(BroadcastSchedule::count())->toBe(1);
+});
+
+it('rejects updating a schedule into another schedule\'s slot', function () {
+    BroadcastSchedule::factory()->create([
+        'user_id' => $this->announcer->id,
+        'broadcast_date' => '2026-11-01',
+        'start_time' => '08:00:00',
+        'end_time' => '09:00:00',
+    ]);
+    $schedule = BroadcastSchedule::factory()->create([
+        'user_id' => $this->announcer->id,
+        'broadcast_date' => '2026-11-01',
+        'start_time' => '10:00:00',
+        'end_time' => '11:00:00',
+    ]);
+
+    $this->actingAs($this->hr)
+        ->put(route('jadwalSiaran.update', $schedule), schedulePayload($this->announcer, [
+            'start_time' => '08:30',
+            'end_time' => '09:30',
+        ]))
+        ->assertSessionHasErrors('start_time');
+
+    $schedule->refresh();
+
+    expect($schedule->start_time)->toBe('10:00:00')
+        ->and($schedule->end_time)->toBe('11:00:00');
+});
+
+it('shows validation messages in Indonesian', function () {
+    $response = $this->actingAs($this->hr)
+        ->post(route('jadwalSiaran.store'), schedulePayload($this->announcer, [
+            'program_title' => '',
+        ]));
+
+    $response->assertSessionHasErrors('program_title');
+
+    expect(session('errors')->first('program_title'))->toContain('judul program');
+});
+
+it('rejects a broadcast date that is not in Y-m-d format', function () {
+    $this->actingAs($this->hr)
+        ->post(route('jadwalSiaran.store'), schedulePayload($this->announcer, [
+            'broadcast_date' => '01/11/2026',
+        ]))
+        ->assertSessionHasErrors('broadcast_date');
+
+    expect(BroadcastSchedule::count())->toBe(0);
 });
 
 it('allows adjacent schedules for the same announcer', function () {

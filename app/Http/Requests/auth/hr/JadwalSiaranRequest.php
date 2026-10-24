@@ -32,10 +32,46 @@ class JadwalSiaranRequest extends FormRequest
                 Rule::exists('users', 'id')->where('role', 'announcer'),
             ],
             'program_title' => ['required', 'string', 'max:255'],
-            'broadcast_date' => ['required', 'date'],
+            'broadcast_date' => ['required', 'date_format:Y-m-d'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
             'notes' => ['nullable', 'string'],
+        ];
+    }
+
+    /**
+     * Get custom attribute names for validation errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'user_id' => 'announcer',
+            'program_title' => 'judul program',
+            'broadcast_date' => 'tanggal siaran',
+            'start_time' => 'jam mulai',
+            'end_time' => 'jam selesai',
+            'notes' => 'catatan',
+        ];
+    }
+
+    /**
+     * Get custom validation messages in Indonesian.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'required' => ':attribute wajib diisi.',
+            'string' => ':attribute harus berupa teks.',
+            'program_title.max' => ':attribute maksimal :max karakter.',
+            'user_id.exists' => ':attribute yang dipilih tidak valid.',
+            'broadcast_date.date_format' => ':attribute harus berformat tahun-bulan-tanggal (Y-m-d).',
+            'start_time.date_format' => ':attribute harus berformat jam:menit (H:i).',
+            'end_time.date_format' => ':attribute harus berformat jam:menit (H:i).',
+            'end_time.after' => ':attribute harus lebih besar dari jam mulai.',
         ];
     }
 
