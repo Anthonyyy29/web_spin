@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\auth\announcer\AnnouncerController;
 use App\Http\Controllers\auth\crew\SesiSayaController;
+use App\Http\Controllers\auth\hr\AbsensiController;
 use App\Http\Controllers\auth\hr\HrController;
 use App\Http\Controllers\auth\hr\ProgramController;
 use App\Http\Controllers\auth\hr\SesiController;
@@ -23,6 +24,11 @@ Route::group(['prefix' => 'hr', 'middleware' => ['auth', isHr::class]], function
     Route::resource('sesi', SesiController::class)->only(['index', 'edit', 'update']);
     Route::post('sesi/{sesi}/tunda', [SesiController::class, 'postpone'])->name('sesi.postpone');
     Route::post('sesi/{sesi}/batal', [SesiController::class, 'cancel'])->name('sesi.cancel');
+    Route::get('absensi', [AbsensiController::class, 'index'])->name('absensi.index');
+    Route::get('absensi/export', [AbsensiController::class, 'export'])->name('absensi.export');
+    Route::get('sesi/{sesi}/absensi', [AbsensiController::class, 'session'])->name('absensi.session');
+    Route::get('sesi/{sesi}/absensi/export', [AbsensiController::class, 'sessionExport'])->name('absensi.session.export');
+    Route::put('sesi/{sesi}/absensi/{user}', [AbsensiController::class, 'update'])->name('absensi.update');
 });
 
 // announcer

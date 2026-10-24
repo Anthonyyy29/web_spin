@@ -42,6 +42,7 @@
                         </div>
                         <div class="flex items-center gap-4">
                             <a href="{{ route('sesi.edit', $session) }}" class="font-medium text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Jadwalkan</a>
+                            <a href="{{ route('absensi.session', $session) }}" class="text-muted underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Absensi</a>
                             <form method="POST" action="{{ route('sesi.cancel', $session) }}" onsubmit="return confirm(@js('Batalkan sesi '.$session->program->name.' yang semula '.$session->regular_date->format('d/m/Y').'?'))">
                                 @csrf
                                 <button type="submit" class="text-danger underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger">Batalkan</button>
@@ -75,6 +76,7 @@
                         <td class="px-5 py-3">
                             <div class="flex items-center justify-end gap-4">
                                 <a href="{{ route('sesi.edit', $session) }}" class="font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ubah</a>
+                                <a href="{{ route('absensi.session', $session) }}" class="text-muted underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Absensi</a>
                                 @if ($session->status === \App\Enums\SessionStatus::Scheduled)
                                     <form method="POST" action="{{ route('sesi.postpone', $session) }}" onsubmit="return confirm(@js('Tunda sesi '.$session->program->name.' pada '.$session->session_date->format('d/m/Y').'? Tanggal dan jam dikosongkan sampai dijadwalkan ulang.'))">
                                         @csrf
