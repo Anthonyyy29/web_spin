@@ -11,7 +11,12 @@ use Illuminate\Support\Facades\DB;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->session = BroadcastSession::factory()->create();
+    $this->session = BroadcastSession::factory()->create([
+        'session_date' => '2026-10-26',
+        'crewcall_time' => '07:30:00',
+        'tapping_start' => '08:00:00',
+        'tapping_end' => '09:30:00',
+    ]);
     $this->at = fn (string $time): CarbonImmutable => CarbonImmutable::parse('2026-10-26 '.$time, 'Asia/Jakarta');
 });
 
@@ -41,6 +46,19 @@ it('marks check-ins up to five full minutes after crewcall as present', function
         ->and($this->session->statusForCheckIn(($this->at)('07:36:00')))->toBe(AttendanceStatus::Terlambat)
         ->and($this->session->statusForCheckIn(($this->at)('07:20:00')))->toBe(AttendanceStatus::Hadir);
 });
+
+it('evaluates a check-in status independent of the session status', function () {
+    $cancelled = BroadcastSession::factory()->cancelled()->create();
+
+    expect($cancelled->statusForCheckIn(($this->at)('07:35:59')))->toBe(AttendanceStatus::Hadir)
+        ->and($cancelled->statusForCheckIn(($this->at)('07:36:00')))->toBe(AttendanceStatus::Terlambat);
+});
+
+it('refuses to evaluate a check-in status without a session date and crewcall time', function () {
+    $postponed = BroadcastSession::factory()->postponed()->create();
+
+    $postponed->statusForCheckIn(($this->at)('07:30:00'));
+})->throws(LogicException::class, 'Session has no date or crewcall time');
 
 it('never opens check-in for postponed or cancelled sessions', function () {
     $postponed = BroadcastSession::factory()->postponed()->create();

@@ -102,14 +102,16 @@ class BroadcastSession extends Model
      * Get the attendance status earned by checking in at the given instant:
      * present before crewcall plus six minutes, late afterwards.
      *
-     * @throws LogicException When the session has no crewcall time to compare against.
+     * The comparison depends only on the session date and crewcall time, never on the session status.
+     *
+     * @throws LogicException When the session has no date or crewcall time to compare against.
      */
     public function statusForCheckIn(CarbonInterface $checkedInAt): AttendanceStatus
     {
-        $crewcallAt = $this->crewcallAt();
+        $crewcallAt = $this->timeOnSessionDate($this->crewcall_time);
 
         if ($crewcallAt === null) {
-            throw new LogicException('Session has no crewcall time to evaluate a check-in against.');
+            throw new LogicException('Session has no date or crewcall time to evaluate a check-in against.');
         }
 
         return $checkedInAt->lessThan($crewcallAt->addMinutes(6))
@@ -143,12 +145,12 @@ class BroadcastSession extends Model
     }
 
     /**
-     * Combine the session date with a time of day in the application timezone.
-     * Null unless the session is scheduled and both date and time are present.
+     * Combine the session date with a time of day in the application timezone, regardless of session status.
+     * Null unless both the session date and the time are present.
      */
-    private function scheduledMomentAt(?string $time): ?CarbonImmutable
+    private function timeOnSessionDate(?string $time): ?CarbonImmutable
     {
-        if ($this->status !== SessionStatus::Scheduled || $this->session_date === null || $time === null) {
+        if ($this->session_date === null || $time === null) {
             return null;
         }
 
@@ -156,5 +158,18 @@ class BroadcastSession extends Model
             $this->session_date->toDateString().' '.$time,
             config('app.timezone'),
         );
+    }
+
+    /**
+     * Combine the session date with a time of day for check-in window rules.
+     * Null unless the session is scheduled and both date and time are present.
+     */
+    private function scheduledMomentAt(?string $time): ?CarbonImmutable
+    {
+        if ($this->status !== SessionStatus::Scheduled) {
+            return null;
+        }
+
+        return $this->timeOnSessionDate($time);
     }
 }
