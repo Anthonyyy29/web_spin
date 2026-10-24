@@ -14,13 +14,33 @@ class Gen7MemberSeeder extends Seeder
     public const DEFAULT_PASSWORD = '1234';
 
     /**
-     * Gen 7 members (from "Data Diri Gen 7 - Data Anggota") per role name. The username is the full name.
+     * Gen 7 members per role name. The username is the full name; a member with two jobs gets one account per job,
+     * with the job in parentheses after the name.
      *
      * @var array<string, list<string>>
      */
     private const MEMBERS = [
-        'announcer' => [
+        'gm' => [
+            'Nurul Afifah Azzahra',
+        ],
+        'vgm' => [
+            'Fitria Attira',
+        ],
+        'sekretaris' => [
+            'Vitroh Maviroh',
+            'Syavirni Dwi Amalia (Sekretaris)',
+        ],
+        'finance' => [
+            'Shafa Dhiya Raihanah (Finance)',
+            'Noval Rasyah Kurnia Putra (Finance)',
+        ],
+        'head_of_podcast' => [
+            'Allea De Chaelyn Tomo Lawa',
+        ],
+        'kadiv_announcer' => [
             'Ivanda Leona Putri Vabita',
+        ],
+        'announcer' => [
             'Ashfaa Atsqya Fernando',
             'Belva Vanya Aulia',
             'Kahlil Al Fathir',
@@ -28,18 +48,20 @@ class Gen7MemberSeeder extends Seeder
             'Lalia Alina',
             'Nail Khairi Nur Hadi',
             'Nisrina Ihda Jamaliah',
-            'Noval Rasyah Kurnia Putra',
+            'Noval Rasyah Kurnia Putra (Announcer)',
             'Priscilla Christiana Nahadin',
             'Rael Nathania Wibowo',
             'Saskia Oktaviani',
-            'Shafa Dhiya Raihanah',
+            'Shafa Dhiya Raihanah (Announcer)',
             'Sheriel Zelda Fitriani Cholid',
             'Shezza Nadyra Hergianto',
             'Shiren Rizkia fahira',
             'Yariza Nafisha Hamzah',
         ],
-        'sound_operator' => [
+        'kadiv_sound_operator' => [
             'Salwa Syafira',
+        ],
+        'sound_operator' => [
             'Ahmad Faris Firta Budiman',
             'Audrey Geovanni Rionald Sinaga',
             'Bimo Septiansyah',
@@ -47,12 +69,14 @@ class Gen7MemberSeeder extends Seeder
             'Fatyanheiza Putri Cahyadi',
             'Meirina Kartika Rahmah',
             'Raka Desnoel Sr',
-            'Syavirni Dwi Amalia',
+            'Syavirni Dwi Amalia (Sound Operator)',
             'Yohanes Dimas Restu Putra',
             'Zahra Dinda Rahma Dani',
         ],
-        'human_resource' => [
+        'kadiv_human_resource' => [
             'Satriani',
+        ],
+        'human_resource' => [
             'Anggraini Dwina Putri',
             'Azza Nabila Assaida',
             'Dewi Novita Sari',
@@ -60,21 +84,89 @@ class Gen7MemberSeeder extends Seeder
             'Keisha Ann Aida Rahman',
             'Yoga Nanda Saputra',
         ],
+        'head_of_public_relation' => [
+            'Nayla Agis Maulida',
+        ],
+        'kadiv_partnership' => [
+            'Putri Nabila',
+        ],
+        'partnership' => [
+            'Azzahra Putri Anastasya',
+            'Calysta Jauza Faris',
+            'Divta Dewani Sunandar',
+            'Shabrina Hilmi Amanu',
+        ],
+        'kadiv_media_relation' => [
+            'Najla Safira Balqis',
+        ],
+        'media_relation' => [
+            'Fahri Sohail Risay',
+            'Rizma Ayu Revalina',
+            'Salwa Azzahra Zein',
+            'Zafira Jua Santika',
+        ],
+        'head_of_social_media' => [
+            'Miftah Faradilah',
+        ],
+        'kadiv_creative' => [
+            'Syalloma Zidna Azzahra',
+        ],
+        'creative' => [
+            'Farah Syifa Annisa Ramadhani',
+            'Ghistyanata Utomo',
+            'Khaira Meizahra',
+            'Nur Annissa',
+            'Salsabila Putri Azhari',
+            'Sayla Ahmad Sumantri Ownie',
+        ],
+        'kadiv_video_editor' => [
+            'Lidya Damayanti',
+        ],
+        'video_editor' => [
+            'Abdul Zani',
+            'Andhika Efran Nurdiansah',
+            'Farhan Athallah Shalfianas',
+            'Inas Nahiza',
+            'Keyro Haqqu Hemiyari',
+            'Shofie Queen Hillul Latifah',
+        ],
+        'kadiv_design_and_publishing' => [
+            'Chelsea Alya Mukhbita Widyadhana',
+        ],
+        'design_and_publishing' => [
+            'Aldelvine Zahyan Annurin',
+            'Anisya Nurfaidah',
+            'Calvien Agustian Tacazily',
+            'Devie Damayanti',
+            'Fathin Nayla Putri',
+            'Luthfia Malika',
+            'Shevia Dwi Lestari',
+            'Zahra Aulia Nafizza',
+            'Zhafira Ramadhani',
+        ],
+        'kadiv_web_development' => [
+            'Adi Ezra Anthoni',
+        ],
+        'web_development' => [
+            'Bimo Rajendra Fassah',
+            'Rafdi Muliawan',
+            'Rayya Mahira',
+        ],
     ];
 
     /**
-     * Create an account for every announcer, sound operator and human resources member.
+     * Create an account for every Gen 7 member, one per job.
      */
     public function run(): void
     {
-        foreach (self::MEMBERS as $roleName => $names) {
-            $roleId = Role::where('name', $roleName)->value('id');
+        $roleIds = Role::pluck('id', 'name');
 
+        foreach (self::MEMBERS as $roleName => $names) {
             foreach ($names as $name) {
                 User::create([
                     'username' => $name,
                     'password' => self::DEFAULT_PASSWORD,
-                    'role_id' => $roleId,
+                    'role_id' => $roleIds[$roleName],
                 ]);
             }
         }
