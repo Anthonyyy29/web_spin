@@ -7,6 +7,10 @@
     <h1 class="mt-1 text-2xl font-semibold tracking-tight">{{ $session->status === \App\Enums\SessionStatus::Postponed ? 'Jadwalkan ulang sesi' : 'Ubah sesi' }}</h1>
     <p class="mt-1 mb-6 text-sm text-muted">{{ $session->program->name }} <span class="tabular-nums">(semula {{ $session->regular_date->locale('id')->translatedFormat('D, d M Y') }})</span></p>
 
+    @if ($session->status === \App\Enums\SessionStatus::Cancelled)
+        <p class="mb-6 max-w-2xl rounded-md border border-line bg-white px-4 py-3 text-sm text-muted">Menyimpan akan mengaktifkan kembali sesi ini.</p>
+    @endif
+
     <form method="POST" action="{{ route('sesi.update', $session) }}" class="max-w-2xl rounded-lg border border-line bg-white p-6 md:p-8">
         @csrf
         @method('PUT')

@@ -129,7 +129,7 @@ class ProgramController extends Controller
             ->all();
 
         $program->crew()->sync($crew);
-        $program->syncSessions(today());
+        $program->syncSessions(now());
     }
 
     /**

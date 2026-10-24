@@ -18,6 +18,9 @@
                     @endforeach
                 </select>
             </div>
+            @if ($isHistory)
+                <input type="hidden" name="waktu" value="riwayat">
+            @endif
             <button type="submit" class="rounded-md bg-signal-strong px-4 py-2 text-sm font-medium text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Terapkan</button>
         </form>
     </div>
@@ -53,6 +56,12 @@
             </ul>
         </section>
     @endif
+
+    @php($tabClass = 'border-b-2 px-1 pb-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal')
+    <nav aria-label="Waktu sesi" class="mb-4 flex gap-6 border-b border-line">
+        <a href="{{ route('sesi.index', array_filter(['program' => $selectedProgramId])) }}" @if (! $isHistory) aria-current="page" @endif class="{{ $tabClass }} {{ $isHistory ? 'border-transparent text-muted hover:text-ink' : 'border-signal-strong text-ink' }}">Mendatang</a>
+        <a href="{{ route('sesi.index', array_filter(['program' => $selectedProgramId, 'waktu' => 'riwayat'])) }}" @if ($isHistory) aria-current="page" @endif class="{{ $tabClass }} {{ $isHistory ? 'border-signal-strong text-ink' : 'border-transparent text-muted hover:text-ink' }}">Riwayat</a>
+    </nav>
 
     <div class="overflow-x-auto rounded-lg border border-line bg-white">
         <table class="w-full text-left text-sm">
@@ -92,7 +101,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-5 py-12 text-center text-muted">Belum ada sesi bertanggal.</td>
+                        <td colspan="7" class="px-5 py-12 text-center text-muted">{{ $isHistory ? 'Belum ada riwayat sesi.' : 'Belum ada sesi mendatang.' }}</td>
                     </tr>
                 @endforelse
             </tbody>

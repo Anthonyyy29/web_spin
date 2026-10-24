@@ -47,7 +47,7 @@
                 @forelse ($rows as $row)
                     <tr class="hover:bg-canvas/60">
                         <td class="px-5 py-3 font-medium">{{ $row['user']->username }}</td>
-                        <td class="px-5 py-3 text-muted">{{ $row['user']->role === 'so' ? 'SO' : 'Announcer' }}</td>
+                        <td class="px-5 py-3 text-muted">{{ \App\Enums\CrewPosition::from($row['user']->role)->label() }}</td>
                         <td class="px-5 py-3 text-right tabular-nums">{{ $row['hadir'] }}</td>
                         <td class="px-5 py-3 text-right tabular-nums">{{ $row['terlambat'] }}</td>
                         <td class="px-5 py-3 text-right tabular-nums">{{ $row['izin'] }}</td>

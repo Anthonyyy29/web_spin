@@ -35,7 +35,7 @@
                         <td class="px-5 py-3 whitespace-nowrap tabular-nums">{{ substr($session->tapping_start, 0, 5) }}–{{ substr($session->tapping_end, 0, 5) }}</td>
                         <td class="px-5 py-3 whitespace-nowrap">
                             {{ $session->attendanceStatusFor($user, $now)->label() }}
-                            @if ($attendance)
+                            @if ($attendance?->checked_in_at)
                                 <span class="ml-1 text-muted tabular-nums">{{ $attendance->checked_in_at->format('H:i') }}</span>
                             @endif
                         </td>

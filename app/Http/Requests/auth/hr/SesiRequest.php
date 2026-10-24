@@ -84,6 +84,7 @@ class SesiRequest extends FormRequest
         return [
             function (Validator $validator): void {
                 $this->validateTimeOrder($validator);
+                $this->validateScheduleIsNotMovedAfterCheckIn($validator);
                 $this->validateCrewIsNotDuplicated($validator);
                 $this->validateCrewHasNoOverlap($validator);
             },
@@ -108,6 +109,37 @@ class SesiRequest extends FormRequest
             'status' => SessionStatus::Scheduled,
             'is_customized' => true,
         ];
+    }
+
+    /**
+     * Reject a new date or time for a session that already has a check-in recorded on the old schedule.
+     */
+    private function validateScheduleIsNotMovedAfterCheckIn(Validator $validator): void
+    {
+        if ($validator->errors()->isNotEmpty()) {
+            return;
+        }
+
+        /** @var BroadcastSession $current */
+        $current = $this->route('sesi');
+        $stored = [
+            'session_date' => $current->session_date?->toDateString(),
+            'crewcall_time' => $current->crewcall_time,
+            'tapping_start' => $current->tapping_start,
+            'tapping_end' => $current->tapping_end,
+        ];
+        $submitted = [
+            'session_date' => $this->input('session_date'),
+            'crewcall_time' => Carbon::createFromFormat('H:i', $this->input('crewcall_time'))->format('H:i:s'),
+            'tapping_start' => Carbon::createFromFormat('H:i', $this->input('tapping_start'))->format('H:i:s'),
+            'tapping_end' => Carbon::createFromFormat('H:i', $this->input('tapping_end'))->format('H:i:s'),
+        ];
+
+        $isMoved = collect($stored)->contains(fn (?string $value, string $field): bool => $value !== $submitted[$field]);
+
+        if ($isMoved && $current->hasCheckIns()) {
+            $validator->errors()->add('session_date', BroadcastSession::LOCKED_SCHEDULE_MESSAGE);
+        }
     }
 
     /**

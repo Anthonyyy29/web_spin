@@ -74,7 +74,7 @@ class DatabaseSeeder extends Seeder
                 $so->id => ['position' => CrewPosition::So->value],
             ]);
 
-            $program->syncSessions(today());
+            $program->syncSessions(now());
         });
     }
 }

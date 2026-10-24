@@ -114,3 +114,40 @@ it('does not create past sessions for a program that already has sessions', func
     expect($this->program->sessions()->whereDate('regular_date', '2026-10-05')->exists())->toBeFalse()
         ->and($this->program->sessions()->count())->toBe(16);
 });
+
+it('leaves today\'s session untouched once check-in has opened but still updates later sessions', function () {
+    $this->program->syncSessions($this->today);
+    $newAnnouncer = User::factory()->announcer()->create();
+
+    $this->program->update(['crewcall_time' => '09:00:00', 'tapping_start' => '09:30:00', 'tapping_end' => '11:00:00']);
+    $this->program->crew()->sync([$newAnnouncer->id => ['position' => 'announcer']]);
+    $this->program->syncSessions(CarbonImmutable::parse('2026-10-26 10:00:00'));
+
+    $today = $this->program->sessions()->whereDate('regular_date', '2026-10-26')->first();
+    $nextWeek = $this->program->sessions()->whereDate('regular_date', '2026-11-02')->first();
+
+    expect($today->crewcall_time)->toBe('07:30:00')
+        ->and($today->tapping_start)->toBe('08:00:00')
+        ->and($today->crew->pluck('id')->sort()->values()->all())->toBe(collect([$this->announcer->id, $this->so->id])->sort()->values()->all())
+        ->and($nextWeek->crewcall_time)->toBe('09:00:00')
+        ->and($nextWeek->crew->pluck('id')->all())->toBe([$newAnnouncer->id]);
+});
+
+it('keeps today\'s session when its program no longer matches after check-in opened', function () {
+    $this->program->syncSessions($this->today);
+    $session = $this->program->sessions()->whereDate('regular_date', '2026-10-26')->first();
+
+    $this->program->update(['day_of_week' => 2]);
+    $this->program->syncSessions(CarbonImmutable::parse('2026-10-26 07:15:00'));
+
+    expect($session->fresh())->not->toBeNull();
+});
+
+it('still updates today\'s session before check-in opens', function () {
+    $this->program->syncSessions($this->today);
+
+    $this->program->update(['crewcall_time' => '09:00:00']);
+    $this->program->syncSessions(CarbonImmutable::parse('2026-10-26 07:14:59'));
+
+    expect($this->program->sessions()->whereDate('regular_date', '2026-10-26')->first()->crewcall_time)->toBe('09:00:00');
+});

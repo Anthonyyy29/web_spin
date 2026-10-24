@@ -289,7 +289,7 @@ it('exports the per person summary as csv', function () {
     $lines = ($this->streamed)($response);
 
     expect($lines[0])->toBe(['Username', 'Role', 'Hadir', 'Terlambat', 'Tidak hadir', 'Izin', 'Sakit'])
-        ->and($lines[1])->toBe(['ani', 'announcer', '0', '1', '0', '0', '0'])
+        ->and($lines[1])->toBe(['ani', 'Announcer', '0', '1', '0', '0', '0'])
         ->and($lines)->toHaveCount(2);
 });
 
@@ -308,8 +308,8 @@ it('exports a session as csv', function () {
     $lines = ($this->streamed)($response);
 
     expect($lines[0])->toBe(['Program', 'Tanggal', 'Crewcall', 'Username', 'Posisi', 'Status', 'Jam check-in', 'Catatan'])
-        ->and($lines[1])->toBe(['Pagi Ceria', '2026-10-26', '07:30', 'ani', 'announcer', 'Terlambat', '07:40', 'Macet, banjir'])
-        ->and($lines[2])->toBe(['Pagi Ceria', '2026-10-26', '07:30', 'cici', 'so', 'Tidak hadir', '', ''])
+        ->and($lines[1])->toBe(['Pagi Ceria', '2026-10-26', '07:30', 'ani', 'Announcer', 'Terlambat', '07:40', 'Macet, banjir'])
+        ->and($lines[2])->toBe(['Pagi Ceria', '2026-10-26', '07:30', 'cici', 'SO', 'Tidak hadir', '', ''])
         ->and($lines)->toHaveCount(3);
 });
 
@@ -323,7 +323,7 @@ it('exports a postponed session as csv without a date', function () {
         ->assertOk()
         ->assertDownload('absensi-pagi-ceria-ditunda.csv');
 
-    expect(($this->streamed)($response)[1])->toBe(['Pagi Ceria', '', '', 'ani', 'announcer', 'Belum', '', '']);
+    expect(($this->streamed)($response)[1])->toBe(['Pagi Ceria', '', '', 'ani', 'Announcer', 'Belum', '', '']);
 });
 
 it('forbids non hr users from attendance routes', function () {
@@ -350,4 +350,39 @@ it('links to the attendance page from the session list and the nav', function ()
         ->assertOk()
         ->assertSee(route('absensi.session', $session))
         ->assertSee(route('absensi.index'));
+});
+
+it('preselects the current izin or sakit status in the override select', function () {
+    $session = ($this->closedSession)();
+    $ani = ($this->crewUser)('ani');
+    $session->crew()->attach($ani->id, ['position' => 'announcer']);
+    Attendance::factory()->create([
+        'broadcast_session_id' => $session->id,
+        'user_id' => $ani->id,
+        'checked_in_at' => null,
+        'status' => AttendanceStatus::Sakit,
+    ]);
+
+    $this->actingAs($this->hr)
+        ->get(route('absensi.session', $session))
+        ->assertOk()
+        ->assertSee('<option value="sakit" selected>', false)
+        ->assertDontSee('<option value="izin" selected>', false);
+});
+
+it('labels positions and roles with the crew position labels', function () {
+    $session = ($this->closedSession)();
+    $ani = ($this->crewUser)('ani');
+    $cici = ($this->crewUser)('cici', 'so');
+    $session->crew()->attach([$ani->id => ['position' => 'announcer'], $cici->id => ['position' => 'so']]);
+
+    $this->actingAs($this->hr)
+        ->get(route('absensi.session', $session))
+        ->assertOk()
+        ->assertSeeInOrder(['ani', 'Announcer', 'cici', 'SO']);
+
+    $this->actingAs($this->hr)
+        ->get(route('absensi.index'))
+        ->assertOk()
+        ->assertSeeInOrder(['ani', 'Announcer', 'cici', 'SO']);
 });

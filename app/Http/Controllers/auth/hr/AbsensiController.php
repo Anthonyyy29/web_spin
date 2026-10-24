@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\auth\hr;
 
 use App\Enums\AttendanceStatus;
+use App\Enums\CrewPosition;
 use App\Enums\SessionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\auth\hr\AbsensiStatusRequest;
@@ -48,7 +49,7 @@ class AbsensiController extends Controller
             foreach ($rows as $row) {
                 $this->writeCsvRow($output, [
                     $row['user']->username,
-                    $row['user']->role,
+                    CrewPosition::from($row['user']->role)->label(),
                     $row['hadir'],
                     $row['terlambat'],
                     $row['tidak_hadir'],
@@ -89,7 +90,7 @@ class AbsensiController extends Controller
                     $date ?? '',
                     $crewcall,
                     $member['user']->username,
-                    $member['position'] ?? '-',
+                    $member['position'] === null ? '-' : CrewPosition::from($member['position'])->label(),
                     $member['status']->label(),
                     $member['attendance']?->checked_in_at?->format('H:i') ?? '',
                     $member['attendance']?->note ?? '',

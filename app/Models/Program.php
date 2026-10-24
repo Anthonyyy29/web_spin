@@ -51,16 +51,18 @@ class Program extends Model
      * Runs in a single transaction. Rules:
      * - Matching dates are every date in [period_start, period_end] whose ISO weekday equals day_of_week.
      * - A program without sessions gets one for every matching date; otherwise only matching dates on or
-     *   after $today that have no session with that regular_date yet (moved sessions are never recreated).
-     * - Non-customized sessions with regular_date on or after $today are reset to the program's times and
+     *   after today (the start of $now) that have no session with that regular_date yet (moved sessions are
+     *   never recreated).
+     * - Non-customized sessions with regular_date on or after today are reset to the program's times and
      *   crew; if their regular_date is no longer a matching date they are deleted unless they have attendance.
-     * - Customized sessions and sessions before $today are left untouched.
+     * - Customized sessions, sessions before today, and today's session once its check-in has opened at $now
+     *   are left untouched.
      * - Attendances are never modified.
      */
-    public function syncSessions(CarbonInterface $today): void
+    public function syncSessions(CarbonInterface $now): void
     {
-        DB::transaction(function () use ($today): void {
-            $todayDate = $today->toDateString();
+        DB::transaction(function () use ($now): void {
+            $todayDate = $now->copy()->startOfDay()->toDateString();
             $matchingDates = $this->matchingDates();
             $crewPayload = $this->crew()->get()
                 ->mapWithKeys(fn (User $user): array => [$user->id => ['position' => $user->pivot->position]])
@@ -91,7 +93,8 @@ class Program extends Model
 
             $existingSessions
                 ->reject(fn (BroadcastSession $session): bool => $session->is_customized
-                    || $session->regular_date->toDateString() < $todayDate)
+                    || $session->regular_date->toDateString() < $todayDate
+                    || $this->checkInHasOpened($session, $now))
                 ->each(function (BroadcastSession $session) use ($matchingDates, $crewPayload): void {
                     if (! in_array($session->regular_date->toDateString(), $matchingDates, true)) {
                         if (! $session->attendances()->exists()) {
@@ -110,6 +113,16 @@ class Program extends Model
                     $session->crew()->sync($crewPayload);
                 });
         });
+    }
+
+    /**
+     * Determine whether the session's check-in window has already opened at the given instant.
+     */
+    private function checkInHasOpened(BroadcastSession $session, CarbonInterface $now): bool
+    {
+        $opensAt = $session->checkInOpensAt();
+
+        return $opensAt !== null && $opensAt->lessThanOrEqualTo($now);
     }
 
     /**

@@ -16,18 +16,23 @@ use Illuminate\View\View;
 class SesiController extends Controller
 {
     /**
-     * Display the dated sessions and the postponed sessions waiting to be rescheduled.
+     * Display the upcoming or past dated sessions and the postponed sessions waiting to be rescheduled.
      */
     public function index(Request $request): View
     {
         $programId = $request->integer('program') ?: null;
+        $isHistory = $request->query('waktu') === 'riwayat';
+        $today = today()->toDateString();
 
         $sessions = BroadcastSession::query()
             ->with(['program', 'crew'])
             ->whereNotNull('session_date')
             ->when($programId, fn ($query) => $query->where('program_id', $programId))
-            ->orderByDesc('session_date')
-            ->orderBy('crewcall_time')
+            ->when(
+                $isHistory,
+                fn ($query) => $query->whereDate('session_date', '<', $today)->orderByDesc('session_date')->orderByDesc('crewcall_time'),
+                fn ($query) => $query->whereDate('session_date', '>=', $today)->orderBy('session_date')->orderBy('crewcall_time'),
+            )
             ->paginate(15)
             ->withQueryString();
 
@@ -43,6 +48,7 @@ class SesiController extends Controller
             'postponedSessions' => $postponedSessions,
             'programs' => Program::orderBy('name')->get(['id', 'name']),
             'selectedProgramId' => $programId,
+            'isHistory' => $isHistory,
         ]);
     }
 
@@ -89,6 +95,10 @@ class SesiController extends Controller
     {
         if ($sesi->status !== SessionStatus::Scheduled) {
             return $this->rejected('Sesi ini tidak bisa ditunda.');
+        }
+
+        if ($sesi->hasCheckIns()) {
+            return $this->rejected(BroadcastSession::LOCKED_SCHEDULE_MESSAGE);
         }
 
         $sesi->update([

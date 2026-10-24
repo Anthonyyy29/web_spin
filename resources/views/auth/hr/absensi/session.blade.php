@@ -53,7 +53,7 @@
                     @php($user = $member['user'])
                     <tr class="hover:bg-canvas/60">
                         <td class="px-5 py-3 font-medium">{{ $user->username }}</td>
-                        <td class="px-5 py-3 text-muted">{{ $member['position'] === null ? '-' : ($member['position'] === 'so' ? 'SO' : 'Announcer') }}</td>
+                        <td class="px-5 py-3 text-muted">{{ $member['position'] === null ? '-' : \App\Enums\CrewPosition::from($member['position'])->label() }}</td>
                         <td class="px-5 py-3 whitespace-nowrap {{ $member['status'] === \App\Enums\AttendanceStatus::TidakHadir ? 'font-medium text-danger' : '' }}">{{ $member['status']->label() }}</td>
                         <td class="px-5 py-3 tabular-nums">{{ $member['attendance']?->checked_in_at?->format('H:i') ?? '-' }}</td>
                         <td class="px-5 py-3 text-muted">{{ $member['attendance']?->note ?? '-' }}</td>
@@ -64,8 +64,8 @@
                                     @method('PUT')
                                     <label for="status-{{ $user->id }}" class="sr-only">Status {{ $user->username }}</label>
                                     <select id="status-{{ $user->id }}" name="status" class="rounded-md border border-line bg-white px-2 py-1.5 text-sm text-ink focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/30">
-                                        <option value="izin">Izin</option>
-                                        <option value="sakit">Sakit</option>
+                                        <option value="izin" @selected($member['status'] === \App\Enums\AttendanceStatus::Izin)>Izin</option>
+                                        <option value="sakit" @selected($member['status'] === \App\Enums\AttendanceStatus::Sakit)>Sakit</option>
                                         <option value="reset">Kembalikan</option>
                                     </select>
                                     <label for="note-{{ $user->id }}" class="sr-only">Catatan {{ $user->username }}</label>

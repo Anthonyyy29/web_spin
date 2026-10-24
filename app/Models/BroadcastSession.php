@@ -21,6 +21,11 @@ class BroadcastSession extends Model
     /** @use HasFactory<BroadcastSessionFactory> */
     use HasFactory;
 
+    /**
+     * Error shown when HR tries to move a session that already has check-ins.
+     */
+    public const LOCKED_SCHEDULE_MESSAGE = 'Sesi ini sudah punya check-in, jadi tanggal dan jamnya tidak bisa diubah.';
+
     protected $table = 'broadcast_sessions';
 
     /**
@@ -53,6 +58,14 @@ class BroadcastSession extends Model
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class, 'broadcast_session_id');
+    }
+
+    /**
+     * Determine whether any crew member has actually checked in, ignoring statuses HR set without a check-in.
+     */
+    public function hasCheckIns(): bool
+    {
+        return $this->attendances()->whereNotNull('checked_in_at')->exists();
     }
 
     /**

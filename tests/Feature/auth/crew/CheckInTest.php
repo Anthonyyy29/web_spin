@@ -255,3 +255,31 @@ it('keeps roles out of each other\'s areas', function () {
     $this->actingAs($this->so)->get('/hr/program')->assertForbidden();
     $this->actingAs($this->announcer)->get('/so/sesi')->assertForbidden();
 });
+
+it('shows my sessions when hr marked me sakit without a check-in', function () {
+    $this->travelTo('2026-10-26 07:00:00');
+    $hr = User::factory()->hr()->create();
+    $session = ($this->crewSession)($this->announcer);
+
+    $this->actingAs($hr)
+        ->put(route('absensi.update', [$session, $this->announcer]), ['status' => 'sakit'])
+        ->assertRedirect(route('absensi.session', $session));
+
+    expect(Attendance::sole()->checked_in_at)->toBeNull();
+
+    $this->actingAs($this->announcer)
+        ->get(route('announcer.sesi.index'))
+        ->assertOk()
+        ->assertSee('Sakit');
+});
+
+it('forbids hr users from checking in', function () {
+    $hr = User::factory()->hr()->create();
+    $session = ($this->crewSession)($this->announcer);
+    $this->travelTo('2026-10-26 07:20:00');
+
+    $this->actingAs($hr)->post(route('announcer.sesi.checkIn', $session))->assertForbidden();
+    $this->actingAs($hr)->post(route('so.sesi.checkIn', $session))->assertForbidden();
+
+    expect(Attendance::count())->toBe(0);
+});
