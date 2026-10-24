@@ -43,7 +43,7 @@ it('lets hr create a program and generates its sessions', function () {
         ->and($program->tapping_end)->toBe('09:30:00')
         ->and($program->sessions)->toHaveCount(4)
         ->and($program->crew()->wherePivot('position', 'announcer')->pluck('users.id')->all())->toBe([$this->announcer->id])
-        ->and($program->crew()->wherePivot('position', 'so')->pluck('users.id')->all())->toBe([$this->so->id]);
+        ->and($program->crew()->wherePivot('position', 'sound_operator')->pluck('users.id')->all())->toBe([$this->so->id]);
 
     $session = $program->sessions()->orderBy('regular_date')->first();
 

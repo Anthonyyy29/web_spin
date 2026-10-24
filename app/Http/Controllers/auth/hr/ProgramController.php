@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\auth\hr;
 
+use App\Enums\CrewPosition;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\auth\hr\ProgramRequest;
 use App\Models\Program;
@@ -35,8 +36,8 @@ class ProgramController extends Controller
     {
         $programs = Program::query()
             ->withCount([
-                'crew as announcers_count' => fn ($query) => $query->where('program_crew.position', 'announcer'),
-                'crew as sos_count' => fn ($query) => $query->where('program_crew.position', 'so'),
+                'crew as announcers_count' => fn ($query) => $query->where('program_crew.position', CrewPosition::Announcer->value),
+                'crew as sos_count' => fn ($query) => $query->where('program_crew.position', CrewPosition::So->value),
             ])
             ->orderBy('day_of_week')
             ->orderBy('crewcall_time')
@@ -80,8 +81,8 @@ class ProgramController extends Controller
 
         return view('auth.hr.program.edit', [
             'program' => $program,
-            'selectedAnnouncerIds' => $program->crew->where('pivot.position', 'announcer')->pluck('id')->all(),
-            'selectedSoIds' => $program->crew->where('pivot.position', 'so')->pluck('id')->all(),
+            'selectedAnnouncerIds' => $program->crew->where('pivot.position', CrewPosition::Announcer->value)->pluck('id')->all(),
+            'selectedSoIds' => $program->crew->where('pivot.position', CrewPosition::So->value)->pluck('id')->all(),
             ...$this->formData(),
         ]);
     }
@@ -140,8 +141,8 @@ class ProgramController extends Controller
     private function formData(): array
     {
         return [
-            'announcers' => User::where('role', 'announcer')->orderBy('username')->get(),
-            'sos' => User::where('role', 'so')->orderBy('username')->get(),
+            'announcers' => User::withRoles(CrewPosition::Announcer->roleNames())->orderBy('username')->get(),
+            'sos' => User::withRoles(CrewPosition::So->roleNames())->orderBy('username')->get(),
             'dayNames' => self::DAY_NAMES,
         ];
     }

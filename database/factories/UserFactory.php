@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -26,8 +27,18 @@ class UserFactory extends Factory
         return [
             'username' => fake()->unique()->userName(),
             'password' => static::$password ??= Hash::make('password'),
-            'role' => 'announcer',
+            'role_id' => fn (): ?int => Role::where('name', 'announcer')->value('id'),
         ];
+    }
+
+    /**
+     * Indicate that the user has the role with the given name.
+     */
+    public function role(string $name): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => fn (): ?int => Role::where('name', $name)->value('id'),
+        ]);
     }
 
     /**
@@ -35,9 +46,7 @@ class UserFactory extends Factory
      */
     public function hr(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'role' => 'hr',
-        ]);
+        return $this->role('human_resource');
     }
 
     /**
@@ -45,9 +54,7 @@ class UserFactory extends Factory
      */
     public function announcer(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'role' => 'announcer',
-        ]);
+        return $this->role('announcer');
     }
 
     /**
@@ -55,8 +62,6 @@ class UserFactory extends Factory
      */
     public function so(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'role' => 'so',
-        ]);
+        return $this->role('sound_operator');
     }
 }

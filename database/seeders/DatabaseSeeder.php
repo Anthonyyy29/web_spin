@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -18,7 +19,7 @@ class DatabaseSeeder extends Seeder
         User::create([
             'username' => 'HR',
             'password' => 'hr',
-            'role' => 'hr',
+            'role_id' => Role::where('name', 'human_resource')->value('id'),
         ]);
 
         $this->call(Gen7MemberSeeder::class);

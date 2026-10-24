@@ -10,10 +10,10 @@ uses(RefreshDatabase::class);
 it('seeds the hr account and the gen 7 members without example data', function () {
     $this->seed();
 
-    expect(User::where('role', 'announcer')->count())->toBe(17)
-        ->and(User::where('role', 'so')->count())->toBe(11)
-        ->and(User::where('role', 'hr')->count())->toBe(8)
-        ->and(User::where('username', 'HR')->value('role'))->toBe('hr')
+    expect(User::withRoles(['announcer'])->count())->toBe(17)
+        ->and(User::withRoles(['sound_operator'])->count())->toBe(11)
+        ->and(User::withRoles(['human_resource'])->count())->toBe(8)
+        ->and(User::where('username', 'HR')->sole()->role->name)->toBe('human_resource')
         ->and(User::where('username', 'announcer2')->exists())->toBeFalse()
         ->and(Program::count())->toBe(0);
 });

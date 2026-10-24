@@ -3,6 +3,7 @@
 namespace App\Http\Requests\auth\hr\Concerns;
 
 use App\Enums\CrewPosition;
+use App\Models\Role;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -23,13 +24,13 @@ trait ValidatesCrewAssignment
             'announcer_ids.*' => [
                 'integer',
                 'distinct',
-                Rule::exists('users', 'id')->where('role', CrewPosition::Announcer->value),
+                Rule::exists('users', 'id')->whereIn('role_id', $this->roleIdsFor(CrewPosition::Announcer)),
             ],
             'so_ids' => ['nullable', 'array'],
             'so_ids.*' => [
                 'integer',
                 'distinct',
-                Rule::exists('users', 'id')->where('role', CrewPosition::So->value),
+                Rule::exists('users', 'id')->whereIn('role_id', $this->roleIdsFor(CrewPosition::So)),
             ],
         ];
     }
@@ -103,6 +104,16 @@ trait ValidatesCrewAssignment
         }
 
         return $positions;
+    }
+
+    /**
+     * Get the ids of the roles that may be assigned to the given position.
+     *
+     * @return list<int>
+     */
+    private function roleIdsFor(CrewPosition $position): array
+    {
+        return Role::whereIn('name', $position->roleNames())->pluck('id')->all();
     }
 
     /**

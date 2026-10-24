@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -13,7 +14,7 @@ class Gen7MemberSeeder extends Seeder
     public const DEFAULT_PASSWORD = '1234';
 
     /**
-     * Gen 7 members (from "Data Diri Gen 7 - Data Anggota") per application role. The username is the full name.
+     * Gen 7 members (from "Data Diri Gen 7 - Data Anggota") per role name. The username is the full name.
      *
      * @var array<string, list<string>>
      */
@@ -37,7 +38,7 @@ class Gen7MemberSeeder extends Seeder
             'Shiren Rizkia fahira',
             'Yariza Nafisha Hamzah',
         ],
-        'so' => [
+        'sound_operator' => [
             'Salwa Syafira',
             'Ahmad Faris Firta Budiman',
             'Audrey Geovanni Rionald Sinaga',
@@ -50,7 +51,7 @@ class Gen7MemberSeeder extends Seeder
             'Yohanes Dimas Restu Putra',
             'Zahra Dinda Rahma Dani',
         ],
-        'hr' => [
+        'human_resource' => [
             'Satriani',
             'Anggraini Dwina Putri',
             'Azza Nabila Assaida',
@@ -66,12 +67,14 @@ class Gen7MemberSeeder extends Seeder
      */
     public function run(): void
     {
-        foreach (self::MEMBERS as $role => $names) {
+        foreach (self::MEMBERS as $roleName => $names) {
+            $roleId = Role::where('name', $roleName)->value('id');
+
             foreach ($names as $name) {
                 User::create([
                     'username' => $name,
                     'password' => self::DEFAULT_PASSWORD,
-                    'role' => $role,
+                    'role_id' => $roleId,
                 ]);
             }
         }

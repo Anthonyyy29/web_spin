@@ -120,7 +120,7 @@ it('updates a session and syncs its crew', function () {
         ->and($session->tapping_end)->toBe('11:00:00')
         ->and($session->status)->toBe(SessionStatus::Scheduled)
         ->and($session->is_customized)->toBeTrue()
-        ->and($session->crew()->wherePivot('position', 'so')->pluck('users.id')->all())->toBe([$this->so->id])
+        ->and($session->crew()->wherePivot('position', 'sound_operator')->pluck('users.id')->all())->toBe([$this->so->id])
         ->and(Attendance::whereKey($attendance->id)->exists())->toBeTrue();
 });
 
@@ -353,7 +353,7 @@ it('stores an extra session outside the weekly schedule', function () {
         ->and($session->status)->toBe(SessionStatus::Scheduled)
         ->and($session->is_customized)->toBeTrue()
         ->and($session->crew->firstWhere('id', $this->announcer->id)->pivot->position)->toBe('announcer')
-        ->and($session->crew->firstWhere('id', $this->so->id)->pivot->position)->toBe('so');
+        ->and($session->crew->firstWhere('id', $this->so->id)->pivot->position)->toBe('sound_operator');
 });
 
 it('requires an existing program for an extra session', function (array $override) {
@@ -449,7 +449,7 @@ it('keeps attendance on a crew only change of a session that has a check-in', fu
         ->assertSessionHas('status', 'Sesi berhasil diperbarui.');
 
     expect($session->attendances()->count())->toBe(1)
-        ->and($session->crew()->wherePivot('position', 'so')->pluck('users.id')->all())->toBe([$this->so->id]);
+        ->and($session->crew()->wherePivot('position', 'sound_operator')->pluck('users.id')->all())->toBe([$this->so->id]);
 });
 
 it('keeps hr marked attendance when moving a session without a check-in', function () {

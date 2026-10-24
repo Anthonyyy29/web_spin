@@ -7,9 +7,6 @@ use App\Http\Controllers\auth\hr\HrController;
 use App\Http\Controllers\auth\hr\ProgramController;
 use App\Http\Controllers\auth\hr\SesiController;
 use App\Http\Controllers\UserController;
-use App\Http\Middleware\isAnnouncer;
-use App\Http\Middleware\isHr;
-use App\Http\Middleware\isSo;
 use Illuminate\Support\Facades\Route;
 
 // Guest
@@ -18,7 +15,7 @@ Route::post('/login', [UserController::class, 'login'])->name('login');
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 
 // admin HR
-Route::group(['prefix' => 'hr', 'middleware' => ['auth', isHr::class]], function () {
+Route::group(['prefix' => 'hr', 'middleware' => ['auth', 'role:kadiv_human_resource,human_resource']], function () {
     Route::get('/dashboard', [HrController::class, 'dashboard'])->name('hr.dashboard');
     Route::resource('program', ProgramController::class)->except('show');
     Route::resource('sesi', SesiController::class)->only(['index', 'create', 'store', 'edit', 'update']);
@@ -35,14 +32,14 @@ Route::group(['prefix' => 'hr', 'middleware' => ['auth', isHr::class]], function
 });
 
 // announcer
-Route::group(['prefix' => 'announcer', 'middleware' => ['auth', isAnnouncer::class]], function () {
+Route::group(['prefix' => 'announcer', 'middleware' => ['auth', 'role:kadiv_announcer,announcer']], function () {
     Route::get('/dashboard', [AnnouncerController::class, 'dashboard'])->name('announcer.dashboard');
     Route::get('sesi', [SesiSayaController::class, 'index'])->name('announcer.sesi.index');
     Route::post('sesi/{sesi}/check-in', [SesiSayaController::class, 'checkIn'])->name('announcer.sesi.checkIn');
 });
 
 // sound operator
-Route::group(['prefix' => 'so', 'middleware' => ['auth', isSo::class]], function () {
+Route::group(['prefix' => 'so', 'middleware' => ['auth', 'role:kadiv_sound_operator,sound_operator']], function () {
     Route::get('sesi', [SesiSayaController::class, 'index'])->name('so.sesi.index');
     Route::post('sesi/{sesi}/check-in', [SesiSayaController::class, 'checkIn'])->name('so.sesi.checkIn');
 });

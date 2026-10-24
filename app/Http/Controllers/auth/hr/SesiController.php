@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\auth\hr;
 
+use App\Enums\CrewPosition;
 use App\Enums\SessionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\auth\hr\SesiRequest;
@@ -206,10 +207,10 @@ class SesiController extends Controller
     {
         return [
             'session' => $session,
-            'selectedAnnouncerIds' => $crew->where('pivot.position', 'announcer')->pluck('id')->values()->all(),
-            'selectedSoIds' => $crew->where('pivot.position', 'so')->pluck('id')->values()->all(),
-            'announcers' => User::where('role', 'announcer')->orderBy('username')->get(),
-            'sos' => User::where('role', 'so')->orderBy('username')->get(),
+            'selectedAnnouncerIds' => $crew->where('pivot.position', CrewPosition::Announcer->value)->pluck('id')->values()->all(),
+            'selectedSoIds' => $crew->where('pivot.position', CrewPosition::So->value)->pluck('id')->values()->all(),
+            'announcers' => User::withRoles(CrewPosition::Announcer->roleNames())->orderBy('username')->get(),
+            'sos' => User::withRoles(CrewPosition::So->roleNames())->orderBy('username')->get(),
         ];
     }
 

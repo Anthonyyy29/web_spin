@@ -17,7 +17,7 @@ beforeEach(function () {
     $this->announcer = User::factory()->announcer()->create();
     $this->so = User::factory()->so()->create();
     $this->program->crew()->attach($this->announcer, ['position' => 'announcer']);
-    $this->program->crew()->attach($this->so, ['position' => 'so']);
+    $this->program->crew()->attach($this->so, ['position' => 'sound_operator']);
     $this->today = CarbonImmutable::parse('2026-10-24');
 });
 
@@ -35,7 +35,7 @@ it('creates a session for every matching weekday in the period', function () {
             ->and($session->crewcall_time)->toBe('07:30:00')
             ->and($session->is_customized)->toBeFalse()
             ->and($session->crew)->toHaveCount(2)
-            ->and($session->crew->firstWhere('id', $this->so->id)->pivot->position)->toBe('so');
+            ->and($session->crew->firstWhere('id', $this->so->id)->pivot->position)->toBe('sound_operator');
     });
 });
 

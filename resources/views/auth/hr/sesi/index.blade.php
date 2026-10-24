@@ -82,7 +82,7 @@
                     <tr class="hover:bg-canvas/60">
                         <td class="px-5 py-3 font-medium">{{ $session->program->name }}</td>
                         @include('auth.partials.sesi-cells', ['session' => $session])
-                        <td class="px-5 py-3 whitespace-nowrap text-muted">{{ $session->crew->where('pivot.position', 'announcer')->count() }} announcer, {{ $session->crew->where('pivot.position', 'so')->count() }} SO</td>
+                        <td class="px-5 py-3 whitespace-nowrap text-muted">{{ $session->crew->where('pivot.position', 'announcer')->count() }} announcer, {{ $session->crew->where('pivot.position', \App\Enums\CrewPosition::So->value)->count() }} SO</td>
                         <td class="px-5 py-3">
                             <div class="flex items-center justify-end gap-4">
                                 <a href="{{ route('sesi.edit', $session) }}" class="font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ubah</a>

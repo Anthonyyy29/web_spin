@@ -17,7 +17,7 @@ beforeEach(function () {
 
     $this->crewSession = function (User $user, array $attributes = []): BroadcastSession {
         $session = BroadcastSession::factory()->for($this->program)->create($attributes);
-        $session->crew()->attach($user->id, ['position' => $user->role]);
+        $session->crew()->attach($user->id, ['position' => $user->crewPosition()->value]);
 
         return $session;
     };

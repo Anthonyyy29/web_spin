@@ -16,15 +16,15 @@ it('links a program, its session crew and attendance', function () {
     $session = BroadcastSession::factory()->for($program)->create();
     $user = User::factory()->so()->create();
 
-    $program->crew()->attach($user, ['position' => 'so']);
-    $session->crew()->attach($user, ['position' => 'so']);
+    $program->crew()->attach($user, ['position' => 'sound_operator']);
+    $session->crew()->attach($user, ['position' => 'sound_operator']);
     Attendance::factory()->for($session, 'session')->for($user)->create();
 
-    expect($session->crew->first()->pivot->position)->toBe('so')
+    expect($session->crew->first()->pivot->position)->toBe('sound_operator')
         ->and($session->attendances->first()->status)->toBe(AttendanceStatus::Hadir)
         ->and($session->program->is($program))->toBeTrue()
         ->and($program->sessions)->toHaveCount(1)
-        ->and($program->crew->first()->pivot->position)->toBe('so')
+        ->and($program->crew->first()->pivot->position)->toBe('sound_operator')
         ->and($user->broadcastSessions->first()->is($session))->toBeTrue()
         ->and($user->programs->first()->is($program))->toBeTrue()
         ->and($user->attendances)->toHaveCount(1)

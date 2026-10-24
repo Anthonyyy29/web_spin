@@ -11,17 +11,13 @@ class UserController extends Controller
     {
         if (Auth::attempt($request->only('username', 'password'))) {
             $request->session()->regenerate();
-            if (Auth::user()->role === 'hr') {
-                return redirect()->intended(route('hr.dashboard'));
-            } elseif (Auth::user()->role === 'announcer') {
-                return redirect()->intended(route('announcer.dashboard'));
-            } elseif (Auth::user()->role === 'so') {
-                return redirect()->intended(route('so.sesi.index'));
-            } elseif (Auth::user()->role === 'admin') {
-                return redirect()->intended(route('admin.dashboard'));
-            } else {
-                return redirect()->intended('/');
+            $area = Auth::user()->area();
+
+            if ($area === null) {
+                return redirect('/');
             }
+
+            return redirect()->intended(route($area->homeRoute()));
         }
 
         return back()->withErrors(['username' => 'Username atau password salah.'])->withInput();

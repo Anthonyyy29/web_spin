@@ -15,7 +15,7 @@ class SesiSayaController extends Controller
     public function index(): View
     {
         $user = auth()->user();
-        $role = $user->role;
+        $area = $user->area();
 
         $now = now();
         $withAttendance = ['program', 'attendances' => fn ($query) => $query->where('user_id', $user->id)];
@@ -49,8 +49,8 @@ class SesiSayaController extends Controller
             'historySessions' => $historySessions,
             'user' => $user,
             'now' => $now,
-            'layout' => 'auth.'.$role.'.layout',
-            'routePrefix' => $role,
+            'layout' => $area->layout(),
+            'routePrefix' => $area->value,
         ]);
     }
 

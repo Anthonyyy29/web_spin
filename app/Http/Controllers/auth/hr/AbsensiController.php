@@ -120,7 +120,7 @@ class AbsensiController extends Controller
             foreach ($rows as $row) {
                 $this->writeCsvRow($output, [
                     $row['user']->username,
-                    CrewPosition::from($row['user']->role)->label(),
+                    $row['user']->crewPosition()->label(),
                     $row['hadir'],
                     $row['terlambat'],
                     $row['tidak_hadir'],
@@ -371,8 +371,8 @@ class AbsensiController extends Controller
     private function positionOrder(?string $position): int
     {
         return match ($position) {
-            'announcer' => 0,
-            'so' => 1,
+            CrewPosition::Announcer->value => 0,
+            CrewPosition::So->value => 1,
             default => 2,
         };
     }
@@ -387,11 +387,11 @@ class AbsensiController extends Controller
     {
         $now = now();
 
-        $users = User::query()
-            ->whereIn('role', ['announcer', 'so'])
-            ->orderBy('role')
-            ->orderBy('username')
-            ->get();
+        $users = User::withRoles([...CrewPosition::Announcer->roleNames(), ...CrewPosition::So->roleNames()])
+            ->with('role')
+            ->get()
+            ->sortBy(fn (User $user): array => [$this->positionOrder($user->crewPosition()?->value), $user->username])
+            ->values();
 
         $sessions = BroadcastSession::query()
             ->with(['crew', 'attendances'])

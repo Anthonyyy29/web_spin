@@ -16,7 +16,7 @@ beforeEach(function () {
     $this->hr = User::factory()->hr()->create();
     $this->program = Program::factory()->create(['name' => 'Pagi Ceria']);
 
-    $this->crewUser = fn (string $username, string $role = 'announcer'): User => User::factory()->create(['username' => $username, 'role' => $role]);
+    $this->crewUser = fn (string $username, string $role = 'announcer'): User => User::factory()->role($role)->create(['username' => $username]);
 
     $this->closedSession = function (array $attributes = []): BroadcastSession {
         return BroadcastSession::factory()->for($this->program)->create($attributes);
@@ -42,11 +42,11 @@ it('shows each crew member\'s status for a session', function () {
     $session = ($this->closedSession)();
     $present = ($this->crewUser)('ani');
     $late = ($this->crewUser)('budi');
-    $absent = ($this->crewUser)('cici', 'so');
+    $absent = ($this->crewUser)('cici', 'sound_operator');
     foreach ([$present, $late] as $user) {
         $session->crew()->attach($user->id, ['position' => 'announcer']);
     }
-    $session->crew()->attach($absent->id, ['position' => 'so']);
+    $session->crew()->attach($absent->id, ['position' => 'sound_operator']);
     ($this->checkIn)($session, $present, '2026-10-26 07:20:00');
     ($this->checkIn)($session, $late, '2026-10-26 07:40:00');
 
@@ -208,14 +208,14 @@ it('only changes attendance status of scheduled sessions', function () {
 it('summarises attendance per person for a date range', function () {
     $ani = ($this->crewUser)('ani');
     $budi = ($this->crewUser)('budi');
-    $cici = ($this->crewUser)('cici', 'so');
+    $cici = ($this->crewUser)('cici', 'sound_operator');
     $dodi = ($this->crewUser)('dodi');
     $nobody = ($this->crewUser)('eko');
     $removed = ($this->crewUser)('fani');
 
     $make = function (string $date, array $attributes = []) use ($ani, $budi, $cici): BroadcastSession {
         $session = BroadcastSession::factory()->for($this->program)->create(['session_date' => $date, 'regular_date' => $date, ...$attributes]);
-        $session->crew()->attach([$ani->id => ['position' => 'announcer'], $budi->id => ['position' => 'announcer'], $cici->id => ['position' => 'so']]);
+        $session->crew()->attach([$ani->id => ['position' => 'announcer'], $budi->id => ['position' => 'announcer'], $cici->id => ['position' => 'sound_operator']]);
 
         return $session;
     };
@@ -296,8 +296,8 @@ it('exports the per person summary as csv', function () {
 it('exports a session as csv', function () {
     $session = ($this->closedSession)();
     $ani = ($this->crewUser)('ani');
-    $cici = ($this->crewUser)('cici', 'so');
-    $session->crew()->attach([$ani->id => ['position' => 'announcer'], $cici->id => ['position' => 'so']]);
+    $cici = ($this->crewUser)('cici', 'sound_operator');
+    $session->crew()->attach([$ani->id => ['position' => 'announcer'], $cici->id => ['position' => 'sound_operator']]);
     ($this->checkIn)($session, $ani, '2026-10-26 07:40:00', null, 'Macet, banjir');
 
     $response = $this->actingAs($this->hr)
@@ -331,7 +331,7 @@ it('forbids non hr users from attendance routes', function () {
     $member = ($this->crewUser)('ani');
     $session->crew()->attach($member->id, ['position' => 'announcer']);
 
-    foreach ([$member, ($this->crewUser)('cici', 'so')] as $user) {
+    foreach ([$member, ($this->crewUser)('cici', 'sound_operator')] as $user) {
         $this->actingAs($user)->get(route('absensi.index'))->assertForbidden();
         $this->actingAs($user)->get(route('absensi.export'))->assertForbidden();
         $this->actingAs($user)->get(route('absensi.people'))->assertForbidden();
@@ -376,8 +376,8 @@ it('preselects the current izin or sakit status in the override select', functio
 it('labels positions and roles with the crew position labels', function () {
     $session = ($this->closedSession)();
     $ani = ($this->crewUser)('ani');
-    $cici = ($this->crewUser)('cici', 'so');
-    $session->crew()->attach([$ani->id => ['position' => 'announcer'], $cici->id => ['position' => 'so']]);
+    $cici = ($this->crewUser)('cici', 'sound_operator');
+    $session->crew()->attach([$ani->id => ['position' => 'announcer'], $cici->id => ['position' => 'sound_operator']]);
 
     $this->actingAs($this->hr)
         ->get(route('absensi.session', $session))
@@ -393,13 +393,13 @@ it('labels positions and roles with the crew position labels', function () {
 describe('per program', function () {
     beforeEach(function () {
         $this->ani = ($this->crewUser)('ani');
-        $this->cici = ($this->crewUser)('cici', 'so');
+        $this->cici = ($this->crewUser)('cici', 'sound_operator');
         $this->fani = ($this->crewUser)('fani');
-        $this->program->crew()->attach([$this->ani->id => ['position' => 'announcer'], $this->cici->id => ['position' => 'so']]);
+        $this->program->crew()->attach([$this->ani->id => ['position' => 'announcer'], $this->cici->id => ['position' => 'sound_operator']]);
 
         $make = function (string $date, array $attributes = [], ?array $crew = null): BroadcastSession {
             $session = BroadcastSession::factory()->for($this->program)->create(['session_date' => $date, 'regular_date' => $date, ...$attributes]);
-            $session->crew()->attach($crew ?? [$this->ani->id => ['position' => 'announcer'], $this->cici->id => ['position' => 'so']]);
+            $session->crew()->attach($crew ?? [$this->ani->id => ['position' => 'announcer'], $this->cici->id => ['position' => 'sound_operator']]);
 
             return $session;
         };
