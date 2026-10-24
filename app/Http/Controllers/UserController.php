@@ -14,7 +14,7 @@ class UserController extends Controller
             $area = Auth::user()->area();
 
             if ($area === null) {
-                return redirect('/');
+                return redirect()->route('unavailable');
             }
 
             return redirect()->intended(route($area->homeRoute()));

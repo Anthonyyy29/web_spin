@@ -1,7 +1,5 @@
 @extends('auth.layout')
 
-@section('role', 'HR')
-
 @section('nav')
     @include('auth.partials.nav-link', ['label' => 'Dashboard', 'route' => 'hr.dashboard', 'active' => 'hr.dashboard'])
     @include('auth.partials.nav-link', ['label' => 'Program', 'route' => 'program.index', 'active' => 'program.*'])

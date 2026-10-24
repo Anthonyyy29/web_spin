@@ -20,7 +20,7 @@
 
         <div class="hidden border-t border-line px-5 py-4 md:mt-auto md:block">
             <p class="text-sm font-medium">{{ Auth::user()->username }}</p>
-            <p class="text-sm text-muted">@yield('role')</p>
+            <p class="text-sm text-muted">{{ Auth::user()->role->label }}</p>
             <form method="POST" action="{{ route('logout') }}" class="mt-3">
                 @csrf
                 <button type="submit" class="text-sm text-muted underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Keluar</button>

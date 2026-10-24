@@ -44,5 +44,7 @@ Route::group(['prefix' => 'so', 'middleware' => ['auth', 'role:kadiv_sound_opera
     Route::post('sesi/{sesi}/check-in', [SesiSayaController::class, 'checkIn'])->name('so.sesi.checkIn');
 });
 
+Route::view('/belum-tersedia', 'auth.belum-tersedia')->middleware('auth')->name('unavailable');
+
 Route::get('/', fn () => view('main'));
 // Route::get('/test', fn () => view('auth.announcer.dashboard.index'));

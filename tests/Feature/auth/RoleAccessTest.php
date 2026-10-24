@@ -87,3 +87,32 @@ it('offers kadiv crew in the program form and rejects other roles', function () 
     expect($program->crew->firstWhere('id', $kadivSo->id)->pivot->position)->toBe('sound_operator')
         ->and($program->crew->firstWhere('id', $kadivAnnouncer->id)->pivot->position)->toBe('announcer');
 });
+
+it('sends a role without an area to the unavailable page after login', function () {
+    $user = User::factory()->role('creative')->create(['password' => 'secret-pass']);
+
+    $this->post(route('login'), ['username' => $user->username, 'password' => 'secret-pass'])
+        ->assertRedirect(route('unavailable'));
+});
+
+it('shows the unavailable page with the job title and a logout button', function () {
+    $user = User::factory()->role('kadiv_creative')->create();
+
+    $this->actingAs($user)->get(route('unavailable'))
+        ->assertOk()
+        ->assertSee($user->username)
+        ->assertSee('Kadiv Creative')
+        ->assertSee('Fitur untuk jabatanmu belum tersedia. Silakan keluar.')
+        ->assertSee(route('logout'), false)
+        ->assertSee('Keluar');
+});
+
+it('requires login for the unavailable page', function () {
+    $this->get(route('unavailable'))->assertRedirect(route('login'));
+});
+
+it('shows the job title label in the sidebar', function () {
+    $this->actingAs(User::factory()->role('kadiv_announcer')->create())
+        ->get('/announcer/dashboard')
+        ->assertSee('Kadiv Announcer');
+});
