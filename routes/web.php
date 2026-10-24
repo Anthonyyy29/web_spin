@@ -16,7 +16,7 @@ Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 // admin HR
 Route::group(['prefix' => 'hr', 'middleware' => ['auth', isHr::class]], function () {
     Route::get('/dashboard', [HrController::class, 'dashboard'])->name('hr.dashboard');
-    Route::resource('jadwalSiaran', JadwalSiaranController::class);
+    Route::resource('jadwalSiaran', JadwalSiaranController::class)->except('show');
 
 });
 

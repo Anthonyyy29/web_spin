@@ -24,7 +24,7 @@
     {{-- Sidebar --}}
     <aside class="fixed top-16 left-0 bottom-0 w-64 bg-white border-r p-4">
         <a href="{{ route('hr.dashboard') }}" class="block px-3 py-2 rounded hover:bg-gray-100">Dashboard</a>
-        <a href="#" class="block px-3 py-2 rounded hover:bg-gray-100">Jadwal Siaran</a>
+        <a href="{{ route('jadwalSiaran.index') }}" class="block px-3 py-2 rounded hover:bg-gray-100">Jadwal Siaran</a>
         <a href="#" class="block px-3 py-2 rounded hover:bg-gray-100">Absensi</a>
         <a href="#" class="block px-3 py-2 rounded hover:bg-gray-100">Pengaturan</a>
     </aside>
