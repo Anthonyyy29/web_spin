@@ -47,6 +47,53 @@ it('rejects a schedule that overlaps another for the same announcer and date', f
     expect(BroadcastSchedule::count())->toBe(1);
 });
 
+it('accepts a schedule that ends at midnight', function () {
+    $this->actingAs($this->hr)
+        ->post(route('jadwalSiaran.store'), schedulePayload($this->announcer, [
+            'start_time' => '23:00',
+            'end_time' => '00:00',
+        ]))
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('broadcast_schedules', [
+        'user_id' => $this->announcer->id,
+        'start_time' => '23:00:00',
+        'end_time' => '00:00:00',
+    ]);
+});
+
+it('rejects a schedule that overlaps one ending at midnight', function () {
+    BroadcastSchedule::factory()->create([
+        'user_id' => $this->announcer->id,
+        'broadcast_date' => '2026-11-01',
+        'start_time' => '23:00:00',
+        'end_time' => '00:00:00',
+    ]);
+
+    $this->actingAs($this->hr)
+        ->post(route('jadwalSiaran.store'), schedulePayload($this->announcer, [
+            'start_time' => '23:30',
+            'end_time' => '00:00',
+        ]))
+        ->assertSessionHasErrors('start_time');
+});
+
+it('allows a schedule right before one ending at midnight', function () {
+    BroadcastSchedule::factory()->create([
+        'user_id' => $this->announcer->id,
+        'broadcast_date' => '2026-11-01',
+        'start_time' => '23:00:00',
+        'end_time' => '00:00:00',
+    ]);
+
+    $this->actingAs($this->hr)
+        ->post(route('jadwalSiaran.store'), schedulePayload($this->announcer, [
+            'start_time' => '22:00',
+            'end_time' => '23:00',
+        ]))
+        ->assertSessionHasNoErrors();
+});
+
 it('rejects updating a schedule into another schedule\'s slot', function () {
     BroadcastSchedule::factory()->create([
         'user_id' => $this->announcer->id,
@@ -82,7 +129,7 @@ it('shows validation messages in Indonesian', function () {
 
     $response->assertSessionHasErrors('program_title');
 
-    expect(session('errors')->first('program_title'))->toContain('judul program');
+    expect(session('errors')->first('program_title'))->toBe('Judul program wajib diisi.');
 });
 
 it('rejects a broadcast date that is not in Y-m-d format', function () {

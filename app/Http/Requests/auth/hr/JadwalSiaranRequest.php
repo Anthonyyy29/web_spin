@@ -12,6 +12,11 @@ use Illuminate\Validation\Validator;
 class JadwalSiaranRequest extends FormRequest
 {
     /**
+     * End time that marks the end of the broadcast day (midnight).
+     */
+    private const MIDNIGHT = '00:00';
+
+    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -34,7 +39,11 @@ class JadwalSiaranRequest extends FormRequest
             'program_title' => ['required', 'string', 'max:255'],
             'broadcast_date' => ['required', 'date_format:Y-m-d'],
             'start_time' => ['required', 'date_format:H:i'],
-            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'end_time' => [
+                'required',
+                'date_format:H:i',
+                Rule::when($this->input('end_time') !== self::MIDNIGHT, 'after:start_time'),
+            ],
             'notes' => ['nullable', 'string'],
         ];
     }
@@ -64,14 +73,14 @@ class JadwalSiaranRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'required' => ':attribute wajib diisi.',
-            'string' => ':attribute harus berupa teks.',
-            'program_title.max' => ':attribute maksimal :max karakter.',
-            'user_id.exists' => ':attribute yang dipilih tidak valid.',
-            'broadcast_date.date_format' => ':attribute harus berformat tahun-bulan-tanggal (Y-m-d).',
-            'start_time.date_format' => ':attribute harus berformat jam:menit (H:i).',
-            'end_time.date_format' => ':attribute harus berformat jam:menit (H:i).',
-            'end_time.after' => ':attribute harus lebih besar dari jam mulai.',
+            'required' => ':Attribute wajib diisi.',
+            'string' => ':Attribute harus berupa teks.',
+            'program_title.max' => ':Attribute maksimal :max karakter.',
+            'user_id.exists' => ':Attribute yang dipilih tidak valid.',
+            'broadcast_date.date_format' => ':Attribute harus berformat tahun-bulan-tanggal (Y-m-d).',
+            'start_time.date_format' => ':Attribute harus berformat jam:menit (H:i).',
+            'end_time.date_format' => ':Attribute harus berformat jam:menit (H:i).',
+            'end_time.after' => ':Attribute harus lebih besar dari jam mulai, atau 00:00 untuk tengah malam.',
         ];
     }
 
@@ -113,15 +122,25 @@ class JadwalSiaranRequest extends FormRequest
         return $validated;
     }
 
+    /**
+     * Determine if another schedule of the same announcer and date overlaps this one.
+     *
+     * An end time of 00:00 means midnight, so it is compared as 24:00:00.
+     */
     private function hasOverlappingSchedule(): bool
     {
         $currentSchedule = $this->route('jadwalSiaran');
+        $endTime = $this->input('end_time') === self::MIDNIGHT
+            ? '24:00:00'
+            : $this->toFullTime($this->input('end_time'));
 
         return BroadcastSchedule::query()
             ->where('user_id', $this->input('user_id'))
             ->whereDate('broadcast_date', $this->input('broadcast_date'))
-            ->where('start_time', '<', $this->toFullTime($this->input('end_time')))
-            ->where('end_time', '>', $this->toFullTime($this->input('start_time')))
+            ->where('start_time', '<', $endTime)
+            ->where(fn ($query) => $query
+                ->where('end_time', '>', $this->toFullTime($this->input('start_time')))
+                ->orWhere('end_time', $this->toFullTime(self::MIDNIGHT)))
             ->when($currentSchedule, fn ($query) => $query->whereKeyNot($currentSchedule->getKey()))
             ->exists();
     }
