@@ -85,3 +85,14 @@ it('ignores a role change sent with the profile form', function () {
 
     expect($this->user->fresh()->role->name)->toBe('announcer');
 });
+
+it('renders the stored photo with a url from the public disk', function () {
+    config(['filesystems.default' => 'local', 'filesystems.disks.local.url' => 'http://other.test/files']);
+
+    $this->actingAs($this->user)->put(route('profil.update'), ['username' => 'Ani Lestari', 'photo' => UploadedFile::fake()->image('a.jpg')]);
+    $path = $this->user->fresh()->photo_path;
+
+    $this->actingAs($this->user)->get(route('profil.edit'))
+        ->assertOk()
+        ->assertSee(Storage::disk('public')->url($path), false);
+});
