@@ -87,7 +87,7 @@
                                 <a href="{{ route('sesi.edit', $session) }}" class="font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ubah</a>
                                 <a href="{{ route('absensi.session', $session) }}" class="text-muted underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Absensi</a>
                                 @if ($session->status === \App\Enums\SessionStatus::Scheduled)
-                                    <form method="POST" action="{{ route('sesi.postpone', $session) }}" onsubmit="return confirm(@js('Tunda sesi '.$session->program->name.' pada '.$session->session_date->format('d/m/Y').'? Tanggal dan jam dikosongkan sampai dijadwalkan ulang.'))">
+                                    <form method="POST" action="{{ route('sesi.postpone', $session) }}" onsubmit="return confirm(@js($session->has_check_ins ? 'Sesi ini sudah punya check-in. Menunda akan menghapus semua absensi sesi ini. Lanjutkan?' : 'Tunda sesi '.$session->program->name.' pada '.$session->session_date->format('d/m/Y').'? Tanggal dan jam dikosongkan sampai dijadwalkan ulang.'))">
                                         @csrf
                                         <button type="submit" class="text-muted underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Tunda</button>
                                     </form>

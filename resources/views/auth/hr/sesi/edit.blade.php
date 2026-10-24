@@ -11,7 +11,7 @@
         <p class="mb-6 max-w-2xl rounded-md border border-line bg-white px-4 py-3 text-sm text-muted">Menyimpan akan mengaktifkan kembali sesi ini.</p>
     @endif
 
-    <form method="POST" action="{{ route('sesi.update', $session) }}" class="max-w-2xl rounded-lg border border-line bg-white p-6 md:p-8">
+    <form method="POST" action="{{ route('sesi.update', $session) }}" class="max-w-2xl rounded-lg border border-line bg-white p-6 md:p-8" @if ($hasCheckIns) onsubmit="return confirm(@js('Sesi ini sudah punya check-in. Jika tanggal atau jam diubah, semua absensi sesi ini akan dihapus. Lanjutkan?'))" @endif>
         @csrf
         @method('PUT')
         @php($fieldClass = 'w-full rounded-md border border-line bg-white px-3 py-2 text-ink focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/30 aria-[invalid=true]:border-danger')
@@ -51,6 +51,10 @@
 
             @include('auth.hr.partials.crew-fields')
         </div>
+
+        @if ($hasCheckIns)
+            <p class="mt-6 text-sm text-danger">Sesi ini sudah punya check-in. Mengubah tanggal atau jam akan menghapus semua absensi sesi ini.</p>
+        @endif
 
         <div class="mt-8 flex items-center gap-5 border-t border-line pt-5">
             <button type="submit" class="rounded-md bg-signal-strong px-4 py-2 text-sm font-medium text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Simpan sesi</button>

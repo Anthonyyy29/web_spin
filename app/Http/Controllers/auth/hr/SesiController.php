@@ -10,11 +10,17 @@ use App\Models\Program;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class SesiController extends Controller
 {
+    /**
+     * Appended to the status flash when moving or postponing a session removed its attendance.
+     */
+    private const ATTENDANCE_DELETED_NOTICE = ' Absensi sesi ini dihapus.';
+
     /**
      * Display the upcoming or past dated sessions and the postponed sessions waiting to be rescheduled.
      */
@@ -26,6 +32,7 @@ class SesiController extends Controller
 
         $sessions = BroadcastSession::query()
             ->with(['program', 'crew'])
+            ->withExists(['attendances as has_check_ins' => fn ($query) => $query->whereNotNull('checked_in_at')])
             ->whereNotNull('session_date')
             ->when($programId, fn ($query) => $query->where('program_id', $programId))
             ->when(
@@ -61,6 +68,7 @@ class SesiController extends Controller
 
         return view('auth.hr.sesi.edit', [
             'session' => $sesi,
+            'hasCheckIns' => $sesi->hasCheckIns(),
             'selectedAnnouncerIds' => $sesi->crew->where('pivot.position', 'announcer')->pluck('id')->all(),
             'selectedSoIds' => $sesi->crew->where('pivot.position', 'so')->pluck('id')->all(),
             'announcers' => User::where('role', 'announcer')->orderBy('username')->get(),
@@ -73,8 +81,17 @@ class SesiController extends Controller
      */
     public function update(SesiRequest $request, BroadcastSession $sesi): RedirectResponse
     {
-        DB::transaction(function () use ($request, $sesi): void {
-            $sesi->update($request->sessionAttributes());
+        $attendanceDeleted = false;
+
+        DB::transaction(function () use ($request, $sesi, &$attendanceDeleted): void {
+            $attributes = $request->sessionAttributes();
+
+            if ($sesi->hasCheckIns() && $sesi->isScheduleChangedBy(Arr::only($attributes, ['session_date', 'crewcall_time', 'tapping_start', 'tapping_end']))) {
+                $sesi->attendances()->delete();
+                $attendanceDeleted = true;
+            }
+
+            $sesi->update($attributes);
 
             $crew = collect($request->crewPositions())
                 ->map(fn (string $position): array => ['position' => $position])
@@ -85,7 +102,7 @@ class SesiController extends Controller
 
         return redirect()
             ->route('sesi.index')
-            ->with('status', 'Sesi berhasil diperbarui.');
+            ->with('status', 'Sesi berhasil diperbarui.'.($attendanceDeleted ? self::ATTENDANCE_DELETED_NOTICE : ''));
     }
 
     /**
@@ -97,22 +114,27 @@ class SesiController extends Controller
             return $this->rejected('Sesi ini tidak bisa ditunda.');
         }
 
-        if ($sesi->hasCheckIns()) {
-            return $this->rejected(BroadcastSession::LOCKED_SCHEDULE_MESSAGE);
-        }
+        $attendanceDeleted = false;
 
-        $sesi->update([
-            'session_date' => null,
-            'crewcall_time' => null,
-            'tapping_start' => null,
-            'tapping_end' => null,
-            'status' => SessionStatus::Postponed,
-            'is_customized' => true,
-        ]);
+        DB::transaction(function () use ($sesi, &$attendanceDeleted): void {
+            if ($sesi->hasCheckIns()) {
+                $sesi->attendances()->delete();
+                $attendanceDeleted = true;
+            }
+
+            $sesi->update([
+                'session_date' => null,
+                'crewcall_time' => null,
+                'tapping_start' => null,
+                'tapping_end' => null,
+                'status' => SessionStatus::Postponed,
+                'is_customized' => true,
+            ]);
+        });
 
         return redirect()
             ->route('sesi.index')
-            ->with('status', 'Sesi ditunda. Jadwalkan ulang dari daftar "Perlu dijadwalkan ulang".');
+            ->with('status', 'Sesi ditunda. Jadwalkan ulang dari daftar "Perlu dijadwalkan ulang".'.($attendanceDeleted ? self::ATTENDANCE_DELETED_NOTICE : ''));
     }
 
     /**

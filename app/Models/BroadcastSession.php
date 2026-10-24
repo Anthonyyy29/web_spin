@@ -21,11 +21,6 @@ class BroadcastSession extends Model
     /** @use HasFactory<BroadcastSessionFactory> */
     use HasFactory;
 
-    /**
-     * Error shown when HR tries to move a session that already has check-ins.
-     */
-    public const LOCKED_SCHEDULE_MESSAGE = 'Sesi ini sudah punya check-in, jadi tanggal dan jamnya tidak bisa diubah.';
-
     protected $table = 'broadcast_sessions';
 
     /**
@@ -66,6 +61,24 @@ class BroadcastSession extends Model
     public function hasCheckIns(): bool
     {
         return $this->attendances()->whereNotNull('checked_in_at')->exists();
+    }
+
+    /**
+     * Determine whether the given session date and times differ from the stored ones.
+     * Times are compared as H:i:s and the date as Y-m-d.
+     *
+     * @param  array{session_date: string, crewcall_time: string, tapping_start: string, tapping_end: string}  $schedule
+     */
+    public function isScheduleChangedBy(array $schedule): bool
+    {
+        $stored = [
+            'session_date' => $this->session_date?->toDateString(),
+            'crewcall_time' => $this->crewcall_time,
+            'tapping_start' => $this->tapping_start,
+            'tapping_end' => $this->tapping_end,
+        ];
+
+        return collect($stored)->contains(fn (?string $value, string $field): bool => $value !== $schedule[$field]);
     }
 
     /**

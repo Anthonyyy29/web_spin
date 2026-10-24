@@ -303,42 +303,46 @@ it('forbids non hr users from session routes', function () {
     expect($session->refresh()->status)->toBe(SessionStatus::Scheduled);
 });
 
-it('refuses to postpone a session that already has a check-in', function () {
+it('deletes all attendance when postponing a session that has a check-in', function () {
     $session = ($this->sessionWithCrew)();
     Attendance::factory()->for($session, 'session')->for($this->announcer)->create();
+    Attendance::factory()->for($session, 'session')->for($this->so)->create(['checked_in_at' => null, 'status' => 'izin']);
+    $otherSession = ($this->sessionWithCrew)(['session_date' => '2026-11-02']);
+    Attendance::factory()->for($otherSession, 'session')->for($this->announcer)->create();
 
     $this->actingAs($this->hr)
         ->post(route('sesi.postpone', $session))
         ->assertRedirect(route('sesi.index'))
-        ->assertSessionHasErrors(['sesi' => 'Sesi ini sudah punya check-in, jadi tanggal dan jamnya tidak bisa diubah.']);
+        ->assertSessionHas('status', 'Sesi ditunda. Jadwalkan ulang dari daftar "Perlu dijadwalkan ulang". Absensi sesi ini dihapus.');
 
-    expect($session->refresh()->status)->toBe(SessionStatus::Scheduled)
-        ->and($session->session_date->toDateString())->toBe('2026-10-26');
+    expect($session->refresh()->status)->toBe(SessionStatus::Postponed)
+        ->and($session->attendances()->count())->toBe(0)
+        ->and($otherSession->attendances()->count())->toBe(1);
 });
 
-it('still postpones a session whose attendance was only marked by hr', function () {
+it('keeps hr marked attendance when postponing a session without a check-in', function () {
     $session = ($this->sessionWithCrew)();
     Attendance::factory()->for($session, 'session')->for($this->announcer)->create(['checked_in_at' => null, 'status' => 'sakit']);
 
     $this->actingAs($this->hr)
         ->post(route('sesi.postpone', $session))
-        ->assertSessionHasNoErrors();
+        ->assertSessionHas('status', 'Sesi ditunda. Jadwalkan ulang dari daftar "Perlu dijadwalkan ulang".');
 
-    expect($session->refresh()->status)->toBe(SessionStatus::Postponed);
+    expect($session->refresh()->status)->toBe(SessionStatus::Postponed)
+        ->and($session->attendances()->count())->toBe(1);
 });
 
-it('refuses to change the date or times of a session that already has a check-in', function (array $change) {
+it('deletes all attendance when a schedule field changes on a session that has a check-in', function (array $change) {
     $session = ($this->sessionWithCrew)();
     Attendance::factory()->for($session, 'session')->for($this->announcer)->create();
+    Attendance::factory()->for($session, 'session')->for($this->so)->create(['checked_in_at' => null, 'status' => 'izin']);
 
     $this->actingAs($this->hr)
-        ->from(route('sesi.edit', $session))
         ->put(route('sesi.update', $session), ($this->payload)(['session_date' => '2026-10-26', 'crewcall_time' => '07:30', 'tapping_start' => '08:00', 'tapping_end' => '09:30', ...$change]))
-        ->assertRedirect(route('sesi.edit', $session))
-        ->assertSessionHasErrors(['session_date' => 'Sesi ini sudah punya check-in, jadi tanggal dan jamnya tidak bisa diubah.']);
+        ->assertRedirect(route('sesi.index'))
+        ->assertSessionHas('status', 'Sesi berhasil diperbarui. Absensi sesi ini dihapus.');
 
-    expect($session->refresh()->session_date->toDateString())->toBe('2026-10-26')
-        ->and($session->crewcall_time)->toBe('07:30:00');
+    expect($session->attendances()->count())->toBe(0);
 })->with([
     'date' => [['session_date' => '2026-10-28']],
     'crewcall' => [['crewcall_time' => '07:45']],
@@ -346,7 +350,7 @@ it('refuses to change the date or times of a session that already has a check-in
     'tapping end' => [['tapping_end' => '10:00']],
 ]);
 
-it('allows a crew only change on a session that already has a check-in', function () {
+it('keeps attendance on a crew only change of a session that has a check-in', function () {
     $session = ($this->sessionWithCrew)();
     Attendance::factory()->for($session, 'session')->for($this->announcer)->create();
 
@@ -358,9 +362,47 @@ it('allows a crew only change on a session that already has a check-in', functio
             'tapping_end' => '09:30',
         ]))
         ->assertRedirect(route('sesi.index'))
-        ->assertSessionHasNoErrors();
+        ->assertSessionHas('status', 'Sesi berhasil diperbarui.');
 
-    expect($session->refresh()->crew()->wherePivot('position', 'so')->pluck('users.id')->all())->toBe([$this->so->id]);
+    expect($session->attendances()->count())->toBe(1)
+        ->and($session->crew()->wherePivot('position', 'so')->pluck('users.id')->all())->toBe([$this->so->id]);
+});
+
+it('keeps hr marked attendance when moving a session without a check-in', function () {
+    $session = ($this->sessionWithCrew)();
+    Attendance::factory()->for($session, 'session')->for($this->announcer)->create(['checked_in_at' => null, 'status' => 'izin']);
+
+    $this->actingAs($this->hr)
+        ->put(route('sesi.update', $session), ($this->payload)())
+        ->assertSessionHas('status', 'Sesi berhasil diperbarui.');
+
+    expect($session->refresh()->session_date->toDateString())->toBe('2026-10-28')
+        ->and($session->attendances()->count())->toBe(1);
+});
+
+it('shows the attendance warning on the edit page only when the session has a check-in', function () {
+    $withCheckIn = ($this->sessionWithCrew)();
+    Attendance::factory()->for($withCheckIn, 'session')->for($this->announcer)->create();
+    $hrMarked = ($this->sessionWithCrew)(['session_date' => '2026-11-02']);
+    Attendance::factory()->for($hrMarked, 'session')->for($this->announcer)->create(['checked_in_at' => null, 'status' => 'izin']);
+
+    $this->actingAs($this->hr)->get(route('sesi.edit', $withCheckIn))->assertOk()
+        ->assertSee('Sesi ini sudah punya check-in. Mengubah tanggal atau jam akan menghapus semua absensi sesi ini.')
+        ->assertSee('Sesi ini sudah punya check-in. Jika tanggal atau jam diubah, semua absensi sesi ini akan dihapus. Lanjutkan?', false);
+    $this->actingAs($this->hr)->get(route('sesi.edit', $hrMarked))->assertOk()
+        ->assertDontSee('Sesi ini sudah punya check-in')
+        ->assertDontSee('semua absensi sesi ini akan dihapus');
+});
+
+it('uses the warning confirm text on the postpone form only when the session has a check-in', function () {
+    $withCheckIn = ($this->sessionWithCrew)(['session_date' => '2026-10-26']);
+    Attendance::factory()->for($withCheckIn, 'session')->for($this->announcer)->create();
+    ($this->sessionWithCrew)(['session_date' => '2026-11-02']);
+
+    $response = $this->actingAs($this->hr)->get(route('sesi.index'))->assertOk();
+
+    expect(substr_count($response->getContent(), 'Menunda akan menghapus semua absensi sesi ini'))->toBe(1);
+    expect(substr_count($response->getContent(), 'Tunda sesi Pagi Ceria'))->toBe(1);
 });
 
 it('still cancels a session that already has a check-in', function () {
@@ -369,7 +411,8 @@ it('still cancels a session that already has a check-in', function () {
 
     $this->actingAs($this->hr)->post(route('sesi.cancel', $session))->assertSessionHasNoErrors();
 
-    expect($session->refresh()->status)->toBe(SessionStatus::Cancelled);
+    expect($session->refresh()->status)->toBe(SessionStatus::Cancelled)
+        ->and($session->attendances()->count())->toBe(1);
 });
 
 it('shows today first on the default upcoming tab even with many future sessions', function () {
