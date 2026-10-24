@@ -19,8 +19,13 @@
         </nav>
 
         <div class="hidden border-t border-line px-5 py-4 md:mt-auto md:block">
-            <p class="text-sm font-medium">{{ Auth::user()->username }}</p>
-            <p class="text-sm text-muted">{{ Auth::user()->role->label }}</p>
+            <div class="flex items-center gap-3">
+                @include('auth.partials.avatar', ['user' => Auth::user(), 'size' => 'size-8'])
+                <div class="min-w-0">
+                    <p class="truncate text-sm font-medium">{{ Auth::user()->username }}</p>
+                    <p class="truncate text-sm text-muted">{{ Auth::user()->role->label }}</p>
+                </div>
+            </div>
             <form method="POST" action="{{ route('logout') }}" class="mt-3">
                 @csrf
                 <button type="submit" class="text-sm text-muted underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Keluar</button>

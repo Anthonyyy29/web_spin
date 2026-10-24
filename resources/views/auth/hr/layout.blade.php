@@ -6,4 +6,5 @@
     @include('auth.partials.nav-link', ['label' => 'Sesi', 'route' => 'sesi.index', 'active' => 'sesi.*'])
     @include('auth.partials.nav-link', ['label' => 'Absensi', 'route' => 'absensi.index', 'active' => 'absensi.*'])
     @include('auth.partials.nav-link', ['label' => 'Pengaturan', 'route' => null, 'active' => null])
+    @include('auth.partials.nav-link', ['label' => 'Profil', 'route' => 'profil.edit', 'active' => 'profil.*'])
 @endsection

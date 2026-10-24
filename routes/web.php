@@ -6,6 +6,7 @@ use App\Http\Controllers\auth\hr\AbsensiController;
 use App\Http\Controllers\auth\hr\HrController;
 use App\Http\Controllers\auth\hr\ProgramController;
 use App\Http\Controllers\auth\hr\SesiController;
+use App\Http\Controllers\auth\ProfilController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +43,12 @@ Route::group(['prefix' => 'announcer', 'middleware' => ['auth', 'role:kadiv_anno
 Route::group(['prefix' => 'so', 'middleware' => ['auth', 'role:kadiv_sound_operator,sound_operator']], function () {
     Route::get('sesi', [SesiSayaController::class, 'index'])->name('so.sesi.index');
     Route::post('sesi/{sesi}/check-in', [SesiSayaController::class, 'checkIn'])->name('so.sesi.checkIn');
+});
+
+// profil (semua jabatan yang punya area)
+Route::group(['middleware' => ['auth', 'role:kadiv_announcer,announcer,kadiv_sound_operator,sound_operator,kadiv_human_resource,human_resource']], function () {
+    Route::get('/profil', [ProfilController::class, 'edit'])->name('profil.edit');
+    Route::put('/profil', [ProfilController::class, 'update'])->name('profil.update');
 });
 
 Route::view('/belum-tersedia', 'auth.belum-tersedia')->middleware('auth')->name('unavailable');
