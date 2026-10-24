@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -60,6 +61,49 @@ class SesiController extends Controller
     }
 
     /**
+     * Show the form for adding an extra session, prefilled from the program given in the query string.
+     */
+    public function create(Request $request): View
+    {
+        $program = Program::with('crew')->find($request->integer('program') ?: null);
+        $session = new BroadcastSession($program ? [
+            'program_id' => $program->id,
+            'crewcall_time' => $program->crewcall_time,
+            'tapping_start' => $program->tapping_start,
+            'tapping_end' => $program->tapping_end,
+        ] : []);
+
+        return view('auth.hr.sesi.create', [
+            ...$this->formData($session, $program?->crew ?? collect()),
+            'programs' => Program::orderBy('name')->get(['id', 'name']),
+        ]);
+    }
+
+    /**
+     * Store an extra session outside the program's weekly schedule.
+     */
+    public function store(SesiRequest $request): RedirectResponse
+    {
+        DB::transaction(function () use ($request): void {
+            $session = BroadcastSession::create([
+                ...$request->sessionAttributes(),
+                'program_id' => $request->integer('program_id'),
+                'regular_date' => null,
+            ]);
+
+            $session->crew()->sync(
+                collect($request->crewPositions())
+                    ->map(fn (string $position): array => ['position' => $position])
+                    ->all()
+            );
+        });
+
+        return redirect()
+            ->route('sesi.index')
+            ->with('status', 'Sesi tambahan dibuat.');
+    }
+
+    /**
      * Show the form for editing the specified session.
      */
     public function edit(BroadcastSession $sesi): View
@@ -67,12 +111,8 @@ class SesiController extends Controller
         $sesi->load(['program', 'crew']);
 
         return view('auth.hr.sesi.edit', [
-            'session' => $sesi,
+            ...$this->formData($sesi, $sesi->crew),
             'hasCheckIns' => $sesi->hasCheckIns(),
-            'selectedAnnouncerIds' => $sesi->crew->where('pivot.position', 'announcer')->pluck('id')->all(),
-            'selectedSoIds' => $sesi->crew->where('pivot.position', 'so')->pluck('id')->all(),
-            'announcers' => User::where('role', 'announcer')->orderBy('username')->get(),
-            'sos' => User::where('role', 'so')->orderBy('username')->get(),
         ]);
     }
 
@@ -154,6 +194,23 @@ class SesiController extends Controller
         return redirect()
             ->route('sesi.index')
             ->with('status', 'Sesi dibatalkan.');
+    }
+
+    /**
+     * View data shared by the add and edit session forms.
+     *
+     * @param  Collection<int, User>  $crew  crew with a pivot position, used to preselect the checkboxes
+     * @return array{session: BroadcastSession, selectedAnnouncerIds: list<int>, selectedSoIds: list<int>, announcers: Collection<int, User>, sos: Collection<int, User>}
+     */
+    private function formData(BroadcastSession $session, Collection $crew): array
+    {
+        return [
+            'session' => $session,
+            'selectedAnnouncerIds' => $crew->where('pivot.position', 'announcer')->pluck('id')->values()->all(),
+            'selectedSoIds' => $crew->where('pivot.position', 'so')->pluck('id')->values()->all(),
+            'announcers' => User::where('role', 'announcer')->orderBy('username')->get(),
+            'sos' => User::where('role', 'so')->orderBy('username')->get(),
+        ];
     }
 
     /**

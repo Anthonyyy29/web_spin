@@ -33,6 +33,7 @@ class SesiRequest extends FormRequest
     public function rules(): array
     {
         return [
+            ...($this->isCreatingSession() ? ['program_id' => ['required', 'integer', 'exists:programs,id']] : []),
             'session_date' => ['required', 'date_format:Y-m-d'],
             'crewcall_time' => ['required', 'date_format:H:i'],
             'tapping_start' => ['required', 'date_format:H:i'],
@@ -49,6 +50,7 @@ class SesiRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            'program_id' => 'program',
             'session_date' => 'tanggal sesi',
             'crewcall_time' => 'jam crewcall',
             'tapping_start' => 'tapping mulai',
@@ -66,6 +68,8 @@ class SesiRequest extends FormRequest
     {
         return [
             'required' => ':Attribute wajib diisi.',
+            'program_id.integer' => ':Attribute yang dipilih tidak ditemukan.',
+            'program_id.exists' => ':Attribute yang dipilih tidak ditemukan.',
             'session_date.date_format' => ':Attribute harus berformat tahun-bulan-tanggal (Y-m-d).',
             'crewcall_time.date_format' => ':Attribute harus berformat jam:menit (H:i).',
             'tapping_start.date_format' => ':Attribute harus berformat jam:menit (H:i).',
@@ -111,6 +115,14 @@ class SesiRequest extends FormRequest
     }
 
     /**
+     * Determine whether the request creates an extra session rather than updating an existing one.
+     */
+    public function isCreatingSession(): bool
+    {
+        return $this->route('sesi') === null;
+    }
+
+    /**
      * Reject crew members already booked in another scheduled session whose tapping overlaps on the same date.
      */
     private function validateCrewHasNoOverlap(Validator $validator): void
@@ -121,7 +133,7 @@ class SesiRequest extends FormRequest
 
         $tappingStart = Carbon::createFromFormat('H:i', $this->input('tapping_start'))->format('H:i:s');
         $tappingEnd = Carbon::createFromFormat('H:i', $this->input('tapping_end'))->format('H:i:s');
-        /** @var BroadcastSession $current */
+        /** @var BroadcastSession|null $current */
         $current = $this->route('sesi');
 
         $bookedCrew = User::query()
@@ -129,7 +141,7 @@ class SesiRequest extends FormRequest
             ->whereHas('broadcastSessions', function ($query) use ($current, $tappingStart, $tappingEnd): void {
                 $query->where('broadcast_sessions.status', SessionStatus::Scheduled)
                     ->whereDate('broadcast_sessions.session_date', $this->input('session_date'))
-                    ->where('broadcast_sessions.id', '!=', $current->id)
+                    ->when($current, fn ($query) => $query->where('broadcast_sessions.id', '!=', $current->id))
                     ->where('broadcast_sessions.tapping_start', '<', $tappingEnd)
                     ->where('broadcast_sessions.tapping_end', '>', $tappingStart);
             })

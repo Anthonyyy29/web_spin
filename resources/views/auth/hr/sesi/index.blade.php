@@ -6,7 +6,7 @@
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
             <h1 class="text-2xl font-semibold tracking-tight">Sesi</h1>
-            <p class="mt-1 text-sm text-muted">Sesi siaran yang dibuat dari program. Ubah jadwal atau kru, tunda, atau batalkan per sesi.</p>
+            <p class="mt-1 text-sm text-muted">Sesi siaran yang dibuat dari program, ditambah sesi tambahan dari HR. Ubah jadwal atau kru, tunda, atau batalkan per sesi.</p>
         </div>
         <form method="GET" action="{{ route('sesi.index') }}" class="flex items-end gap-2">
             <div>
@@ -21,7 +21,8 @@
             @if ($isHistory)
                 <input type="hidden" name="waktu" value="riwayat">
             @endif
-            <button type="submit" class="rounded-md bg-signal-strong px-4 py-2 text-sm font-medium text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Terapkan</button>
+            <button type="submit" class="rounded-md border border-line bg-white px-4 py-2 text-sm font-medium text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Terapkan</button>
+            <a href="{{ route('sesi.create', array_filter(['program' => $selectedProgramId])) }}" class="rounded-md bg-signal-strong px-4 py-2 text-sm font-medium text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Tambah sesi</a>
         </form>
     </div>
 
@@ -41,12 +42,12 @@
                     <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
                         <div>
                             <span class="font-medium">{{ $session->program->name }}</span>
-                            <span class="ml-2 text-muted tabular-nums">semula {{ $session->regular_date->locale('id')->translatedFormat('D, d M Y') }}</span>
+                            <span class="ml-2 text-muted tabular-nums">{{ $session->regular_date ? 'semula '.$session->regular_date->locale('id')->translatedFormat('D, d M Y') : 'sesi tambahan' }}</span>
                         </div>
                         <div class="flex items-center gap-4">
                             <a href="{{ route('sesi.edit', $session) }}" class="font-medium text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Jadwalkan</a>
                             <a href="{{ route('absensi.session', $session) }}" class="text-muted underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Absensi</a>
-                            <form method="POST" action="{{ route('sesi.cancel', $session) }}" onsubmit="return confirm(@js('Batalkan sesi '.$session->program->name.' yang semula '.$session->regular_date->format('d/m/Y').'?'))">
+                            <form method="POST" action="{{ route('sesi.cancel', $session) }}" onsubmit="return confirm(@js('Batalkan sesi '.$session->program->name.($session->regular_date ? ' yang semula '.$session->regular_date->format('d/m/Y') : ' (sesi tambahan)').'?'))">
                                 @csrf
                                 <button type="submit" class="text-danger underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger">Batalkan</button>
                             </form>

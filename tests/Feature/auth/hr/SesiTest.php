@@ -298,9 +298,93 @@ it('forbids non hr users from session routes', function () {
         $this->actingAs($user)->put(route('sesi.update', $session), ($this->payload)())->assertForbidden();
         $this->actingAs($user)->post(route('sesi.postpone', $session))->assertForbidden();
         $this->actingAs($user)->post(route('sesi.cancel', $session))->assertForbidden();
+        $this->actingAs($user)->get(route('sesi.create'))->assertForbidden();
+        $this->actingAs($user)->post(route('sesi.store'), ($this->payload)(['program_id' => $this->program->id]))->assertForbidden();
     }
 
-    expect($session->refresh()->status)->toBe(SessionStatus::Scheduled);
+    expect($session->refresh()->status)->toBe(SessionStatus::Scheduled)
+        ->and(BroadcastSession::count())->toBe(1);
+});
+
+it('links to the add session form with the active program filter', function () {
+    $this->actingAs($this->hr)
+        ->get(route('sesi.index', ['program' => $this->program->id]))
+        ->assertOk()
+        ->assertSee(route('sesi.create', ['program' => $this->program->id]), false);
+});
+
+it('prefills the add session form from the chosen program', function () {
+    $this->program->update(['crewcall_time' => '07:30:00', 'tapping_start' => '08:00:00', 'tapping_end' => '09:30:00']);
+    $this->program->crew()->attach($this->announcer, ['position' => 'announcer']);
+
+    $response = $this->actingAs($this->hr)
+        ->get(route('sesi.create', ['program' => $this->program->id]))
+        ->assertOk()
+        ->assertSee('Tambah sesi')
+        ->assertSee('value="07:30"', false)
+        ->assertSee('value="08:00"', false)
+        ->assertSee('value="09:30"', false);
+
+    expect($response->viewData('selectedAnnouncerIds'))->toBe([$this->announcer->id])
+        ->and($response->viewData('session')->program_id)->toBe($this->program->id);
+});
+
+it('shows an empty add session form without a program', function () {
+    $this->actingAs($this->hr)
+        ->get(route('sesi.create'))
+        ->assertOk()
+        ->assertSee('Pilih program');
+});
+
+it('stores an extra session outside the weekly schedule', function () {
+    $this->actingAs($this->hr)
+        ->post(route('sesi.store'), ($this->payload)(['program_id' => $this->program->id]))
+        ->assertRedirect(route('sesi.index'))
+        ->assertSessionHas('status', 'Sesi tambahan dibuat.');
+
+    $session = BroadcastSession::sole();
+
+    expect($session->program_id)->toBe($this->program->id)
+        ->and($session->regular_date)->toBeNull()
+        ->and($session->session_date->toDateString())->toBe('2026-10-28')
+        ->and($session->crewcall_time)->toBe('09:00:00')
+        ->and($session->tapping_start)->toBe('09:30:00')
+        ->and($session->tapping_end)->toBe('11:00:00')
+        ->and($session->status)->toBe(SessionStatus::Scheduled)
+        ->and($session->is_customized)->toBeTrue()
+        ->and($session->crew->firstWhere('id', $this->announcer->id)->pivot->position)->toBe('announcer')
+        ->and($session->crew->firstWhere('id', $this->so->id)->pivot->position)->toBe('so');
+});
+
+it('requires an existing program for an extra session', function (array $override) {
+    $this->actingAs($this->hr)
+        ->post(route('sesi.store'), ($this->payload)($override))
+        ->assertSessionHasErrors('program_id');
+
+    expect(BroadcastSession::count())->toBe(0);
+})->with([
+    'missing' => [[]],
+    'unknown' => [['program_id' => 999]],
+]);
+
+it('rejects an extra session that clashes with a crew member booking', function () {
+    ($this->sessionWithCrew)(['session_date' => '2026-10-28', 'tapping_start' => '10:00:00', 'tapping_end' => '11:30:00']);
+
+    $this->actingAs($this->hr)
+        ->post(route('sesi.store'), ($this->payload)(['program_id' => $this->program->id]))
+        ->assertSessionHasErrors(['tapping_start' => "Bentrok dengan sesi lain milik {$this->announcer->username}."]);
+
+    expect(BroadcastSession::count())->toBe(1);
+});
+
+it('labels a postponed extra session in the reschedule box and edit form', function () {
+    $extra = ($this->sessionWithCrew)(['regular_date' => null, 'is_customized' => true, 'status' => SessionStatus::Postponed, 'session_date' => null, 'crewcall_time' => null, 'tapping_start' => null, 'tapping_end' => null]);
+
+    $this->actingAs($this->hr)->get(route('sesi.index'))->assertOk()->assertSee('sesi tambahan');
+    $this->actingAs($this->hr)->get(route('sesi.edit', $extra))->assertOk()->assertSee('sesi tambahan');
+    $this->actingAs($this->hr)->post(route('sesi.cancel', $extra))->assertRedirect(route('sesi.index'));
+
+    expect($extra->refresh()->status)->toBe(SessionStatus::Cancelled);
 });
 
 it('deletes all attendance when postponing a session that has a check-in', function () {

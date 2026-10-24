@@ -151,3 +151,24 @@ it('still updates today\'s session before check-in opens', function () {
 
     expect($this->program->sessions()->whereDate('regular_date', '2026-10-26')->first()->crewcall_time)->toBe('09:00:00');
 });
+
+it('leaves extra sessions alone and still creates the regular session on the same date', function () {
+    $this->program->update(['period_end' => '2027-01-25']);
+    $this->program->syncSessions($this->today);
+    $extra = BroadcastSession::factory()->for($this->program)->create([
+        'regular_date' => null,
+        'session_date' => '2027-02-01',
+        'crewcall_time' => '13:00:00',
+        'tapping_start' => '13:30:00',
+        'tapping_end' => '15:00:00',
+        'is_customized' => true,
+    ]);
+
+    $this->program->update(['period_end' => '2027-02-01', 'crewcall_time' => '07:00:00']);
+    $this->program->syncSessions($this->today);
+
+    expect($this->program->sessions()->whereDate('regular_date', '2027-02-01')->count())->toBe(1)
+        ->and($extra->refresh()->crewcall_time)->toBe('13:00:00')
+        ->and($extra->regular_date)->toBeNull()
+        ->and($extra->session_date->toDateString())->toBe('2027-02-01');
+});

@@ -21,7 +21,7 @@ Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 Route::group(['prefix' => 'hr', 'middleware' => ['auth', isHr::class]], function () {
     Route::get('/dashboard', [HrController::class, 'dashboard'])->name('hr.dashboard');
     Route::resource('program', ProgramController::class)->except('show');
-    Route::resource('sesi', SesiController::class)->only(['index', 'edit', 'update']);
+    Route::resource('sesi', SesiController::class)->only(['index', 'create', 'store', 'edit', 'update']);
     Route::post('sesi/{sesi}/tunda', [SesiController::class, 'postpone'])->name('sesi.postpone');
     Route::post('sesi/{sesi}/batal', [SesiController::class, 'cancel'])->name('sesi.cancel');
     Route::get('absensi', [AbsensiController::class, 'index'])->name('absensi.index');

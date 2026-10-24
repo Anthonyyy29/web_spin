@@ -55,8 +55,8 @@ class Program extends Model
      *   never recreated).
      * - Non-customized sessions with regular_date on or after today are reset to the program's times and
      *   crew; if their regular_date is no longer a matching date they are deleted unless they have attendance.
-     * - Customized sessions, sessions before today, and today's session once its check-in has opened at $now
-     *   are left untouched.
+     * - Customized sessions (including extra sessions without a regular_date), sessions before today, and
+     *   today's session once its check-in has opened at $now are left untouched.
      * - Attendances are never modified.
      */
     public function syncSessions(CarbonInterface $now): void
@@ -71,6 +71,7 @@ class Program extends Model
             $existingSessions = $this->sessions()->get();
             $hadSessions = $existingSessions->isNotEmpty();
             $existingRegularDates = $existingSessions
+                ->filter(fn (BroadcastSession $session): bool => $session->regular_date !== null)
                 ->map(fn (BroadcastSession $session): string => $session->regular_date->toDateString())
                 ->all();
 
@@ -93,6 +94,7 @@ class Program extends Model
 
             $existingSessions
                 ->reject(fn (BroadcastSession $session): bool => $session->is_customized
+                    || $session->regular_date === null
                     || $session->regular_date->toDateString() < $todayDate
                     || $this->checkInHasOpened($session, $now))
                 ->each(function (BroadcastSession $session) use ($matchingDates, $crewPayload): void {
