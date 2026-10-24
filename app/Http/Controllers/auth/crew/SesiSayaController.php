@@ -17,17 +17,38 @@ class SesiSayaController extends Controller
         $user = auth()->user();
         $role = $user->role;
 
-        $sessions = $user->broadcastSessions()
-            ->whereIn('status', [SessionStatus::Scheduled, SessionStatus::Postponed])
-            ->with(['program', 'attendances' => fn ($query) => $query->where('user_id', $user->id)])
-            ->orderByRaw('session_date is null')
+        $now = now();
+        $withAttendance = ['program', 'attendances' => fn ($query) => $query->where('user_id', $user->id)];
+
+        $upcomingSessions = $user->broadcastSessions()
+            ->where('status', SessionStatus::Scheduled)
+            ->whereDate('session_date', '>=', $now->toDateString())
+            ->with($withAttendance)
             ->orderBy('session_date')
             ->orderBy('crewcall_time')
-            ->paginate(15);
+            ->get()
+            ->concat(
+                $user->broadcastSessions()
+                    ->where('status', SessionStatus::Postponed)
+                    ->with($withAttendance)
+                    ->orderBy('broadcast_sessions.id')
+                    ->get()
+            );
+
+        $historySessions = $user->broadcastSessions()
+            ->where('status', SessionStatus::Scheduled)
+            ->whereDate('session_date', '<', $now->toDateString())
+            ->with($withAttendance)
+            ->orderByDesc('session_date')
+            ->orderByDesc('crewcall_time')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('auth.crew.sesi.index', [
-            'sessions' => $sessions,
+            'upcomingSessions' => $upcomingSessions,
+            'historySessions' => $historySessions,
             'user' => $user,
+            'now' => $now,
             'layout' => 'auth.'.$role.'.layout',
             'routePrefix' => $role,
         ]);

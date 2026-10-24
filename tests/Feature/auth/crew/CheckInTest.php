@@ -149,6 +149,60 @@ it('shows my sessions including postponed ones without errors', function () {
         ->assertSeeInOrder(['26 Okt 2026', 'Ditunda']);
 });
 
+it('keeps today in upcoming with the check-in button even with many past sessions', function () {
+    $this->travelTo('2026-10-26 07:20:00');
+    foreach (range(1, 20) as $day) {
+        ($this->crewSession)($this->announcer, ['session_date' => now()->subDays($day)->toDateString()]);
+    }
+    $today = ($this->crewSession)($this->announcer);
+
+    $this->actingAs($this->announcer)
+        ->get(route('announcer.sesi.index'))
+        ->assertOk()
+        ->assertSeeInOrder(['Mendatang', 'Hari ini', route('announcer.sesi.checkIn', $today), 'Riwayat'], false);
+});
+
+it('lists past sessions under history newest first and paginates them', function () {
+    $this->travelTo('2026-10-26 07:20:00');
+    ($this->crewSession)($this->announcer, ['session_date' => '2026-10-20']);
+    ($this->crewSession)($this->announcer, ['session_date' => '2026-10-22']);
+    ($this->crewSession)($this->announcer, ['session_date' => '2026-10-21']);
+    foreach (range(1, 15) as $day) {
+        ($this->crewSession)($this->announcer, ['session_date' => '2026-09-'.str_pad((string) $day, 2, '0', STR_PAD_LEFT)]);
+    }
+
+    $this->actingAs($this->announcer)
+        ->get(route('announcer.sesi.index'))
+        ->assertOk()
+        ->assertSeeInOrder(['Belum ada sesi mendatang.', 'Riwayat', '22 Okt 2026', '21 Okt 2026', '20 Okt 2026'])
+        ->assertDontSee('01 Sep 2026');
+
+    $this->actingAs($this->announcer)
+        ->get(route('announcer.sesi.index', ['page' => 2]))
+        ->assertOk()
+        ->assertSee('01 Sep 2026');
+});
+
+it('shows empty states for upcoming and history', function () {
+    $this->actingAs($this->announcer)
+        ->get(route('announcer.sesi.index'))
+        ->assertOk()
+        ->assertSee('Belum ada sesi mendatang.')
+        ->assertSee('Belum ada riwayat sesi.');
+});
+
+it('lists postponed sessions under upcoming after dated ones', function () {
+    $this->travelTo('2026-10-26 07:20:00');
+    ($this->crewSession)($this->announcer, ['status' => SessionStatus::Postponed, 'session_date' => null, 'crewcall_time' => null, 'tapping_start' => null, 'tapping_end' => null]);
+    ($this->crewSession)($this->announcer, ['session_date' => '2026-11-02']);
+    ($this->crewSession)($this->announcer, ['session_date' => '2026-10-19']);
+
+    $this->actingAs($this->announcer)
+        ->get(route('announcer.sesi.index'))
+        ->assertOk()
+        ->assertSeeInOrder(['Mendatang', '02 Nov 2026', 'Ditunda', 'Riwayat', '19 Okt 2026']);
+});
+
 it('hides the check-in button after checking in and shows the status and time', function () {
     $this->travelTo('2026-10-26 07:20:00');
     $session = ($this->crewSession)($this->announcer);
