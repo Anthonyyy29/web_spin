@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -33,5 +34,24 @@ class User extends Authenticatable
     public function broadcastSchedules(): HasMany
     {
         return $this->hasMany(BroadcastSchedule::class, 'user_id');
+    }
+
+    public function programs(): BelongsToMany
+    {
+        return $this->belongsToMany(Program::class, 'program_crew')
+            ->withPivot('position')
+            ->withTimestamps();
+    }
+
+    public function broadcastSessions(): BelongsToMany
+    {
+        return $this->belongsToMany(BroadcastSession::class, 'session_crew', 'user_id', 'broadcast_session_id')
+            ->withPivot('position')
+            ->withTimestamps();
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
     }
 }

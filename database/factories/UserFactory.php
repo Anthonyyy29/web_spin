@@ -49,4 +49,14 @@ class UserFactory extends Factory
             'role' => 'announcer',
         ]);
     }
+
+    /**
+     * Indicate that the user has the SO role.
+     */
+    public function so(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'so',
+        ]);
+    }
 }
