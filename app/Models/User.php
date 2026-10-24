@@ -31,11 +31,6 @@ class User extends Authenticatable
         ];
     }
 
-    public function broadcastSchedules(): HasMany
-    {
-        return $this->hasMany(BroadcastSchedule::class, 'user_id');
-    }
-
     public function programs(): BelongsToMany
     {
         return $this->belongsToMany(Program::class, 'program_crew')
