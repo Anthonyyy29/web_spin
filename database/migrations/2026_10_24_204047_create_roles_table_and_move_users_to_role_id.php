@@ -84,7 +84,7 @@ return new class extends Migration
         ));
 
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('role_id')->nullable()->after('password')->constrained()->restrictOnDelete();
+            $table->unsignedBigInteger('role_id')->nullable()->after('password');
         });
 
         $roleIds = DB::table('roles')->pluck('id', 'name');
@@ -94,7 +94,11 @@ return new class extends Migration
         }
 
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('role_id')->nullable(false)->change();
+            $table->unsignedBigInteger('role_id')->nullable(false)->change();
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('role_id')->references('id')->on('roles')->restrictOnDelete();
         });
 
         Schema::table('users', function (Blueprint $table) {
