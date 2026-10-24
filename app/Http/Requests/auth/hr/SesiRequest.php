@@ -4,6 +4,7 @@ namespace App\Http\Requests\auth\hr;
 
 use App\Enums\SessionStatus;
 use App\Http\Requests\auth\hr\Concerns\ValidatesCrewAssignment;
+use App\Http\Requests\auth\hr\Concerns\ValidatesTimeOrder;
 use App\Models\BroadcastSession;
 use App\Models\User;
 use Carbon\Carbon;
@@ -14,6 +15,7 @@ use Illuminate\Validation\Validator;
 class SesiRequest extends FormRequest
 {
     use ValidatesCrewAssignment;
+    use ValidatesTimeOrder;
 
     /**
      * Determine if the user is authorized to make this request.
@@ -106,25 +108,6 @@ class SesiRequest extends FormRequest
             'status' => SessionStatus::Scheduled,
             'is_customized' => true,
         ];
-    }
-
-    /**
-     * Require crewcall < tapping start < tapping end.
-     */
-    private function validateTimeOrder(Validator $validator): void
-    {
-        $errors = $validator->errors();
-        $crewcallIsValid = ! $errors->has('crewcall_time');
-        $tappingStartIsValid = ! $errors->has('tapping_start');
-        $tappingEndIsValid = ! $errors->has('tapping_end');
-
-        if ($crewcallIsValid && $tappingStartIsValid && $this->input('crewcall_time') >= $this->input('tapping_start')) {
-            $errors->add('tapping_start', 'Tapping mulai harus setelah crewcall.');
-        }
-
-        if ($tappingStartIsValid && $tappingEndIsValid && $this->input('tapping_start') >= $this->input('tapping_end')) {
-            $errors->add('tapping_end', 'Tapping selesai harus setelah tapping mulai.');
-        }
     }
 
     /**

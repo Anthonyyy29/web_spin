@@ -43,6 +43,7 @@ it('lists postponed sessions in the reschedule box', function () {
         ->get(route('sesi.index'))
         ->assertOk()
         ->assertSeeInOrder(['Perlu dijadwalkan ulang', 'Pagi Ceria', route('sesi.edit', $postponed)])
+        ->assertSee(route('sesi.cancel', $postponed))
         ->assertSee('26 Okt 2026')
         ->assertSee('Batal')
         ->assertSee('Terjadwal');
@@ -170,6 +171,57 @@ it('cancels a session', function () {
     expect($session->status)->toBe(SessionStatus::Cancelled)
         ->and($session->is_customized)->toBeTrue()
         ->and($session->session_date)->not->toBeNull();
+});
+
+it('cancels a postponed session', function () {
+    $session = ($this->sessionWithCrew)(['status' => SessionStatus::Postponed, 'session_date' => null, 'crewcall_time' => null, 'tapping_start' => null, 'tapping_end' => null]);
+
+    $this->actingAs($this->hr)
+        ->post(route('sesi.cancel', $session))
+        ->assertRedirect(route('sesi.index'))
+        ->assertSessionHas('status');
+
+    expect($session->refresh()->status)->toBe(SessionStatus::Cancelled)
+        ->and($session->session_date)->toBeNull()
+        ->and($session->is_customized)->toBeTrue();
+});
+
+it('rejects postponing a session that is not scheduled', function () {
+    $cancelled = ($this->sessionWithCrew)(['status' => SessionStatus::Cancelled, 'session_date' => '2026-10-26']);
+    $postponed = ($this->sessionWithCrew)(['status' => SessionStatus::Postponed, 'session_date' => null, 'crewcall_time' => null, 'tapping_start' => null, 'tapping_end' => null]);
+
+    foreach ([$cancelled, $postponed] as $session) {
+        $this->actingAs($this->hr)
+            ->post(route('sesi.postpone', $session))
+            ->assertRedirect(route('sesi.index'))
+            ->assertSessionHasErrors(['sesi' => 'Sesi ini tidak bisa ditunda.']);
+    }
+
+    expect($cancelled->refresh()->status)->toBe(SessionStatus::Cancelled)
+        ->and($cancelled->session_date->toDateString())->toBe('2026-10-26')
+        ->and($cancelled->is_customized)->toBeFalse()
+        ->and($postponed->refresh()->status)->toBe(SessionStatus::Postponed);
+});
+
+it('rejects cancelling an already cancelled session', function () {
+    $session = ($this->sessionWithCrew)(['status' => SessionStatus::Cancelled]);
+
+    $this->actingAs($this->hr)
+        ->post(route('sesi.cancel', $session))
+        ->assertRedirect(route('sesi.index'))
+        ->assertSessionHasErrors(['sesi' => 'Sesi ini tidak bisa dibatalkan.']);
+
+    expect($session->refresh()->is_customized)->toBeFalse();
+});
+
+it('shows the rejection message on the session list', function () {
+    $session = ($this->sessionWithCrew)(['status' => SessionStatus::Cancelled]);
+
+    $this->actingAs($this->hr)
+        ->followingRedirects()
+        ->post(route('sesi.cancel', $session))
+        ->assertOk()
+        ->assertSee('Sesi ini tidak bisa dibatalkan.');
 });
 
 it('rejects a crew member booked in an overlapping session', function () {

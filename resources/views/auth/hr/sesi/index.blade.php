@@ -24,6 +24,12 @@
 
     @include('auth.partials.status')
 
+    @error('sesi')
+        <div role="alert" class="mb-4 rounded-md border border-danger/40 bg-white px-4 py-3 text-sm text-danger">
+            <span class="mr-2 inline-block size-2 rounded-full bg-danger align-middle" aria-hidden="true"></span>{{ $message }}
+        </div>
+    @enderror
+
     @if ($postponedSessions->isNotEmpty())
         <section aria-labelledby="reschedule-heading" class="mb-6 rounded-lg border border-line bg-white">
             <h2 id="reschedule-heading" class="border-b border-line px-5 py-3 text-sm font-semibold">Perlu dijadwalkan ulang</h2>
@@ -34,7 +40,13 @@
                             <span class="font-medium">{{ $session->program->name }}</span>
                             <span class="ml-2 text-muted tabular-nums">semula {{ $session->regular_date->locale('id')->translatedFormat('D, d M Y') }}</span>
                         </div>
-                        <a href="{{ route('sesi.edit', $session) }}" class="font-medium text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Jadwalkan</a>
+                        <div class="flex items-center gap-4">
+                            <a href="{{ route('sesi.edit', $session) }}" class="font-medium text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Jadwalkan</a>
+                            <form method="POST" action="{{ route('sesi.cancel', $session) }}" onsubmit="return confirm(@js('Batalkan sesi '.$session->program->name.' yang semula '.$session->regular_date->format('d/m/Y').'?'))">
+                                @csrf
+                                <button type="submit" class="text-danger underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger">Batalkan</button>
+                            </form>
+                        </div>
                     </li>
                 @endforeach
             </ul>

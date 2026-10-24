@@ -87,6 +87,10 @@ class SesiController extends Controller
      */
     public function postpone(BroadcastSession $sesi): RedirectResponse
     {
+        if ($sesi->status !== SessionStatus::Scheduled) {
+            return $this->rejected('Sesi ini tidak bisa ditunda.');
+        }
+
         $sesi->update([
             'session_date' => null,
             'crewcall_time' => null,
@@ -102,10 +106,14 @@ class SesiController extends Controller
     }
 
     /**
-     * Cancel the session.
+     * Cancel a scheduled or postponed session.
      */
     public function cancel(BroadcastSession $sesi): RedirectResponse
     {
+        if (! in_array($sesi->status, [SessionStatus::Scheduled, SessionStatus::Postponed], true)) {
+            return $this->rejected('Sesi ini tidak bisa dibatalkan.');
+        }
+
         $sesi->update([
             'status' => SessionStatus::Cancelled,
             'is_customized' => true,
@@ -114,5 +122,15 @@ class SesiController extends Controller
         return redirect()
             ->route('sesi.index')
             ->with('status', 'Sesi dibatalkan.');
+    }
+
+    /**
+     * Redirect to the session list with an error for an action the session status does not allow.
+     */
+    private function rejected(string $message): RedirectResponse
+    {
+        return redirect()
+            ->route('sesi.index')
+            ->withErrors(['sesi' => $message]);
     }
 }
