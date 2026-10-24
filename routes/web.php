@@ -25,7 +25,10 @@ Route::group(['prefix' => 'hr', 'middleware' => ['auth', isHr::class]], function
     Route::post('sesi/{sesi}/tunda', [SesiController::class, 'postpone'])->name('sesi.postpone');
     Route::post('sesi/{sesi}/batal', [SesiController::class, 'cancel'])->name('sesi.cancel');
     Route::get('absensi', [AbsensiController::class, 'index'])->name('absensi.index');
+    Route::get('absensi/orang', [AbsensiController::class, 'people'])->name('absensi.people');
     Route::get('absensi/export', [AbsensiController::class, 'export'])->name('absensi.export');
+    Route::get('absensi/program/{program}', [AbsensiController::class, 'program'])->name('absensi.program');
+    Route::get('absensi/program/{program}/export', [AbsensiController::class, 'programExport'])->name('absensi.program.export');
     Route::get('sesi/{sesi}/absensi', [AbsensiController::class, 'session'])->name('absensi.session');
     Route::get('sesi/{sesi}/absensi/export', [AbsensiController::class, 'sessionExport'])->name('absensi.session.export');
     Route::put('sesi/{sesi}/absensi/{user}', [AbsensiController::class, 'update'])->name('absensi.update');

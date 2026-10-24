@@ -240,7 +240,7 @@ it('summarises attendance per person for a date range', function () {
     $make('2026-10-26', ['crewcall_time' => '10:00:00', 'tapping_start' => '10:30:00', 'tapping_end' => '11:30:00']);
 
     $response = $this->actingAs($this->hr)
-        ->get(route('absensi.index', ['from' => '2026-10-01', 'to' => '2026-10-26']))
+        ->get(route('absensi.people', ['from' => '2026-10-01', 'to' => '2026-10-26']))
         ->assertOk()
         ->assertSeeInOrder(['ani', 'budi', 'dodi', 'cici']);
 
@@ -257,21 +257,21 @@ it('summarises attendance per person for a date range', function () {
 });
 
 it('defaults the summary range to this month and validates it', function () {
-    $response = $this->actingAs($this->hr)->get(route('absensi.index'))->assertOk();
+    $response = $this->actingAs($this->hr)->get(route('absensi.people'))->assertOk();
 
     expect($response->viewData('from'))->toBe('2026-10-01')
         ->and($response->viewData('to'))->toBe('2026-10-26');
 
     $this->actingAs($this->hr)
-        ->from(route('absensi.index'))
-        ->get(route('absensi.index', ['from' => '2026/10/01', 'to' => '2026-10-26']))
-        ->assertRedirect(route('absensi.index'))
+        ->from(route('absensi.people'))
+        ->get(route('absensi.people', ['from' => '2026/10/01', 'to' => '2026-10-26']))
+        ->assertRedirect(route('absensi.people'))
         ->assertSessionHasErrors('from');
 
     $this->actingAs($this->hr)
-        ->from(route('absensi.index'))
+        ->from(route('absensi.people'))
         ->get(route('absensi.export', ['from' => '2026-10-20', 'to' => '2026-10-01']))
-        ->assertRedirect(route('absensi.index'))
+        ->assertRedirect(route('absensi.people'))
         ->assertSessionHasErrors('to');
 });
 
@@ -334,6 +334,9 @@ it('forbids non hr users from attendance routes', function () {
     foreach ([$member, ($this->crewUser)('cici', 'so')] as $user) {
         $this->actingAs($user)->get(route('absensi.index'))->assertForbidden();
         $this->actingAs($user)->get(route('absensi.export'))->assertForbidden();
+        $this->actingAs($user)->get(route('absensi.people'))->assertForbidden();
+        $this->actingAs($user)->get(route('absensi.program', $this->program))->assertForbidden();
+        $this->actingAs($user)->get(route('absensi.program.export', $this->program))->assertForbidden();
         $this->actingAs($user)->get(route('absensi.session', $session))->assertForbidden();
         $this->actingAs($user)->get(route('absensi.session.export', $session))->assertForbidden();
         $this->actingAs($user)->put(route('absensi.update', [$session, $member]), ['status' => 'izin'])->assertForbidden();
@@ -382,7 +385,110 @@ it('labels positions and roles with the crew position labels', function () {
         ->assertSeeInOrder(['ani', 'Announcer', 'cici', 'SO']);
 
     $this->actingAs($this->hr)
-        ->get(route('absensi.index'))
+        ->get(route('absensi.people'))
         ->assertOk()
         ->assertSeeInOrder(['ani', 'Announcer', 'cici', 'SO']);
+});
+
+describe('per program', function () {
+    beforeEach(function () {
+        $this->ani = ($this->crewUser)('ani');
+        $this->cici = ($this->crewUser)('cici', 'so');
+        $this->fani = ($this->crewUser)('fani');
+        $this->program->crew()->attach([$this->ani->id => ['position' => 'announcer'], $this->cici->id => ['position' => 'so']]);
+
+        $make = function (string $date, array $attributes = [], ?array $crew = null): BroadcastSession {
+            $session = BroadcastSession::factory()->for($this->program)->create(['session_date' => $date, 'regular_date' => $date, ...$attributes]);
+            $session->crew()->attach($crew ?? [$this->ani->id => ['position' => 'announcer'], $this->cici->id => ['position' => 'so']]);
+
+            return $session;
+        };
+
+        $this->first = $make('2026-10-05');
+        ($this->checkIn)($this->first, $this->ani, '2026-10-05 07:20:00');
+        ($this->checkIn)($this->first, $this->fani, '2026-10-05 07:20:00');
+        Attendance::factory()->create(['broadcast_session_id' => $this->first->id, 'user_id' => $this->cici->id, 'checked_in_at' => null, 'status' => AttendanceStatus::Sakit]);
+
+        $this->second = $make('2026-10-12');
+        ($this->checkIn)($this->second, $this->ani, '2026-10-12 07:40:00');
+
+        $make('2026-10-19', ['status' => 'cancelled']);
+        $this->extra = $make('2026-10-15', ['regular_date' => null, 'is_customized' => true], [$this->ani->id => ['position' => 'announcer']]);
+        $this->upcoming = $make('2026-10-26', ['crewcall_time' => '10:00:00', 'tapping_start' => '10:30:00', 'tapping_end' => '11:30:00']);
+        BroadcastSession::factory()->for($this->program)->postponed()->create()->crew()->attach($this->ani->id, ['position' => 'announcer']);
+
+        $other = Program::factory()->create(['name' => 'Malam Minggu']);
+        $elsewhere = BroadcastSession::factory()->for($other)->create(['session_date' => '2026-10-06', 'regular_date' => '2026-10-06']);
+        $elsewhere->crew()->attach($this->ani->id, ['position' => 'announcer']);
+    });
+
+    it('lists programs with their attendance totals on the attendance index', function () {
+        $response = $this->actingAs($this->hr)
+            ->get(route('absensi.index'))
+            ->assertOk()
+            ->assertSeeInOrder(['Malam Minggu', 'Pagi Ceria'])
+            ->assertSee(route('absensi.program', $this->program))
+            ->assertSee(route('absensi.people'));
+
+        $row = collect($response->viewData('programs'))->firstWhere('program.id', $this->program->id);
+
+        expect($row['closed_sessions'])->toBe(3)
+            ->and($row['totals'])->toBe(['hadir' => 2, 'terlambat' => 1, 'tidak_hadir' => 2, 'izin' => 0, 'sakit' => 1]);
+    });
+
+    it('shows a crew by date matrix for one program', function () {
+        $response = $this->actingAs($this->hr)
+            ->get(route('absensi.program', $this->program))
+            ->assertOk()
+            ->assertSee('Pagi Ceria')
+            ->assertSee(route('absensi.session', $this->extra))
+            ->assertSeeInOrder(['ani', 'cici', 'fani']);
+
+        expect(collect($response->viewData('sessions'))->pluck('id')->all())
+            ->toBe([$this->first->id, $this->second->id, $this->extra->id, $this->upcoming->id]);
+
+        $rows = collect($response->viewData('rows'))->keyBy(fn ($row) => $row['user']->username);
+        $cells = fn (string $name): array => array_map(fn (?AttendanceStatus $status) => $status?->value, array_values($rows[$name]['cells']));
+
+        expect($rows->keys()->all())->toBe(['ani', 'cici', 'fani'])
+            ->and($rows['fani']['position'])->toBeNull()
+            ->and($cells('ani'))->toBe(['hadir', 'terlambat', 'tidak_hadir', 'belum'])
+            ->and($cells('cici'))->toBe(['sakit', 'tidak_hadir', null, 'belum'])
+            ->and($cells('fani'))->toBe(['hadir', null, null, null])
+            ->and($rows['ani']['totals'])->toBe(['hadir' => 1, 'terlambat' => 1, 'tidak_hadir' => 1, 'izin' => 0, 'sakit' => 0])
+            ->and($rows['cici']['totals'])->toBe(['hadir' => 0, 'terlambat' => 0, 'tidak_hadir' => 1, 'izin' => 0, 'sakit' => 1]);
+    });
+
+    it('filters the program matrix by date range and validates it', function () {
+        $response = $this->actingAs($this->hr)
+            ->get(route('absensi.program', [$this->program, 'from' => '2026-10-10', 'to' => '2026-10-20']))
+            ->assertOk();
+
+        expect(collect($response->viewData('sessions'))->pluck('id')->all())->toBe([$this->second->id, $this->extra->id]);
+
+        $this->actingAs($this->hr)
+            ->from(route('absensi.program', $this->program))
+            ->get(route('absensi.program', [$this->program, 'from' => '2026-10-20', 'to' => '2026-10-10']))
+            ->assertRedirect(route('absensi.program', $this->program))
+            ->assertSessionHasErrors('to');
+    });
+
+    it('exports the program matrix as csv', function () {
+        $response = $this->actingAs($this->hr)
+            ->get(route('absensi.program.export', $this->program))
+            ->assertOk()
+            ->assertDownload('absensi-program-pagi-ceria.csv');
+
+        $lines = ($this->streamed)($response);
+
+        expect($lines[0])->toBe(['Username', 'Posisi', '05/10/2026', '12/10/2026', '15/10/2026', '26/10/2026', 'Hadir', 'Terlambat', 'Tidak hadir', 'Izin', 'Sakit'])
+            ->and($lines[1])->toBe(['ani', 'Announcer', 'Hadir', 'Terlambat', 'Tidak hadir', 'Belum', '1', '1', '1', '0', '0'])
+            ->and($lines[2])->toBe(['cici', 'SO', 'Sakit', 'Tidak hadir', '', 'Belum', '0', '0', '1', '0', '1'])
+            ->and($lines[3])->toBe(['fani', '-', 'Hadir', '', '', '', '1', '0', '0', '0', '0'])
+            ->and($lines)->toHaveCount(4);
+
+        $this->actingAs($this->hr)
+            ->get(route('absensi.program.export', [$this->program, 'from' => '2026-10-10', 'to' => '2026-10-20']))
+            ->assertDownload('absensi-program-pagi-ceria-2026-10-10-2026-10-20.csv');
+    });
 });

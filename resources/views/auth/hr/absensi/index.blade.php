@@ -3,39 +3,18 @@
 @section('title', 'Absensi')
 
 @section('content')
-    <div class="mb-6">
-        <h1 class="text-2xl font-semibold tracking-tight">Absensi</h1>
-        <p class="mt-1 text-sm text-muted">Rekap kehadiran announcer dan SO dari sesi terjadwal yang check-in-nya sudah ditutup. Buka daftar sesi untuk melihat atau mengubah absensi per sesi.</p>
-    </div>
+    @include('auth.hr.absensi._tabs', ['active' => 'program'])
 
-    <form method="GET" action="{{ route('absensi.index') }}" class="mb-6 flex flex-wrap items-start gap-3">
-        @php($fieldClass = 'rounded-md border border-line bg-white px-3 py-2 text-sm text-ink tabular-nums focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/30 aria-[invalid=true]:border-danger')
-        <div>
-            <label for="from" class="mb-1.5 block text-sm font-medium">Dari tanggal</label>
-            <input type="date" id="from" name="from" value="{{ $from }}" class="{{ $fieldClass }}" @error('from') aria-invalid="true" aria-describedby="from-error" @enderror>
-            @error('from')
-                <p id="from-error" class="mt-1.5 text-sm text-danger">{{ $message }}</p>
-            @enderror
-        </div>
-        <div>
-            <label for="to" class="mb-1.5 block text-sm font-medium">Sampai tanggal</label>
-            <input type="date" id="to" name="to" value="{{ $to }}" class="{{ $fieldClass }}" @error('to') aria-invalid="true" aria-describedby="to-error" @enderror>
-            @error('to')
-                <p id="to-error" class="mt-1.5 text-sm text-danger">{{ $message }}</p>
-            @enderror
-        </div>
-        <div class="flex items-center gap-4 pt-7">
-            <button type="submit" class="rounded-md bg-signal-strong px-4 py-2 text-sm font-medium text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Terapkan</button>
-            <a href="{{ route('absensi.export', ['from' => $from, 'to' => $to]) }}" class="text-sm font-medium text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ekspor CSV</a>
-        </div>
-    </form>
+    <p class="mb-6 max-w-3xl text-sm text-muted">Total kehadiran kru per program dari sesi terjadwal yang check-in-nya sudah ditutup. Buka program untuk melihat status tiap kru per tanggal.</p>
 
     <div class="overflow-x-auto rounded-lg border border-line bg-white">
         <table class="w-full text-left text-sm">
             <thead class="border-b border-line text-muted">
                 <tr>
-                    <th scope="col" class="px-5 py-3 font-medium">Username</th>
-                    <th scope="col" class="px-5 py-3 font-medium">Role</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Program</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Hari</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Periode</th>
+                    <th scope="col" class="px-5 py-3 text-right font-medium">Sesi selesai</th>
                     <th scope="col" class="px-5 py-3 text-right font-medium">Hadir</th>
                     <th scope="col" class="px-5 py-3 text-right font-medium">Terlambat</th>
                     <th scope="col" class="px-5 py-3 text-right font-medium">Izin</th>
@@ -44,19 +23,23 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-line">
-                @forelse ($rows as $row)
+                @forelse ($programs as $row)
                     <tr class="hover:bg-canvas/60">
-                        <td class="px-5 py-3 font-medium">{{ $row['user']->username }}</td>
-                        <td class="px-5 py-3 text-muted">{{ \App\Enums\CrewPosition::from($row['user']->role)->label() }}</td>
-                        <td class="px-5 py-3 text-right tabular-nums">{{ $row['hadir'] }}</td>
-                        <td class="px-5 py-3 text-right tabular-nums">{{ $row['terlambat'] }}</td>
-                        <td class="px-5 py-3 text-right tabular-nums">{{ $row['izin'] }}</td>
-                        <td class="px-5 py-3 text-right tabular-nums">{{ $row['sakit'] }}</td>
-                        <td class="px-5 py-3 text-right tabular-nums {{ $row['tidak_hadir'] > 0 ? 'font-medium text-danger' : '' }}">{{ $row['tidak_hadir'] }}</td>
+                        <td class="px-5 py-3 font-medium">
+                            <a href="{{ route('absensi.program', $row['program']) }}" class="text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">{{ $row['program']->name }}</a>
+                        </td>
+                        <td class="px-5 py-3">{{ \App\Http\Controllers\auth\hr\ProgramController::DAY_NAMES[$row['program']->day_of_week] ?? '-' }}</td>
+                        <td class="px-5 py-3 text-muted tabular-nums">{{ $row['program']->period_start->locale('id')->translatedFormat('d M Y') }} – {{ $row['program']->period_end->locale('id')->translatedFormat('d M Y') }}</td>
+                        <td class="px-5 py-3 text-right tabular-nums">{{ $row['closed_sessions'] }}</td>
+                        <td class="px-5 py-3 text-right tabular-nums">{{ $row['totals']['hadir'] }}</td>
+                        <td class="px-5 py-3 text-right tabular-nums">{{ $row['totals']['terlambat'] }}</td>
+                        <td class="px-5 py-3 text-right tabular-nums">{{ $row['totals']['izin'] }}</td>
+                        <td class="px-5 py-3 text-right tabular-nums">{{ $row['totals']['sakit'] }}</td>
+                        <td class="px-5 py-3 text-right tabular-nums {{ $row['totals']['tidak_hadir'] > 0 ? 'font-medium text-danger' : '' }}">{{ $row['totals']['tidak_hadir'] }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-5 py-12 text-center text-muted">Belum ada announcer atau SO.</td>
+                        <td colspan="9" class="px-5 py-12 text-center text-muted">Belum ada program. Buat program dulu di menu Program.</td>
                     </tr>
                 @endforelse
             </tbody>
