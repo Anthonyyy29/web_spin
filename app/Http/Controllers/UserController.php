@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-
-
 class UserController extends Controller
 {
     public function login(Request $request)
@@ -15,14 +13,16 @@ class UserController extends Controller
             $request->session()->regenerate();
             if (Auth::user()->role === 'hr') {
                 return redirect()->intended(route('hr.dashboard'));
-                } elseif (Auth::user()->role === 'announcer') {
-                    return redirect()->intended(route('announcer.dashboard'));
-                } elseif (Auth::user()->role === 'admin') {
-                        return redirect()->intended(route('admin.dashboard'));
-                } else {
+            } elseif (Auth::user()->role === 'announcer') {
+                return redirect()->intended(route('announcer.dashboard'));
+            } elseif (Auth::user()->role === 'so') {
+                return redirect()->intended(route('so.sesi.index'));
+            } elseif (Auth::user()->role === 'admin') {
+                return redirect()->intended(route('admin.dashboard'));
+            } else {
                 return redirect()->intended('/');
             }
-        } 
+        }
 
         return back()->withErrors(['username' => 'Username atau password salah.'])->withInput();
     }
@@ -36,4 +36,3 @@ class UserController extends Controller
         return redirect('/login');
     }
 }
-
