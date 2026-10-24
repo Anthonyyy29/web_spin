@@ -3,47 +3,50 @@
 @section('title', 'Jadwal Siaran')
 
 @section('content')
-    <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-semibold">Jadwal Siaran</h1>
-        <a href="{{ route('jadwalSiaran.create') }}" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">Tambah Jadwal</a>
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-tight">Jadwal Siaran</h1>
+            <p class="mt-1 text-sm text-muted">Semua jadwal announcer, terbaru di atas.</p>
+        </div>
+        <a href="{{ route('jadwalSiaran.create') }}" class="rounded-md bg-signal-strong px-4 py-2 text-sm font-medium text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Tambah jadwal</a>
     </div>
 
-    @if (session('status'))
-        <div class="mb-4 px-4 py-3 rounded bg-green-100 text-green-800 text-sm">{{ session('status') }}</div>
-    @endif
+    @include('auth.partials.status')
 
-    <div class="bg-white rounded border overflow-x-auto">
-        <table class="w-full text-sm text-left">
-            <thead class="bg-gray-50 border-b">
+    <div class="overflow-x-auto rounded-lg border border-line bg-white">
+        <table class="w-full text-left text-sm">
+            <thead class="border-b border-line text-muted">
                 <tr>
-                    <th class="px-4 py-3">Tanggal</th>
-                    <th class="px-4 py-3">Jam</th>
-                    <th class="px-4 py-3">Program</th>
-                    <th class="px-4 py-3">Announcer</th>
-                    <th class="px-4 py-3">Aksi</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Tanggal</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Jam</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Program</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Announcer</th>
+                    <th scope="col" class="px-5 py-3 font-medium"><span class="sr-only">Aksi</span></th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-line">
                 @forelse ($jadwalSiaran as $jadwal)
-                    <tr class="border-b last:border-b-0">
-                        <td class="px-4 py-3">{{ $jadwal->broadcast_date->format('d-m-Y') }}</td>
-                        <td class="px-4 py-3">{{ substr($jadwal->start_time, 0, 5) }} - {{ substr($jadwal->end_time, 0, 5) }}</td>
-                        <td class="px-4 py-3">{{ $jadwal->program_title }}</td>
-                        <td class="px-4 py-3">{{ $jadwal->announcer->username }}</td>
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-3">
-                                <a href="{{ route('jadwalSiaran.edit', $jadwal) }}" class="text-indigo-600">Edit</a>
-                                <form method="POST" action="{{ route('jadwalSiaran.destroy', $jadwal) }}" onsubmit="return confirm('Hapus jadwal ini?')">
+                    <tr class="hover:bg-canvas/60">
+                        @include('auth.partials.jadwal-cells', ['jadwal' => $jadwal])
+                        <td class="px-5 py-3">{{ $jadwal->program_title }}</td>
+                        <td class="px-5 py-3 text-muted">{{ $jadwal->announcer->username }}</td>
+                        <td class="px-5 py-3">
+                            <div class="flex items-center justify-end gap-4">
+                                <a href="{{ route('jadwalSiaran.edit', $jadwal) }}" class="font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ubah</a>
+                                <form method="POST" action="{{ route('jadwalSiaran.destroy', $jadwal) }}" onsubmit="return confirm(@js('Hapus jadwal '.$jadwal->program_title.'?'))">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600">Hapus</button>
+                                    <button type="submit" class="text-danger underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger">Hapus</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-gray-500">Belum ada jadwal siaran.</td>
+                        <td colspan="5" class="px-5 py-12 text-center">
+                            <p class="text-muted">Belum ada jadwal siaran.</p>
+                            <a href="{{ route('jadwalSiaran.create') }}" class="mt-2 inline-block font-medium text-signal-strong underline underline-offset-4">Tambah jadwal pertama</a>
+                        </td>
                     </tr>
                 @endforelse
             </tbody>

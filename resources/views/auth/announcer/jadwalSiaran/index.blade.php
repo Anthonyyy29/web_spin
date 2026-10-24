@@ -3,31 +3,31 @@
 @section('title', 'Jadwal Siaran')
 
 @section('content')
-    <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-semibold">Jadwal Siaran</h1>
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold tracking-tight">Jadwal Siaran</h1>
+        <p class="mt-1 text-sm text-muted">Jadwal siaran kamu, terbaru di atas.</p>
     </div>
 
-    <div class="bg-white rounded border overflow-x-auto">
-        <table class="w-full text-sm text-left">
-            <thead class="bg-gray-50 border-b">
+    <div class="overflow-x-auto rounded-lg border border-line bg-white">
+        <table class="w-full text-left text-sm">
+            <thead class="border-b border-line text-muted">
                 <tr>
-                    <th class="px-4 py-3">Tanggal</th>
-                    <th class="px-4 py-3">Jam</th>
-                    <th class="px-4 py-3">Program</th>
-                    <th class="px-4 py-3">Catatan</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Tanggal</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Jam</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Program</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Catatan</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-line">
                 @forelse ($jadwalSiaran as $jadwal)
-                    <tr class="border-b last:border-b-0">
-                        <td class="px-4 py-3">{{ $jadwal->broadcast_date->format('d-m-Y') }}</td>
-                        <td class="px-4 py-3">{{ substr($jadwal->start_time, 0, 5) }} - {{ substr($jadwal->end_time, 0, 5) }}</td>
-                        <td class="px-4 py-3">{{ $jadwal->program_title }}</td>
-                        <td class="px-4 py-3">{{ $jadwal->notes ?? '-' }}</td>
+                    <tr>
+                        @include('auth.partials.jadwal-cells', ['jadwal' => $jadwal])
+                        <td class="px-5 py-3">{{ $jadwal->program_title }}</td>
+                        <td class="px-5 py-3 text-muted">{{ $jadwal->notes ?? '-' }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-4 py-6 text-center text-gray-500">Belum ada jadwal siaran.</td>
+                        <td colspan="4" class="px-5 py-12 text-center text-muted">Belum ada jadwal siaran untuk kamu.</td>
                     </tr>
                 @endforelse
             </tbody>
