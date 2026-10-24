@@ -1,6 +1,6 @@
 @extends('auth.hr.layout')
 
-@section('title', 'Dashboard')
+@section('title', 'Dashboard HR')
 
 @section('content')
     <h1 class="text-2xl font-semibold mb-2">Dashboard</h1>

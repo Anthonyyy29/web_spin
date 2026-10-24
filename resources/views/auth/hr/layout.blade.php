@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard')</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>@yield('title')</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-100">
 
@@ -13,8 +13,7 @@
         <h1 class="text-xl font-bold text-indigo-600">Dashboard HR</h1>
 
         <div class="flex items-center gap-4">
-            {{-- <span class="text-sm">{{ Auth::user()->name }}</span> --}}
-            <span class="text-sm">{{ $name = "name" }}</span>
+            <span class="text-sm">{{ Auth::user()->username }}</span>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="text-sm text-red-600">Keluar</button>

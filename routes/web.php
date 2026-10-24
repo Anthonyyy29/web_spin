@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\auth\announcer\AnnouncerController;
 use App\Http\Controllers\auth\hr\HrController;
+use App\Http\Controllers\auth\hr\JadwalSiaranController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\isAnnouncer;
 use App\Http\Middleware\isHr;
@@ -15,6 +16,7 @@ Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 // admin HR
 Route::group(['prefix' => 'hr', 'middleware' => ['auth', isHr::class]], function () {
     Route::get('/dashboard', [HrController::class, 'dashboard'])->name('hr.dashboard');
+    Route::resource('jadwalSiaran', JadwalSiaranController::class);
 
 });
 
@@ -25,4 +27,3 @@ Route::group(['prefix' => 'announcer', 'middleware' => ['auth', isAnnouncer::cla
 
 Route::get('/', fn () => view('main'));
 // Route::get('/test', fn () => view('auth.announcer.dashboard.index'));
-// Route::get('/test2', fn () => view('auth.hr.dashboard.index'));
