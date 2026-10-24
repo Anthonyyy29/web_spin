@@ -23,6 +23,7 @@ Route::group(['prefix' => 'hr', 'middleware' => ['auth', isHr::class]], function
 // announcer
 Route::group(['prefix' => 'announcer', 'middleware' => ['auth', isAnnouncer::class]], function () {
     Route::get('/dashboard', [AnnouncerController::class, 'dashboard'])->name('announcer.dashboard');
+    Route::get('/jadwalSiaran', [AnnouncerController::class, 'jadwalSiaran'])->name('announcer.jadwalSiaran');
 });
 
 Route::get('/', fn () => view('main'));
