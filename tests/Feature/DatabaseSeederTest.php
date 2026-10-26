@@ -41,8 +41,61 @@ it('seeds one account per gen 7 member job plus the hr account', function () {
             'kadiv_web_development' => 1,
             'web_development' => 3,
         ])
-        ->and(User::where('username', 'HR')->sole()->role->name)->toBe('human_resource')
-        ->and(Program::count())->toBe(0);
+        ->and(User::where('username', 'HR')->sole()->role->name)->toBe('human_resource');
+});
+
+it('seeds the gen 7 programs with their schedule', function () {
+    $this->seed();
+
+    $programs = Program::orderBy('id')->get()
+        ->map(fn (Program $program): array => [
+            $program->name,
+            $program->day_of_week,
+            substr($program->crewcall_time, 0, 5),
+            substr($program->tapping_start, 0, 5),
+            substr($program->tapping_end, 0, 5),
+        ])
+        ->all();
+
+    expect($programs)->toBe([
+        ['K-TIME', 1, '07:30', '08:00', '09:30'],
+        ['CAKHI', 2, '12:30', '13:00', '14:30'],
+        ['ATTENTHINGS', 2, '16:00', '16:30', '18:00'],
+        ['BISIK BERNADA', 3, '10:00', '10:30', '12:00'],
+        ['ERROR', 4, '07:30', '08:00', '09:30'],
+        ['MOVIE HUNTER', 5, '10:00', '10:30', '12:00'],
+        ['THE UNTOLD STORY', 5, '12:30', '13:00', '14:30'],
+    ]);
+});
+
+it('assigns the announcer and SO crew of each seeded program', function () {
+    $this->seed();
+
+    $crew = Program::where('name', 'THE UNTOLD STORY')->sole()->crew()->orderBy('username')->get()
+        ->map(fn (User $user): array => [$user->username, $user->pivot->position])
+        ->all();
+
+    expect($crew)->toBe([
+        ['Audrey Geovanni Rionald Sinaga', 'sound_operator'],
+        ['Ivanda Leona Putri Vabita', 'announcer'],
+        ['Sheriel Zelda Fitriani Cholid', 'announcer'],
+        ['Shiren Rizkia fahira', 'announcer'],
+        ['Syavirni Dwi Amalia (Sound Operator)', 'sound_operator'],
+    ])
+        ->and(Program::withCount('crew')->orderBy('id')->pluck('crew_count')->all())->toBe([5, 4, 4, 4, 5, 4, 5])
+        ->and(Program::where('name', 'CAKHI')->sole()->crew()->pluck('username')->all())->toContain('Yariza Nafisha Hamzah')
+        ->and(Program::where('name', 'ERROR')->sole()->crew()->pluck('username')->all())->toContain('Shafa Dhiya Raihanah (Announcer)');
+});
+
+it('generates the broadcast sessions of every seeded program with its crew', function () {
+    $this->seed();
+
+    $program = Program::where('name', 'K-TIME')->sole();
+    $session = $program->sessions()->orderBy('regular_date')->first();
+
+    expect($program->sessions()->count())->toBe(21)
+        ->and($session->regular_date->toDateString())->toBe('2026-09-07')
+        ->and($session->crew()->count())->toBe(5);
 });
 
 it('gives members with two jobs one account per job', function () {

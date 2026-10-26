@@ -22,6 +22,6 @@ class DatabaseSeeder extends Seeder
             'role_id' => Role::where('name', 'human_resource')->value('id'),
         ]);
 
-        $this->call(Gen7MemberSeeder::class);
+        $this->call([Gen7MemberSeeder::class, Gen7ProgramSeeder::class]);
     }
 }
