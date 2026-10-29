@@ -93,6 +93,6 @@ it('backfills missing original dates before requiring them', function () {
 
     expect(DB::table('broadcast_sessions')->where('id', $moved)->value('regular_date'))->toStartWith('2026-10-15')
         ->and(DB::table('broadcast_sessions')->where('id', $unscheduled)->value('regular_date'))->toStartWith('2026-10-20')
-        ->and(DB::table('broadcast_sessions')->where('id', $undated)->value('regular_date'))->toStartWith(today()->toDateString())
+        ->and(DB::table('broadcast_sessions')->where('id', $undated)->value('regular_date'))->toStartWith(now('UTC')->toDateString())
         ->and(Schema::hasColumn('broadcast_sessions', 'is_customized'))->toBeFalse();
 });
