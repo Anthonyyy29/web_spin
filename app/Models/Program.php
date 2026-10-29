@@ -61,26 +61,31 @@ class Program extends Model
     }
 
     /**
-     * First broadcast day on or after the start of $from that has no active (non-cancelled) session yet.
+     * First broadcast day inside the program period that has no active (non-cancelled) session yet.
      *
-     * Searches at most 53 weeks ahead and returns null when every broadcast day in that range is taken.
+     * Only broadcast days between the later of the start of $from and period_start, and period_end, are
+     * considered. Returns null when none is left, including when the period has already ended.
      */
     public function nextOpenBroadcastDate(CarbonInterface $from): ?CarbonImmutable
     {
-        $start = CarbonImmutable::parse($from->toDateString());
-        $end = $start->addWeeks(53);
+        $fromDay = CarbonImmutable::parse($from->toDateString());
+        $periodStart = CarbonImmutable::parse($this->period_start->toDateString());
+        $periodEnd = CarbonImmutable::parse($this->period_end->toDateString());
+
+        $start = $fromDay->greaterThan($periodStart) ? $fromDay : $periodStart;
 
         $takenDates = $this->sessions()
             ->whereNotNull('session_date')
             ->where('status', '!=', SessionStatus::Cancelled->value)
-            ->whereBetween('session_date', [$start->toDateString(), $end->toDateString()])
+            ->whereDate('session_date', '>=', $start->toDateString())
+            ->whereDate('session_date', '<=', $periodEnd->toDateString())
             ->pluck('session_date')
             ->map(fn ($date): string => CarbonImmutable::parse($date)->toDateString())
             ->all();
 
         $candidate = $start->addDays(((int) $this->day_of_week - $start->isoWeekday() + 7) % 7);
 
-        for ($week = 0; $week < 53; $week++) {
+        while ($candidate->lessThanOrEqualTo($periodEnd)) {
             if (! in_array($candidate->toDateString(), $takenDates, true)) {
                 return $candidate;
             }
