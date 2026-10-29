@@ -76,7 +76,7 @@ class SesiController extends Controller
         ] : []);
 
         return view('auth.hr.sesi.create', [
-            ...$this->formData($session, $program?->crew ?? collect()),
+            ...$this->formData($session, $program?->crew ?? collect(), $program),
             'programs' => Program::orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -110,10 +110,10 @@ class SesiController extends Controller
      */
     public function edit(BroadcastSession $sesi): View
     {
-        $sesi->load(['program', 'crew']);
+        $sesi->load(['program.crew', 'crew']);
 
         return view('auth.hr.sesi.edit', [
-            ...$this->formData($sesi, $sesi->crew),
+            ...$this->formData($sesi, $sesi->crew, $sesi->program),
             'hasCheckIns' => $sesi->hasCheckIns(),
         ]);
     }
@@ -202,12 +202,22 @@ class SesiController extends Controller
      * View data shared by the add and edit session forms.
      *
      * @param  Collection<int, User>  $crew  crew with a pivot position, used to preselect the checkboxes
-     * @return array{session: BroadcastSession, selectedAnnouncerIds: list<int>, selectedSoIds: list<int>, announcers: Collection<int, User>, sos: Collection<int, User>}
+     * @param  ?Program  $program  program (with crew loaded) whose values the form reminds HR of
+     * @return array{session: BroadcastSession, programReference: ?array{dayOfWeek: int, dayName: string, crewcall_time: string, tapping_start: string, tapping_end: string, announcerIds: list<int>, soIds: list<int>}, selectedAnnouncerIds: list<int>, selectedSoIds: list<int>, announcers: Collection<int, User>, sos: Collection<int, User>}
      */
-    private function formData(BroadcastSession $session, Collection $crew): array
+    private function formData(BroadcastSession $session, Collection $crew, ?Program $program): array
     {
         return [
             'session' => $session,
+            'programReference' => $program ? [
+                'dayOfWeek' => $program->day_of_week,
+                'dayName' => Program::DAY_NAMES[$program->day_of_week],
+                'crewcall_time' => substr($program->crewcall_time, 0, 5),
+                'tapping_start' => substr($program->tapping_start, 0, 5),
+                'tapping_end' => substr($program->tapping_end, 0, 5),
+                'announcerIds' => $program->crew->where('pivot.position', CrewPosition::Announcer->value)->pluck('id')->values()->all(),
+                'soIds' => $program->crew->where('pivot.position', CrewPosition::So->value)->pluck('id')->values()->all(),
+            ] : null,
             'selectedAnnouncerIds' => $crew->where('pivot.position', CrewPosition::Announcer->value)->pluck('id')->values()->all(),
             'selectedSoIds' => $crew->where('pivot.position', CrewPosition::So->value)->pluck('id')->values()->all(),
             'announcers' => User::withRoles(CrewPosition::Announcer->roleNames())->orderBy('username')->get(),

@@ -565,3 +565,29 @@ it('shows a reactivation hint on the edit page of a cancelled session only', fun
     $this->actingAs($this->hr)->get(route('sesi.edit', $scheduled))->assertOk()
         ->assertDontSee('Menyimpan akan mengaktifkan kembali sesi ini.');
 });
+
+it('renders program reference values on the add session form', function () {
+    $this->program->update(['day_of_week' => 5, 'crewcall_time' => '07:30:00', 'tapping_start' => '08:00:00', 'tapping_end' => '09:30:00']);
+    $this->program->crew()->attach($this->announcer, ['position' => 'announcer']);
+
+    $this->actingAs($this->hr)
+        ->get(route('sesi.create', ['program' => $this->program->id]))
+        ->assertOk()
+        ->assertSee('data-program-weekday="5"', false)
+        ->assertSee('Bukan hari siaran program (Jumat)')
+        ->assertSee('data-program-value="07:30"', false)
+        ->assertSee('Beda dari program (09:30)')
+        ->assertSee("data-program-crew='[{$this->announcer->id}]'", false)
+        ->assertSee("data-program-crew='[]'", false);
+});
+
+it('compares an edited session with its program', function () {
+    $this->program->update(['crewcall_time' => '07:30:00']);
+    $session = ($this->sessionWithCrew)(['crewcall_time' => '09:00:00', 'is_customized' => true]);
+
+    $this->actingAs($this->hr)
+        ->get(route('sesi.edit', $session))
+        ->assertOk()
+        ->assertSee('value="09:00"', false)
+        ->assertSee('data-program-value="07:30"', false);
+});

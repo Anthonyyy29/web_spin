@@ -226,3 +226,7 @@ it('redirects guests to the login page', function () {
     $this->get(route('program.index'))->assertRedirect(route('login'));
     $this->post(route('program.store'), ($this->payload)())->assertRedirect(route('login'));
 });
+
+it('does not render session program hints on the program form', function () {
+    $this->actingAs($this->hr)->get(route('program.create'))->assertOk()->assertDontSee('data-program-crew', false);
+});
