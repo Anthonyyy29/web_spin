@@ -20,6 +20,21 @@ class Program extends Model
     use HasFactory;
 
     /**
+     * Day of week names (ISO 8601, 1 = Monday).
+     *
+     * @var array<int, string>
+     */
+    public const DAY_NAMES = [
+        1 => 'Senin',
+        2 => 'Selasa',
+        3 => 'Rabu',
+        4 => 'Kamis',
+        5 => 'Jumat',
+        6 => 'Sabtu',
+        7 => 'Minggu',
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -43,6 +58,36 @@ class Program extends Model
     public function sessions(): HasMany
     {
         return $this->hasMany(BroadcastSession::class);
+    }
+
+    /**
+     * First broadcast day on or after the start of $from that has no active (non-cancelled) session yet.
+     *
+     * Searches at most 53 weeks ahead and returns null when every broadcast day in that range is taken.
+     */
+    public function nextOpenBroadcastDate(CarbonInterface $from): ?CarbonImmutable
+    {
+        $start = CarbonImmutable::parse($from->toDateString());
+        $end = $start->addWeeks(53);
+
+        $takenDates = $this->sessions()
+            ->whereNotNull('session_date')
+            ->where('status', '!=', SessionStatus::Cancelled->value)
+            ->whereBetween('session_date', [$start->toDateString(), $end->toDateString()])
+            ->pluck('session_date')
+            ->map(fn ($date): string => CarbonImmutable::parse($date)->toDateString())
+            ->all();
+
+        $candidate = $start->addDays(((int) $this->day_of_week - $start->isoWeekday() + 7) % 7);
+
+        for ($week = 0; $week < 53; $week++) {
+            if (! in_array($candidate->toDateString(), $takenDates, true)) {
+                return $candidate;
+            }
+            $candidate = $candidate->addWeek();
+        }
+
+        return null;
     }
 
     /**

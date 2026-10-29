@@ -329,6 +329,17 @@ it('prefills the add session form from the chosen program', function () {
         ->and($response->viewData('session')->program_id)->toBe($this->program->id);
 });
 
+it('defaults the add session date to the next open broadcast day of the program', function () {
+    ($this->sessionWithCrew)(['session_date' => '2026-10-26']);
+
+    $response = $this->actingAs($this->hr)
+        ->get(route('sesi.create', ['program' => $this->program->id]))
+        ->assertOk()
+        ->assertSee('name="session_date" value="2026-11-02"', false);
+
+    expect($response->viewData('session')->session_date->toDateString())->toBe('2026-11-02');
+});
+
 it('shows an empty add session form without a program', function () {
     $this->actingAs($this->hr)
         ->get(route('sesi.create'))

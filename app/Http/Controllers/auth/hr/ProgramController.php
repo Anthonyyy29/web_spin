@@ -15,21 +15,6 @@ use Illuminate\View\View;
 class ProgramController extends Controller
 {
     /**
-     * Day of week names (ISO 8601, 1 = Monday).
-     *
-     * @var array<int, string>
-     */
-    public const DAY_NAMES = [
-        1 => 'Senin',
-        2 => 'Selasa',
-        3 => 'Rabu',
-        4 => 'Kamis',
-        5 => 'Jumat',
-        6 => 'Sabtu',
-        7 => 'Minggu',
-    ];
-
-    /**
      * Display a listing of the resource.
      */
     public function index(): View
@@ -45,7 +30,7 @@ class ProgramController extends Controller
 
         return view('auth.hr.program.index', [
             'programs' => $programs,
-            'dayNames' => self::DAY_NAMES,
+            'dayNames' => Program::DAY_NAMES,
         ]);
     }
 
@@ -143,7 +128,7 @@ class ProgramController extends Controller
         return [
             'announcers' => User::withRoles(CrewPosition::Announcer->roleNames())->orderBy('username')->get(),
             'sos' => User::withRoles(CrewPosition::So->roleNames())->orderBy('username')->get(),
-            'dayNames' => self::DAY_NAMES,
+            'dayNames' => Program::DAY_NAMES,
         ];
     }
 }

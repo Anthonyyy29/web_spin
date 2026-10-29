@@ -72,6 +72,7 @@ class SesiController extends Controller
             'crewcall_time' => $program->crewcall_time,
             'tapping_start' => $program->tapping_start,
             'tapping_end' => $program->tapping_end,
+            'session_date' => $program->nextOpenBroadcastDate(now()),
         ] : []);
 
         return view('auth.hr.sesi.create', [
