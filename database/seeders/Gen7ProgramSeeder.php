@@ -91,7 +91,7 @@ class Gen7ProgramSeeder extends Seeder
     ];
 
     /**
-     * Create every Gen 7 program with its announcer and SO crew, then generate its broadcast sessions.
+     * Create every Gen 7 program with its announcer and SO crew.
      */
     public function run(): void
     {
@@ -117,7 +117,6 @@ class Gen7ProgramSeeder extends Seeder
             }
 
             $program->crew()->sync($crew);
-            $program->syncSessions(now());
         }
     }
 }

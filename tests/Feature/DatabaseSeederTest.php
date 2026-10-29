@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\BroadcastSession;
 use App\Models\Program;
 use App\Models\User;
 use Database\Seeders\Gen7MemberSeeder;
@@ -87,15 +88,10 @@ it('assigns the announcer and SO crew of each seeded program', function () {
         ->and(Program::where('name', 'ERROR')->sole()->crew()->pluck('username')->all())->toContain('Shafa Dhiya Raihanah (Announcer)');
 });
 
-it('generates the broadcast sessions of every seeded program with its crew', function () {
+it('does not seed any broadcast session', function () {
     $this->seed();
 
-    $program = Program::where('name', 'K-TIME')->sole();
-    $session = $program->sessions()->orderBy('regular_date')->first();
-
-    expect($program->sessions()->count())->toBe(21)
-        ->and($session->regular_date->toDateString())->toBe('2026-09-07')
-        ->and($session->crew()->count())->toBe(5);
+    expect(BroadcastSession::count())->toBe(0);
 });
 
 it('gives members with two jobs one account per job', function () {
