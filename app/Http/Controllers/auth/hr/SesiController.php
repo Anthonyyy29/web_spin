@@ -62,7 +62,7 @@ class SesiController extends Controller
     }
 
     /**
-     * Show the form for adding an extra session, prefilled from the program given in the query string.
+     * Show the form for adding a session, prefilled from the program given in the query string.
      */
     public function create(Request $request): View
     {
