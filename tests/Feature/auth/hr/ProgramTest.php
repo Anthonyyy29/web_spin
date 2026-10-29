@@ -228,5 +228,5 @@ it('redirects guests to the login page', function () {
 });
 
 it('does not render session program hints on the program form', function () {
-    $this->actingAs($this->hr)->get(route('program.create'))->assertOk()->assertDontSee('data-program-crew', false);
+    $this->actingAs($this->hr)->get(route('program.create'))->assertOk()->assertDontSee('data-program-crew', false)->assertDontSee('data-program-hint', false);
 });

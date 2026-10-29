@@ -24,10 +24,14 @@ window.addEventListener('scroll', closeAnchoredPopovers, { capture: true, passiv
 window.addEventListener('resize', closeAnchoredPopovers);
 
 // Tulisan pengingat di form sesi: muncul kalau isian (hari siaran, jam, kru) beda dari program.
-// Teks tulisan sudah dirender server; untuk kru teksnya disusun di sini. Tanpa atribut data-program-*, blok ini tidak berbuat apa-apa.
-const programHintOf = (field) => field.id !== ''
-    ? document.getElementById(`${field.id}-program`)
-    : field.querySelector('[data-program-hint]');
+// Teks tulisan tanggal/jam ada di atribut data-program-hint-text; untuk kru teksnya disusun di sini. Tanpa atribut data-program-*, blok ini tidak berbuat apa-apa.
+const programHintOf = (field) => document.getElementById(`${field.id}-program`);
+
+// Teks tulisan diisi saat ditampilkan dan dikosongkan saat disembunyikan, supaya pembaca layar mengumumkannya (live region).
+const setHintVisible = (hint, visible) => {
+    hint.textContent = visible ? hint.dataset.programHintText : '';
+    hint.hidden = !visible;
+};
 
 const crewNamesOf = (ids, checkboxes) => ids
     .map((id) => checkboxes.find((checkbox) => Number(checkbox.value) === id))
@@ -66,12 +70,12 @@ const refreshProgramHint = (field) => {
 
     if (field.dataset.programWeekday !== undefined) {
         const weekday = new Date(`${field.value}T00:00`).getDay() || 7;
-        hint.hidden = field.value === '' || weekday === Number(field.dataset.programWeekday);
+        setHintVisible(hint, field.value !== '' && weekday !== Number(field.dataset.programWeekday));
 
         return;
     }
 
-    hint.hidden = field.value === '' || field.value === field.dataset.programValue;
+    setHintVisible(hint, field.value !== '' && field.value !== field.dataset.programValue);
 };
 
 const programFieldSelector = '[data-program-value], [data-program-weekday], fieldset[data-program-crew]';
