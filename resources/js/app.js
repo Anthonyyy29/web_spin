@@ -22,3 +22,68 @@ const closeAnchoredPopovers = () => {
 
 window.addEventListener('scroll', closeAnchoredPopovers, { capture: true, passive: true });
 window.addEventListener('resize', closeAnchoredPopovers);
+
+// Tulisan pengingat di form sesi: muncul kalau isian (hari siaran, jam, kru) beda dari program.
+// Teks tulisan sudah dirender server; untuk kru teksnya disusun di sini. Tanpa atribut data-program-*, blok ini tidak berbuat apa-apa.
+const programHintOf = (field) => field.id !== ''
+    ? document.getElementById(`${field.id}-program`)
+    : field.querySelector('[data-program-hint]');
+
+const crewNamesOf = (ids, checkboxes) => ids
+    .map((id) => checkboxes.find((checkbox) => Number(checkbox.value) === id))
+    .filter((checkbox) => checkbox !== undefined)
+    .map((checkbox) => checkbox.closest('label').textContent.trim());
+
+const refreshProgramHint = (field) => {
+    if (field.matches('fieldset[data-program-crew]')) {
+        const hint = field.querySelector('[data-program-hint]');
+        const programIds = JSON.parse(field.dataset.programCrew).map(Number);
+        const checkboxes = [...field.querySelectorAll('input[type="checkbox"]')];
+        const checkedIds = checkboxes.filter((checkbox) => checkbox.checked).map((checkbox) => Number(checkbox.value));
+        const removed = crewNamesOf(programIds.filter((id) => !checkedIds.includes(id)), checkboxes);
+        const added = crewNamesOf(checkedIds.filter((id) => !programIds.includes(id)), checkboxes);
+        const sentences = [];
+
+        if (removed.length > 0) {
+            sentences.push(`Dilepas dari kru program: ${removed.join(', ')}.`);
+        }
+
+        if (added.length > 0) {
+            sentences.push(`Bukan kru program: ${added.join(', ')}.`);
+        }
+
+        hint.textContent = sentences.join(' ');
+        hint.hidden = sentences.length === 0;
+
+        return;
+    }
+
+    const hint = programHintOf(field);
+
+    if (hint === null) {
+        return;
+    }
+
+    if (field.dataset.programWeekday !== undefined) {
+        const weekday = new Date(`${field.value}T00:00`).getDay() || 7;
+        hint.hidden = field.value === '' || weekday === Number(field.dataset.programWeekday);
+
+        return;
+    }
+
+    hint.hidden = field.value === '' || field.value === field.dataset.programValue;
+};
+
+const programFieldSelector = '[data-program-value], [data-program-weekday], fieldset[data-program-crew]';
+
+document.querySelectorAll(programFieldSelector).forEach(refreshProgramHint);
+
+['input', 'change'].forEach((eventName) => {
+    document.addEventListener(eventName, (event) => {
+        const field = event.target.closest?.(programFieldSelector);
+
+        if (field) {
+            refreshProgramHint(field);
+        }
+    });
+});
