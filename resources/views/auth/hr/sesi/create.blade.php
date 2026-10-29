@@ -5,7 +5,7 @@
 @section('content')
     <a href="{{ route('sesi.index') }}" class="text-sm text-muted underline-offset-4 hover:text-ink hover:underline">Sesi</a>
     <h1 class="mt-1 text-2xl font-semibold tracking-tight">Tambah sesi</h1>
-    <p class="mt-1 mb-6 max-w-2xl text-sm text-muted">Sesi tambahan di luar jadwal mingguan program, misalnya siaran khusus. Sesi ini tidak ikut berubah saat programnya diubah.</p>
+    <p class="mt-1 mb-6 max-w-2xl text-sm text-muted">Jam dan kru diisi dari program. Kalau ada yang kamu ubah, muncul pengingat di bawah isiannya.</p>
 
     @if (! $session->program_id)
         <form method="GET" action="{{ route('sesi.create') }}" class="max-w-2xl rounded-lg border border-line bg-white p-6 md:p-8">

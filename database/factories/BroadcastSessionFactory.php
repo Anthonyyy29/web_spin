@@ -27,7 +27,6 @@ class BroadcastSessionFactory extends Factory
             'tapping_start' => '08:00:00',
             'tapping_end' => '09:30:00',
             'status' => SessionStatus::Scheduled,
-            'is_customized' => false,
         ];
     }
 

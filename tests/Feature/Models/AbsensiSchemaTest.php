@@ -8,6 +8,7 @@ use App\Models\BroadcastSession;
 use App\Models\Program;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
@@ -42,7 +43,6 @@ it('casts session fields and builds factory states', function () {
     $cancelled = BroadcastSession::factory()->cancelled()->create();
 
     expect($session->status)->toBe(SessionStatus::Scheduled)
-        ->and($session->is_customized)->toBeFalse()
         ->and($session->regular_date->toDateString())->toBe('2026-10-26')
         ->and($session->session_date->toDateString())->toBe('2026-10-26')
         ->and($postponed->status)->toBe(SessionStatus::Postponed)
@@ -61,4 +61,25 @@ it('exposes enum labels', function () {
 it('has no program period columns', function () {
     expect(Schema::hasColumns('programs', ['period_start']))->toBeFalse()
         ->and(Schema::hasColumns('programs', ['period_end']))->toBeFalse();
+});
+
+it('has no session customization column and requires the original date', function () {
+    expect(Schema::hasColumn('broadcast_sessions', 'is_customized'))->toBeFalse();
+});
+
+it('backfills missing original dates before requiring them', function () {
+    $migration = require database_path('migrations/2026_10_29_145332_remove_period_and_session_customization.php');
+    $program = Program::factory()->create();
+
+    $migration->down();
+
+    $row = ['program_id' => $program->id, 'status' => 'scheduled', 'regular_date' => null, 'created_at' => '2026-10-20 09:00:00', 'updated_at' => '2026-10-20 09:00:00'];
+    $moved = DB::table('broadcast_sessions')->insertGetId([...$row, 'session_date' => '2026-10-15']);
+    $unscheduled = DB::table('broadcast_sessions')->insertGetId([...$row, 'session_date' => null]);
+
+    $migration->up();
+
+    expect(DB::table('broadcast_sessions')->where('id', $moved)->value('regular_date'))->toStartWith('2026-10-15')
+        ->and(DB::table('broadcast_sessions')->where('id', $unscheduled)->value('regular_date'))->toStartWith('2026-10-20')
+        ->and(Schema::hasColumn('broadcast_sessions', 'is_customized'))->toBeFalse();
 });

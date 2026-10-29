@@ -119,7 +119,6 @@ it('updates a session and syncs its crew', function () {
         ->and($session->tapping_start)->toBe('09:30:00')
         ->and($session->tapping_end)->toBe('11:00:00')
         ->and($session->status)->toBe(SessionStatus::Scheduled)
-        ->and($session->is_customized)->toBeTrue()
         ->and($session->crew()->wherePivot('position', 'sound_operator')->pluck('users.id')->all())->toBe([$this->so->id])
         ->and(Attendance::whereKey($attendance->id)->exists())->toBeTrue();
 });
@@ -140,7 +139,6 @@ it('postpones a session and clears its date and times', function () {
         ->and($session->crewcall_time)->toBeNull()
         ->and($session->tapping_start)->toBeNull()
         ->and($session->tapping_end)->toBeNull()
-        ->and($session->is_customized)->toBeTrue()
         ->and($session->attendances()->count())->toBe(1);
 });
 
@@ -154,8 +152,7 @@ it('reschedules a postponed session', function () {
     $session->refresh();
 
     expect($session->status)->toBe(SessionStatus::Scheduled)
-        ->and($session->session_date->toDateString())->toBe('2026-11-04')
-        ->and($session->is_customized)->toBeTrue();
+        ->and($session->session_date->toDateString())->toBe('2026-11-04');
 });
 
 it('cancels a session', function () {
@@ -169,7 +166,6 @@ it('cancels a session', function () {
     $session->refresh();
 
     expect($session->status)->toBe(SessionStatus::Cancelled)
-        ->and($session->is_customized)->toBeTrue()
         ->and($session->session_date)->not->toBeNull();
 });
 
@@ -182,8 +178,7 @@ it('cancels a postponed session', function () {
         ->assertSessionHas('status');
 
     expect($session->refresh()->status)->toBe(SessionStatus::Cancelled)
-        ->and($session->session_date)->toBeNull()
-        ->and($session->is_customized)->toBeTrue();
+        ->and($session->session_date)->toBeNull();
 });
 
 it('rejects postponing a session that is not scheduled', function () {
@@ -199,7 +194,6 @@ it('rejects postponing a session that is not scheduled', function () {
 
     expect($cancelled->refresh()->status)->toBe(SessionStatus::Cancelled)
         ->and($cancelled->session_date->toDateString())->toBe('2026-10-26')
-        ->and($cancelled->is_customized)->toBeFalse()
         ->and($postponed->refresh()->status)->toBe(SessionStatus::Postponed);
 });
 
@@ -211,7 +205,7 @@ it('rejects cancelling an already cancelled session', function () {
         ->assertRedirect(route('sesi.index'))
         ->assertSessionHasErrors(['sesi' => 'Sesi ini tidak bisa dibatalkan.']);
 
-    expect($session->refresh()->is_customized)->toBeFalse();
+    expect($session->refresh()->status)->toBe(SessionStatus::Cancelled);
 });
 
 it('shows the rejection message on the session list', function () {
@@ -347,22 +341,21 @@ it('shows an empty add session form without a program', function () {
         ->assertSee('Pilih program');
 });
 
-it('stores an extra session outside the weekly schedule', function () {
+it('stores a session with its date as the original date', function () {
     $this->actingAs($this->hr)
         ->post(route('sesi.store'), ($this->payload)(['program_id' => $this->program->id]))
         ->assertRedirect(route('sesi.index'))
-        ->assertSessionHas('status', 'Sesi tambahan dibuat.');
+        ->assertSessionHas('status', 'Sesi dibuat.');
 
     $session = BroadcastSession::sole();
 
     expect($session->program_id)->toBe($this->program->id)
-        ->and($session->regular_date)->toBeNull()
+        ->and($session->regular_date->toDateString())->toBe($session->session_date->toDateString())
         ->and($session->session_date->toDateString())->toBe('2026-10-28')
         ->and($session->crewcall_time)->toBe('09:00:00')
         ->and($session->tapping_start)->toBe('09:30:00')
         ->and($session->tapping_end)->toBe('11:00:00')
         ->and($session->status)->toBe(SessionStatus::Scheduled)
-        ->and($session->is_customized)->toBeTrue()
         ->and($session->crew->firstWhere('id', $this->announcer->id)->pivot->position)->toBe('announcer')
         ->and($session->crew->firstWhere('id', $this->so->id)->pivot->position)->toBe('sound_operator');
 });
@@ -388,14 +381,20 @@ it('rejects an extra session that clashes with a crew member booking', function 
     expect(BroadcastSession::count())->toBe(1);
 });
 
-it('labels a postponed extra session in the reschedule box and edit form', function () {
-    $extra = ($this->sessionWithCrew)(['regular_date' => null, 'is_customized' => true, 'status' => SessionStatus::Postponed, 'session_date' => null, 'crewcall_time' => null, 'tapping_start' => null, 'tapping_end' => null]);
+it('shows the original date of a postponed session', function () {
+    $postponed = ($this->sessionWithCrew)(['regular_date' => '2026-10-26', 'status' => SessionStatus::Postponed, 'session_date' => null, 'crewcall_time' => null, 'tapping_start' => null, 'tapping_end' => null]);
 
-    $this->actingAs($this->hr)->get(route('sesi.index'))->assertOk()->assertSee('sesi tambahan');
-    $this->actingAs($this->hr)->get(route('sesi.edit', $extra))->assertOk()->assertSee('sesi tambahan');
-    $this->actingAs($this->hr)->post(route('sesi.cancel', $extra))->assertRedirect(route('sesi.index'));
+    $this->actingAs($this->hr)->get(route('sesi.index'))->assertOk()->assertSee('semula Sen, 26 Okt 2026')->assertDontSee('sesi tambahan');
+    $this->actingAs($this->hr)->get(route('sesi.edit', $postponed))->assertOk()->assertSee('semula Sen, 26 Okt 2026');
+    $this->actingAs($this->hr)->post(route('sesi.cancel', $postponed))->assertRedirect(route('sesi.index'));
 
-    expect($extra->refresh()->status)->toBe(SessionStatus::Cancelled);
+    expect($postponed->refresh()->status)->toBe(SessionStatus::Cancelled);
+});
+
+it('does not show the original date for a session that was never moved', function () {
+    $session = ($this->sessionWithCrew)(['session_date' => '2026-10-26', 'regular_date' => '2026-10-26']);
+
+    $this->actingAs($this->hr)->get(route('sesi.edit', $session))->assertOk()->assertDontSee('semula');
 });
 
 it('deletes all attendance when postponing a session that has a check-in', function () {
@@ -583,7 +582,7 @@ it('renders program reference values on the add session form', function () {
 
 it('compares an edited session with its program', function () {
     $this->program->update(['crewcall_time' => '07:30:00']);
-    $session = ($this->sessionWithCrew)(['crewcall_time' => '09:00:00', 'is_customized' => true]);
+    $session = ($this->sessionWithCrew)(['crewcall_time' => '09:00:00']);
 
     $this->actingAs($this->hr)
         ->get(route('sesi.edit', $session))

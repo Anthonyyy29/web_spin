@@ -82,7 +82,7 @@ class SesiController extends Controller
     }
 
     /**
-     * Store an extra session outside the program's weekly schedule.
+     * Store a new session; its date is also kept as the original date.
      */
     public function store(SesiRequest $request): RedirectResponse
     {
@@ -90,7 +90,7 @@ class SesiController extends Controller
             $session = BroadcastSession::create([
                 ...$request->sessionAttributes(),
                 'program_id' => $request->integer('program_id'),
-                'regular_date' => null,
+                'regular_date' => $request->safe()->input('session_date'),
             ]);
 
             $session->crew()->sync(
@@ -102,7 +102,7 @@ class SesiController extends Controller
 
         return redirect()
             ->route('sesi.index')
-            ->with('status', 'Sesi tambahan dibuat.');
+            ->with('status', 'Sesi dibuat.');
     }
 
     /**
@@ -170,7 +170,6 @@ class SesiController extends Controller
                 'tapping_start' => null,
                 'tapping_end' => null,
                 'status' => SessionStatus::Postponed,
-                'is_customized' => true,
             ]);
         });
 
@@ -188,10 +187,7 @@ class SesiController extends Controller
             return $this->rejected('Sesi ini tidak bisa dibatalkan.');
         }
 
-        $sesi->update([
-            'status' => SessionStatus::Cancelled,
-            'is_customized' => true,
-        ]);
+        $sesi->update(['status' => SessionStatus::Cancelled]);
 
         return redirect()
             ->route('sesi.index')

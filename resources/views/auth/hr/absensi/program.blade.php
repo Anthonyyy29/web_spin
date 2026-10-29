@@ -41,9 +41,6 @@
                     @foreach ($sessions as $session)
                         <th scope="col" class="px-3 py-3 font-medium whitespace-nowrap">
                             <a href="{{ route('absensi.session', $session) }}" class="tabular-nums underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">{{ $session->session_date->locale('id')->translatedFormat('d M') }}</a>
-                            @if ($session->regular_date === null)
-                                <span class="block text-xs font-normal">tambahan</span>
-                            @endif
                         </th>
                     @endforeach
                     <th scope="col" class="border-l border-line px-3 py-3 text-right font-medium">Hadir</th>

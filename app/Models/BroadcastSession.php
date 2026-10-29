@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use LogicException;
 
-#[Fillable(['program_id', 'regular_date', 'session_date', 'crewcall_time', 'tapping_start', 'tapping_end', 'status', 'is_customized'])]
+#[Fillable(['program_id', 'regular_date', 'session_date', 'crewcall_time', 'tapping_start', 'tapping_end', 'status'])]
 class BroadcastSession extends Model
 {
     /** @use HasFactory<BroadcastSessionFactory> */
@@ -34,7 +34,6 @@ class BroadcastSession extends Model
             'regular_date' => 'date',
             'session_date' => 'date',
             'status' => SessionStatus::class,
-            'is_customized' => 'bool',
         ];
     }
 

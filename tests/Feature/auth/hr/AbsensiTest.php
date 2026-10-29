@@ -413,7 +413,7 @@ describe('per program', function () {
         ($this->checkIn)($this->second, $this->ani, '2026-10-12 07:40:00');
 
         $make('2026-10-19', ['status' => 'cancelled']);
-        $this->extra = $make('2026-10-15', ['regular_date' => null, 'is_customized' => true], [$this->ani->id => ['position' => 'announcer']]);
+        $this->extra = $make('2026-10-15', [], [$this->ani->id => ['position' => 'announcer']]);
         $this->upcoming = $make('2026-10-26', ['crewcall_time' => '10:00:00', 'tapping_start' => '10:30:00', 'tapping_end' => '11:30:00']);
         BroadcastSession::factory()->for($this->program)->postponed()->create()->crew()->attach($this->ani->id, ['position' => 'announcer']);
 

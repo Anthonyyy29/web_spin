@@ -110,12 +110,11 @@ class SesiRequest extends FormRequest
         return [
             ...$validated,
             'status' => SessionStatus::Scheduled,
-            'is_customized' => true,
         ];
     }
 
     /**
-     * Determine whether the request creates an extra session rather than updating an existing one.
+     * Determine whether the request creates a session rather than updating an existing one.
      */
     public function isCreatingSession(): bool
     {

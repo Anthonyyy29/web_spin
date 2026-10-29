@@ -5,7 +5,7 @@
 @section('content')
     <a href="{{ route('sesi.index') }}" class="text-sm text-muted underline-offset-4 hover:text-ink hover:underline">Sesi</a>
     <h1 class="mt-1 text-2xl font-semibold tracking-tight">{{ $session->status === \App\Enums\SessionStatus::Postponed ? 'Jadwalkan ulang sesi' : 'Ubah sesi' }}</h1>
-    <p class="mt-1 mb-6 text-sm text-muted">{{ $session->program->name }} <span class="tabular-nums">({{ $session->regular_date ? 'semula '.$session->regular_date->locale('id')->translatedFormat('D, d M Y') : 'sesi tambahan' }})</span></p>
+    <p class="mt-1 mb-6 text-sm text-muted">{{ $session->program->name }} @if ($session->session_date === null || ! $session->session_date->isSameDay($session->regular_date))<span class="tabular-nums">(semula {{ $session->regular_date->locale('id')->translatedFormat('D, d M Y') }})</span>@endif</p>
 
     @if ($session->status === \App\Enums\SessionStatus::Cancelled)
         <p class="mb-6 max-w-2xl rounded-md border border-line bg-white px-4 py-3 text-sm text-muted">Menyimpan akan mengaktifkan kembali sesi ini.</p>
