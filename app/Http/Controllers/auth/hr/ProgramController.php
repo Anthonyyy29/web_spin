@@ -49,7 +49,7 @@ class ProgramController extends Controller
     {
         DB::transaction(function () use ($request): void {
             $program = Program::create($request->programAttributes());
-            $this->syncCrewAndSessions($program, $request);
+            $this->syncCrew($program, $request);
         });
 
         return redirect()
@@ -79,7 +79,7 @@ class ProgramController extends Controller
     {
         DB::transaction(function () use ($request, $program): void {
             $program->update($request->programAttributes());
-            $this->syncCrewAndSessions($program, $request);
+            $this->syncCrew($program, $request);
         });
 
         return redirect()
@@ -106,16 +106,15 @@ class ProgramController extends Controller
     }
 
     /**
-     * Save the crew of the program and regenerate its sessions.
+     * Save the crew of the program.
      */
-    private function syncCrewAndSessions(Program $program, ProgramRequest $request): void
+    private function syncCrew(Program $program, ProgramRequest $request): void
     {
         $crew = collect($request->crewPositions())
             ->map(fn (string $position): array => ['position' => $position])
             ->all();
 
         $program->crew()->sync($crew);
-        $program->syncSessions(now());
     }
 
     /**

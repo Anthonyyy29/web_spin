@@ -47,23 +47,6 @@
         </div>
     </div>
 
-    <div class="grid gap-5 sm:grid-cols-2">
-        <div>
-            <label for="period_start" class="mb-1.5 block text-sm font-medium">Periode mulai</label>
-            <input type="date" id="period_start" name="period_start" value="{{ old('period_start', $program?->period_start->format('Y-m-d')) }}" class="{{ $fieldClass }} tabular-nums" @error('period_start') aria-invalid="true" aria-describedby="period_start-error" @enderror>
-            @error('period_start')
-                <p id="period_start-error" class="mt-1.5 text-sm text-danger">{{ $message }}</p>
-            @enderror
-        </div>
-        <div>
-            <label for="period_end" class="mb-1.5 block text-sm font-medium">Periode selesai</label>
-            <input type="date" id="period_end" name="period_end" value="{{ old('period_end', $program?->period_end->format('Y-m-d')) }}" class="{{ $fieldClass }} tabular-nums" @error('period_end') aria-invalid="true" aria-describedby="period_end-error" @enderror>
-            @error('period_end')
-                <p id="period_end-error" class="mt-1.5 text-sm text-danger">{{ $message }}</p>
-            @enderror
-        </div>
-    </div>
-
     @include('auth.hr.partials.crew-fields', ['announcers' => $announcers, 'sos' => $sos, 'selectedAnnouncerIds' => $selectedAnnouncerIds ?? [], 'selectedSoIds' => $selectedSoIds ?? []])
 </div>
 

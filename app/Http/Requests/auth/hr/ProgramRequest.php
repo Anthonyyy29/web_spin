@@ -35,8 +35,6 @@ class ProgramRequest extends FormRequest
             'crewcall_time' => ['required', 'date_format:H:i'],
             'tapping_start' => ['required', 'date_format:H:i'],
             'tapping_end' => ['required', 'date_format:H:i'],
-            'period_start' => ['required', 'date_format:Y-m-d'],
-            'period_end' => ['required', 'date_format:Y-m-d', 'after_or_equal:period_start'],
             ...$this->crewRules(),
         ];
     }
@@ -54,8 +52,6 @@ class ProgramRequest extends FormRequest
             'crewcall_time' => 'jam crewcall',
             'tapping_start' => 'tapping mulai',
             'tapping_end' => 'tapping selesai',
-            'period_start' => 'periode mulai',
-            'period_end' => 'periode selesai',
             ...$this->crewAttributes(),
         ];
     }
@@ -76,9 +72,6 @@ class ProgramRequest extends FormRequest
             'crewcall_time.date_format' => ':Attribute harus berformat jam:menit (H:i).',
             'tapping_start.date_format' => ':Attribute harus berformat jam:menit (H:i).',
             'tapping_end.date_format' => ':Attribute harus berformat jam:menit (H:i).',
-            'period_start.date_format' => ':Attribute harus berformat tahun-bulan-tanggal (Y-m-d).',
-            'period_end.date_format' => ':Attribute harus berformat tahun-bulan-tanggal (Y-m-d).',
-            'period_end.after_or_equal' => ':Attribute harus sama dengan atau setelah periode mulai.',
             ...$this->crewMessages(),
         ];
     }
@@ -111,8 +104,6 @@ class ProgramRequest extends FormRequest
             'crewcall_time',
             'tapping_start',
             'tapping_end',
-            'period_start',
-            'period_end',
         ]);
 
         foreach (['crewcall_time', 'tapping_start', 'tapping_end'] as $field) {

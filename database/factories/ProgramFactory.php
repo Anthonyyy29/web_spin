@@ -23,8 +23,6 @@ class ProgramFactory extends Factory
             'crewcall_time' => '07:30:00',
             'tapping_start' => '08:00:00',
             'tapping_end' => '09:30:00',
-            'period_start' => '2026-10-05',
-            'period_end' => '2026-10-26',
         ];
     }
 }

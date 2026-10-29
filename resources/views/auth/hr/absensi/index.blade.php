@@ -13,7 +13,6 @@
                 <tr>
                     <th scope="col" class="px-5 py-3 font-medium">Program</th>
                     <th scope="col" class="px-5 py-3 font-medium">Hari</th>
-                    <th scope="col" class="px-5 py-3 font-medium">Periode</th>
                     <th scope="col" class="px-5 py-3 text-right font-medium">Sesi selesai</th>
                     <th scope="col" class="px-5 py-3 text-right font-medium">Hadir</th>
                     <th scope="col" class="px-5 py-3 text-right font-medium">Terlambat</th>
@@ -28,8 +27,7 @@
                         <td class="px-5 py-3 font-medium">
                             <a href="{{ route('absensi.program', $row['program']) }}" class="text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">{{ $row['program']->name }}</a>
                         </td>
-                        <td class="px-5 py-3">{{ \App\Http\Controllers\auth\hr\ProgramController::DAY_NAMES[$row['program']->day_of_week] ?? '-' }}</td>
-                        <td class="px-5 py-3 text-muted tabular-nums">{{ $row['program']->period_start->locale('id')->translatedFormat('d M Y') }} – {{ $row['program']->period_end->locale('id')->translatedFormat('d M Y') }}</td>
+                        <td class="px-5 py-3">{{ \App\Models\Program::DAY_NAMES[$row['program']->day_of_week] ?? '-' }}</td>
                         <td class="px-5 py-3 text-right tabular-nums">{{ $row['closed_sessions'] }}</td>
                         <td class="px-5 py-3 text-right tabular-nums">{{ $row['totals']['hadir'] }}</td>
                         <td class="px-5 py-3 text-right tabular-nums">{{ $row['totals']['terlambat'] }}</td>
@@ -39,7 +37,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="px-5 py-12 text-center text-muted">Belum ada program. Buat program dulu di menu Program.</td>
+                        <td colspan="8" class="px-5 py-12 text-center text-muted">Belum ada program. Buat program dulu di menu Program.</td>
                     </tr>
                 @endforelse
             </tbody>

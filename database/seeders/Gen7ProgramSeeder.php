@@ -10,16 +10,6 @@ use Illuminate\Database\Seeder;
 class Gen7ProgramSeeder extends Seeder
 {
     /**
-     * First day of the odd semester broadcast period.
-     */
-    public const PERIOD_START = '2026-09-01';
-
-    /**
-     * Last day of the odd semester broadcast period.
-     */
-    public const PERIOD_END = '2027-01-31';
-
-    /**
      * Gen 7 odd semester programs from the attendance schedule. Crew are the usernames seeded by Gen7MemberSeeder.
      *
      * @var list<array{name: string, day_of_week: int, crewcall_time: string, tapping_start: string, tapping_end: string, announcer: list<string>, sound_operator: list<string>}>
@@ -104,8 +94,6 @@ class Gen7ProgramSeeder extends Seeder
                 'crewcall_time' => $data['crewcall_time'],
                 'tapping_start' => $data['tapping_start'],
                 'tapping_end' => $data['tapping_end'],
-                'period_start' => self::PERIOD_START,
-                'period_end' => self::PERIOD_END,
             ]);
 
             $crew = [];

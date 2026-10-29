@@ -23,14 +23,12 @@ beforeEach(function () {
         'crewcall_time' => '07:30',
         'tapping_start' => '08:00',
         'tapping_end' => '09:30',
-        'period_start' => '2026-10-26',
-        'period_end' => '2026-11-16',
         'announcer_ids' => [$this->announcer->id],
         'so_ids' => [$this->so->id],
     ], $overrides);
 });
 
-it('lets hr create a program and generates its sessions', function () {
+it('lets hr create a program without creating sessions', function () {
     $this->actingAs($this->hr)
         ->post(route('program.store'), ($this->payload)())
         ->assertRedirect(route('program.index'))
@@ -38,17 +36,13 @@ it('lets hr create a program and generates its sessions', function () {
 
     $program = Program::where('name', 'Pagi Ceria')->firstOrFail();
 
-    expect($program->crewcall_time)->toBe('07:30:00')
+    expect(Program::count())->toBe(1)
+        ->and(BroadcastSession::count())->toBe(0)
+        ->and($program->crewcall_time)->toBe('07:30:00')
         ->and($program->tapping_start)->toBe('08:00:00')
         ->and($program->tapping_end)->toBe('09:30:00')
-        ->and($program->sessions)->toHaveCount(4)
         ->and($program->crew()->wherePivot('position', 'announcer')->pluck('users.id')->all())->toBe([$this->announcer->id])
         ->and($program->crew()->wherePivot('position', 'sound_operator')->pluck('users.id')->all())->toBe([$this->so->id]);
-
-    $session = $program->sessions()->orderBy('regular_date')->first();
-
-    expect($session->regular_date->toDateString())->toBe('2026-10-26')
-        ->and($session->crew)->toHaveCount(2);
 });
 
 it('lets hr create a program without sound operators', function () {
@@ -59,20 +53,18 @@ it('lets hr create a program without sound operators', function () {
     expect(Program::firstOrFail()->crew)->toHaveCount(1);
 });
 
-it('validates times, period and crew roles with indonesian messages', function () {
+it('validates times and crew roles with indonesian messages', function () {
     $this->actingAs($this->hr)
         ->post(route('program.store'), ($this->payload)([
             'crewcall_time' => '08:00',
             'tapping_start' => '08:00',
             'tapping_end' => '07:00',
-            'period_end' => '2026-10-01',
             'announcer_ids' => [$this->so->id],
             'so_ids' => [$this->announcer->id],
         ]))
         ->assertSessionHasErrors([
             'tapping_start' => 'Tapping mulai harus setelah crewcall.',
             'tapping_end' => 'Tapping selesai harus setelah tapping mulai.',
-            'period_end' => 'Periode selesai harus sama dengan atau setelah periode mulai.',
             'announcer_ids.0' => 'Announcer yang dipilih tidak valid.',
             'so_ids.0' => 'Sound operator (SO) yang dipilih tidak valid.',
         ]);
@@ -130,16 +122,23 @@ it('shows crew validation errors on the form', function () {
         ->assertSee('Sound operator (SO) yang dipilih tidak valid.');
 });
 
-it('updates a program and resyncs upcoming sessions', function () {
-    $this->actingAs($this->hr)->post(route('program.store'), ($this->payload)());
-    $program = Program::firstOrFail();
+it('updates a program without touching its sessions', function () {
+    $program = Program::factory()->create();
+    $oldAnnouncer = $this->announcer;
+    $program->crew()->attach($oldAnnouncer, ['position' => 'announcer']);
+    $session = BroadcastSession::factory()->for($program)->create([
+        'session_date' => '2026-10-26',
+        'crewcall_time' => '07:30:00',
+    ]);
+    $session->crew()->attach($oldAnnouncer, ['position' => 'announcer']);
     $newAnnouncer = User::factory()->announcer()->create();
 
     $this->actingAs($this->hr)
         ->put(route('program.update', $program), ($this->payload)([
             'name' => 'Pagi Baru',
-            'crewcall_time' => '06:45',
-            'tapping_start' => '07:15',
+            'crewcall_time' => '09:00',
+            'tapping_start' => '09:30',
+            'tapping_end' => '10:30',
             'announcer_ids' => [$newAnnouncer->id],
             'so_ids' => [],
         ]))
@@ -147,15 +146,13 @@ it('updates a program and resyncs upcoming sessions', function () {
         ->assertSessionHas('status');
 
     $program->refresh();
-    $session = $program->sessions()->orderBy('regular_date')->first();
+    $session->refresh();
 
     expect($program->name)->toBe('Pagi Baru')
-        ->and($program->crewcall_time)->toBe('06:45:00')
+        ->and($program->crewcall_time)->toBe('09:00:00')
         ->and($program->crew->pluck('id')->all())->toBe([$newAnnouncer->id])
-        ->and($program->sessions)->toHaveCount(4)
-        ->and($session->crewcall_time)->toBe('06:45:00')
-        ->and($session->tapping_start)->toBe('07:15:00')
-        ->and($session->crew->pluck('id')->all())->toBe([$newAnnouncer->id]);
+        ->and($session->crewcall_time)->toBe('07:30:00')
+        ->and($session->crew->pluck('id')->all())->toBe([$oldAnnouncer->id]);
 });
 
 it('shows the form prefilled with the program values', function () {
@@ -165,8 +162,7 @@ it('shows the form prefilled with the program values', function () {
     $this->actingAs($this->hr)
         ->get(route('program.edit', $program))
         ->assertOk()
-        ->assertSee('value="07:30"', false)
-        ->assertSee('value="2026-10-26"', false);
+        ->assertSee('value="07:30"', false);
 });
 
 it('lists programs with their crew counts', function () {
@@ -195,8 +191,8 @@ it('refuses to delete a program that has attendance', function () {
 });
 
 it('deletes a program without attendance together with its sessions', function () {
-    $this->actingAs($this->hr)->post(route('program.store'), ($this->payload)());
-    $program = Program::firstOrFail();
+    $program = Program::factory()->create();
+    BroadcastSession::factory()->for($program)->create();
 
     $this->actingAs($this->hr)
         ->delete(route('program.destroy', $program))
@@ -229,4 +225,9 @@ it('redirects guests to the login page', function () {
 
 it('does not render session program hints on the program form', function () {
     $this->actingAs($this->hr)->get(route('program.create'))->assertOk()->assertDontSee('data-program-crew', false)->assertDontSee('data-program-hint', false);
+});
+
+it('does not show period fields on the program form and list', function () {
+    $this->actingAs($this->hr)->get(route('program.create'))->assertOk()->assertDontSee('period_start', false)->assertDontSee('Periode');
+    $this->actingAs($this->hr)->get(route('program.index'))->assertOk()->assertDontSee('period_start', false)->assertDontSee('Periode');
 });

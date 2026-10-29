@@ -8,6 +8,7 @@ use App\Models\BroadcastSession;
 use App\Models\Program;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
 
@@ -55,4 +56,9 @@ it('exposes enum labels', function () {
     expect(SessionStatus::Postponed->label())->toBe('Ditunda')
         ->and(AttendanceStatus::TidakHadir->label())->toBe('Tidak hadir')
         ->and(CrewPosition::So->label())->toBe('SO');
+});
+
+it('has no program period columns', function () {
+    expect(Schema::hasColumns('programs', ['period_start']))->toBeFalse()
+        ->and(Schema::hasColumns('programs', ['period_end']))->toBeFalse();
 });

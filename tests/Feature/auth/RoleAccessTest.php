@@ -62,8 +62,6 @@ it('offers kadiv crew in the program form and rejects other roles', function () 
         'crewcall_time' => '07:30',
         'tapping_start' => '08:00',
         'tapping_end' => '09:30',
-        'period_start' => '2026-10-26',
-        'period_end' => '2026-11-16',
     ], $overrides);
 
     $this->actingAs($hr)
