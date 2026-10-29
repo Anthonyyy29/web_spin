@@ -91,6 +91,15 @@ it('shows the edit form prefilled for a scheduled session', function () {
         ->assertSee('value="09:30"', false);
 });
 
+it('shows the original date on the edit form of a moved session', function () {
+    $session = ($this->sessionWithCrew)(['regular_date' => '2026-10-26', 'session_date' => '2026-10-28']);
+
+    $this->actingAs($this->hr)
+        ->get(route('sesi.edit', $session))
+        ->assertOk()
+        ->assertSee('semula Sen, 26 Okt 2026');
+});
+
 it('shows empty date and times in the edit form of a postponed session', function () {
     $session = BroadcastSession::factory()->for($this->program)->postponed()->create();
     $session->crew()->attach($this->announcer->id, ['position' => 'announcer']);
@@ -371,7 +380,7 @@ it('requires an existing program for an extra session', function (array $overrid
     'unknown' => [['program_id' => 999]],
 ]);
 
-it('rejects an extra session that clashes with a crew member booking', function () {
+it('rejects a session that clashes with a crew member booking', function () {
     ($this->sessionWithCrew)(['session_date' => '2026-10-28', 'tapping_start' => '10:00:00', 'tapping_end' => '11:30:00']);
 
     $this->actingAs($this->hr)

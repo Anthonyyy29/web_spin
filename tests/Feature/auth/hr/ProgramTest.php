@@ -162,7 +162,8 @@ it('shows the form prefilled with the program values', function () {
     $this->actingAs($this->hr)
         ->get(route('program.edit', $program))
         ->assertOk()
-        ->assertSee('value="07:30"', false);
+        ->assertSee('value="07:30"', false)
+        ->assertSee('Mengubah program tidak mengubah sesi yang sudah ada. Ubah jadwal atau kru per sesi di halaman Sesi.');
 });
 
 it('lists programs with their crew counts', function () {

@@ -18,7 +18,7 @@ return new class extends Migration
 
         DB::table('broadcast_sessions')
             ->whereNull('regular_date')
-            ->update(['regular_date' => DB::raw('COALESCE(session_date, DATE(created_at))')]);
+            ->update(['regular_date' => DB::raw('COALESCE(session_date, DATE(created_at), CURRENT_DATE)')]);
 
         Schema::table('broadcast_sessions', function (Blueprint $table): void {
             $table->date('regular_date')->nullable(false)->change();
