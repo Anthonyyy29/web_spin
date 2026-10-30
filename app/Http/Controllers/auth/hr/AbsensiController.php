@@ -25,6 +25,13 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class AbsensiController extends Controller
 {
     /**
+     * Column headers of the attendance totals, in the order of emptyTotals().
+     *
+     * @var list<string>
+     */
+    private const TOTAL_LABELS = ['Hadir', 'Terlambat', 'Izin', 'Sakit', 'Tidak hadir'];
+
+    /**
      * Display every program with its attendance totals from closed, scheduled sessions.
      */
     public function index(): View
@@ -52,14 +59,14 @@ class AbsensiController extends Controller
     }
 
     /**
-     * Display the attendance summary per person for a date range.
+     * Display the attendance of every announcer and SO per session across all programs for a date range.
      */
     public function people(Request $request): View
     {
         ['from' => $from, 'to' => $to] = $this->dateRange($request);
 
         return view('auth.hr.absensi.people', [
-            'rows' => $this->summaryRows($from, $to),
+            ...$this->peopleMatrix($from, $to),
             'from' => $from,
             'to' => $to,
         ]);
@@ -93,7 +100,7 @@ class AbsensiController extends Controller
             'Username',
             'Posisi',
             ...$sessions->map(fn (BroadcastSession $session): string => $session->session_date->format('d/m/Y'))->all(),
-            'Hadir', 'Terlambat', 'Izin', 'Sakit', 'Tidak hadir',
+            ...self::TOTAL_LABELS,
         ];
 
         $body = $rows->map(fn (array $row): array => [
@@ -113,27 +120,50 @@ class AbsensiController extends Controller
     }
 
     /**
-     * Download the attendance summary per person as an Excel file.
+     * Download the per person by session attendance matrix as an Excel file.
+     * Sessions of the same date share one merged date header, with the program names beneath it.
      */
     public function export(Request $request): StreamedResponse
     {
         ['from' => $from, 'to' => $to] = $this->dateRange($request);
+        ['sessions' => $sessions, 'rows' => $rows] = $this->peopleMatrix($from, $to);
 
-        $body = $this->summaryRows($from, $to)->map(fn (array $row): array => [
+        $topHeader = ['Username', 'Role'];
+        $bottomHeader = [null, null];
+        $merges = [[0, 0, 0, 1], [1, 0, 1, 1]];
+
+        foreach ($sessions->groupBy(fn (BroadcastSession $session): string => $session->session_date->toDateString()) as $group) {
+            $firstColumn = count($topHeader);
+
+            foreach ($group->values() as $index => $session) {
+                $topHeader[] = $index === 0 ? $session->session_date->format('d/m/Y') : null;
+                $bottomHeader[] = $session->program->name;
+            }
+
+            if ($group->count() > 1) {
+                $merges[] = [$firstColumn, 0, count($topHeader) - 1, 0];
+            }
+        }
+
+        foreach (self::TOTAL_LABELS as $label) {
+            $merges[] = [count($topHeader), 0, count($topHeader), 1];
+            $topHeader[] = $label;
+            $bottomHeader[] = null;
+        }
+
+        $body = $rows->map(fn (array $row): array => [
             $row['user']->username,
-            $row['user']->crewPosition()->label(),
-            $row['hadir'],
-            $row['terlambat'],
-            $row['izin'],
-            $row['sakit'],
-            $row['tidak_hadir'],
+            $row['position'] === null ? '-' : CrewPosition::from($row['position'])->label(),
+            ...array_map(fn (?AttendanceStatus $status): AttendanceStatus|string => $status ?? '–', array_values($row['cells'])),
+            ...array_values($row['totals']),
         ]);
 
         return AttendanceSpreadsheet::download(
             "rekap-absensi-{$from}-{$to}.xlsx",
             'Rekap absensi per orang · '.$this->rangeLabel($from, $to),
-            [['Username', 'Role', 'Hadir', 'Terlambat', 'Izin', 'Sakit', 'Tidak hadir']],
+            [$topHeader, $bottomHeader],
             $body,
+            $merges,
             frozenColumns: 2,
         );
     }
@@ -331,8 +361,24 @@ class AbsensiController extends Controller
             $positions[$user->id] = null;
         }
 
-        $rows = collect($users)
-            ->map(function (User $user) use ($sessions, $positions, $now): array {
+        $members = collect($users)->map(fn (User $user): array => ['user' => $user, 'position' => $positions[$user->id]]);
+
+        return ['sessions' => $sessions, 'rows' => $this->matrixRows($sessions, $members, $now)];
+    }
+
+    /**
+     * Build one attendance row per member across the given sessions, sorted by position then username.
+     * A cell is null when the person was not part of that session. Totals count only sessions whose check-in has closed.
+     *
+     * @param  Collection<int, BroadcastSession>  $sessions
+     * @param  Collection<int, array{user: User, position: string|null}>  $members
+     * @return Collection<int, array{user: User, position: string|null, cells: array<int, AttendanceStatus|null>, totals: array{hadir: int, terlambat: int, izin: int, sakit: int, tidak_hadir: int}}>
+     */
+    private function matrixRows(Collection $sessions, Collection $members, CarbonInterface $now): Collection
+    {
+        return $members
+            ->map(function (array $member) use ($sessions, $now): array {
+                $user = $member['user'];
                 $totals = $this->emptyTotals();
                 $cells = [];
 
@@ -347,15 +393,38 @@ class AbsensiController extends Controller
 
                 return [
                     'user' => $user,
-                    'position' => $positions[$user->id],
+                    'position' => $member['position'],
                     'cells' => $cells,
                     'totals' => $totals,
                 ];
             })
             ->sortBy(fn (array $row): array => [$this->positionOrder($row['position']), $row['user']->username])
             ->values();
+    }
 
-        return ['sessions' => $sessions, 'rows' => $rows];
+    /**
+     * Build the per person matrix: every announcer and SO as rows and all scheduled, dated sessions of every program
+     * in the range as columns.
+     *
+     * @return array{sessions: Collection<int, BroadcastSession>, rows: Collection<int, array{user: User, position: string|null, cells: array<int, AttendanceStatus|null>, totals: array{hadir: int, terlambat: int, izin: int, sakit: int, tidak_hadir: int}}>}
+     */
+    private function peopleMatrix(string $from, string $to): array
+    {
+        $sessions = BroadcastSession::query()
+            ->with(['program', 'crew', 'attendances'])
+            ->where('status', SessionStatus::Scheduled)
+            ->whereDate('session_date', '>=', $from)
+            ->whereDate('session_date', '<=', $to)
+            ->orderBy('session_date')
+            ->orderBy('crewcall_time')
+            ->get();
+
+        $members = User::withRoles([...CrewPosition::Announcer->roleNames(), ...CrewPosition::So->roleNames()])
+            ->with('role')
+            ->get()
+            ->map(fn (User $user): array => ['user' => $user, 'position' => $user->crewPosition()?->value]);
+
+        return ['sessions' => $sessions, 'rows' => $this->matrixRows($sessions, $members, now())];
     }
 
     /**
@@ -399,56 +468,6 @@ class AbsensiController extends Controller
             CrewPosition::So->value => 1,
             default => 2,
         };
-    }
-
-    /**
-     * Tally the closed, scheduled sessions in the range per announcer and sound operator.
-     * A session's crew is its assigned crew plus anyone with an attendance row on it.
-     *
-     * @return Collection<int, array{user: User, hadir: int, terlambat: int, izin: int, sakit: int, tidak_hadir: int}>
-     */
-    private function summaryRows(string $from, string $to): Collection
-    {
-        $now = now();
-
-        $users = User::withRoles([...CrewPosition::Announcer->roleNames(), ...CrewPosition::So->roleNames()])
-            ->with('role')
-            ->get()
-            ->sortBy(fn (User $user): array => [$this->positionOrder($user->crewPosition()?->value), $user->username])
-            ->values();
-
-        $sessions = BroadcastSession::query()
-            ->with(['crew', 'attendances'])
-            ->where('status', SessionStatus::Scheduled)
-            ->whereDate('session_date', '>=', $from)
-            ->whereDate('session_date', '<=', $to)
-            ->get()
-            ->filter(fn (BroadcastSession $session): bool => $session->isCheckInClosed($now));
-
-        $counts = $users->mapWithKeys(fn (User $user): array => [$user->id => [
-            AttendanceStatus::Hadir->value => 0,
-            AttendanceStatus::Terlambat->value => 0,
-            AttendanceStatus::Izin->value => 0,
-            AttendanceStatus::Sakit->value => 0,
-            AttendanceStatus::TidakHadir->value => 0,
-        ]])->all();
-
-        foreach ($sessions as $session) {
-            $memberIds = $session->crew->pluck('id')->merge($session->attendances->pluck('user_id'))->unique();
-
-            foreach ($users->whereIn('id', $memberIds->all()) as $user) {
-                $counts[$user->id][$session->attendanceStatusFor($user, $now)->value]++;
-            }
-        }
-
-        return $users->map(fn (User $user): array => [
-            'user' => $user,
-            'hadir' => $counts[$user->id][AttendanceStatus::Hadir->value],
-            'terlambat' => $counts[$user->id][AttendanceStatus::Terlambat->value],
-            'izin' => $counts[$user->id][AttendanceStatus::Izin->value],
-            'sakit' => $counts[$user->id][AttendanceStatus::Sakit->value],
-            'tidak_hadir' => $counts[$user->id][AttendanceStatus::TidakHadir->value],
-        ]);
     }
 
     /**

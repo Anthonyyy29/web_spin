@@ -56,15 +56,7 @@
                         <th scope="row" class="sticky left-0 bg-white px-5 py-3 font-medium whitespace-nowrap">{{ $row['user']->username }}</th>
                         <td class="px-5 py-3 text-muted">{{ $row['position'] === null ? '-' : \App\Enums\CrewPosition::from($row['position'])->label() }}</td>
                         @foreach ($row['cells'] as $status)
-                            @if ($status === null)
-                                <td class="px-3 py-3 text-muted"><span aria-hidden="true">–</span><span class="sr-only">Bukan kru sesi ini</span></td>
-                            @else
-                                <td class="px-3 py-3 whitespace-nowrap {{ match ($status) {
-                                    \App\Enums\AttendanceStatus::TidakHadir => 'font-medium text-danger',
-                                    \App\Enums\AttendanceStatus::Belum => 'text-muted',
-                                    default => '',
-                                } }}">{{ $status->label() }}</td>
-                            @endif
+                            @include('auth.hr.absensi._status-cell', ['status' => $status])
                         @endforeach
                         <td class="border-l border-line px-3 py-3 text-right tabular-nums">{{ $row['totals']['hadir'] }}</td>
                         <td class="px-3 py-3 text-right tabular-nums">{{ $row['totals']['terlambat'] }}</td>

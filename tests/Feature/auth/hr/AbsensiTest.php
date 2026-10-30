@@ -239,16 +239,21 @@ it('summarises attendance per person for a date range', function () {
         ->assertOk()
         ->assertSeeInOrder(['ani', 'budi', 'dodi', 'cici']);
 
-    $rows = collect($response->viewData('rows'))->keyBy(fn ($row) => $row['user']->username)
-        ->map(fn ($row) => [$row['hadir'], $row['terlambat'], $row['izin'], $row['sakit'], $row['tidak_hadir']]);
+    expect(collect($response->viewData('sessions'))->pluck('session_date')->map->toDateString()->all())->toBe(['2026-10-05', '2026-10-12', '2026-10-26']);
+
+    $rows = collect($response->viewData('rows'))->keyBy(fn ($row) => $row['user']->username);
+    $cells = fn (string $name): array => array_map(fn (?AttendanceStatus $status) => $status?->value, array_values($rows[$name]['cells']));
 
     expect($rows->keys()->all())->toBe(['ani', 'budi', 'dodi', 'eko', 'fani', 'cici'])
-        ->and($rows['ani'])->toBe([1, 1, 0, 0, 0])
-        ->and($rows['budi'])->toBe([0, 1, 1, 0, 0])
-        ->and($rows['cici'])->toBe([0, 0, 0, 1, 1])
-        ->and($rows['dodi'])->toBe([0, 0, 0, 0, 0])
-        ->and($rows['eko'])->toBe([0, 0, 0, 0, 0])
-        ->and($rows['fani'])->toBe([1, 0, 0, 0, 0]);
+        ->and($cells('ani'))->toBe(['hadir', 'terlambat', 'belum'])
+        ->and($cells('budi'))->toBe(['terlambat', 'izin', 'belum'])
+        ->and($cells('cici'))->toBe(['sakit', 'tidak_hadir', 'belum'])
+        ->and($cells('dodi'))->toBe([null, null, null])
+        ->and($cells('fani'))->toBe(['hadir', null, null])
+        ->and($rows['ani']['totals'])->toBe(['hadir' => 1, 'terlambat' => 1, 'izin' => 0, 'sakit' => 0, 'tidak_hadir' => 0])
+        ->and($rows['budi']['totals'])->toBe(['hadir' => 0, 'terlambat' => 1, 'izin' => 1, 'sakit' => 0, 'tidak_hadir' => 0])
+        ->and($rows['cici']['totals'])->toBe(['hadir' => 0, 'terlambat' => 0, 'izin' => 0, 'sakit' => 1, 'tidak_hadir' => 1])
+        ->and($rows['eko']['totals'])->toBe(['hadir' => 0, 'terlambat' => 0, 'izin' => 0, 'sakit' => 0, 'tidak_hadir' => 0]);
 });
 
 it('defaults the summary range to this month and validates it', function () {
@@ -270,11 +275,48 @@ it('defaults the summary range to this month and validates it', function () {
         ->assertSessionHasErrors('to');
 });
 
-it('exports the per person summary as excel', function () {
+it('groups same-day sessions of different programs under one date', function () {
+    $ani = ($this->crewUser)('ani');
+    $pagi = ($this->closedSession)(['session_date' => '2026-10-12']);
+    $pagi->crew()->attach($ani->id, ['position' => 'announcer']);
+    ($this->checkIn)($pagi, $ani, '2026-10-12 07:20:00');
+
+    $malam = BroadcastSession::factory()->for(Program::factory()->create(['name' => 'Malam Minggu']))->create([
+        'session_date' => '2026-10-12',
+        'crewcall_time' => '19:00:00',
+        'tapping_start' => '19:30:00',
+        'tapping_end' => '20:30:00',
+    ]);
+    $malam->crew()->attach($ani->id, ['position' => 'announcer']);
+
+    $query = ['from' => '2026-10-01', 'to' => '2026-10-26'];
+
+    $this->actingAs($this->hr)
+        ->get(route('absensi.people', $query))
+        ->assertOk()
+        ->assertSeeInOrder(['12 Okt', 'Pagi Ceria', 'Malam Minggu'])
+        ->assertSee('colspan="2"', false)
+        ->assertSee(route('absensi.session', $pagi));
+
+    $response = $this->actingAs($this->hr)->get(route('absensi.export', $query))->assertOk();
+    ['rows' => $rows, 'merges' => $merges] = readSpreadsheet($response);
+
+    expect($rows[0][0])->toBe('Rekap absensi per orang · 1 Okt 2026 – 26 Okt 2026')
+        ->and($rows[2])->toBe(['Username', 'Role', '12/10/2026', '', 'Hadir', 'Terlambat', 'Izin', 'Sakit', 'Tidak hadir'])
+        ->and($rows[3])->toBe(['', '', 'Pagi Ceria', 'Malam Minggu', '', '', '', '', ''])
+        ->and($rows[4])->toBe(['ani', 'Announcer', 'Hadir', 'Tidak hadir', 1, 0, 0, 0, 1])
+        ->and($merges)->toEqualCanonicalizing(['A3:A4', 'B3:B4', 'C3:D3', 'E3:E4', 'F3:F4', 'G3:G4', 'H3:H4', 'I3:I4']);
+});
+
+it('exports the per person matrix as excel', function () {
     $ani = ($this->crewUser)('ani');
     $session = ($this->closedSession)(['session_date' => '2026-10-12']);
     $session->crew()->attach($ani->id, ['position' => 'announcer']);
     ($this->checkIn)($session, $ani, '2026-10-12 07:40:00');
+
+    $this->actingAs($this->hr)
+        ->get(route('absensi.people', ['from' => '2026-10-01', 'to' => '2026-10-26']))
+        ->assertSee('Ekspor Excel');
 
     $response = $this->actingAs($this->hr)
         ->get(route('absensi.export', ['from' => '2026-10-01', 'to' => '2026-10-26']))
@@ -283,9 +325,28 @@ it('exports the per person summary as excel', function () {
 
     $rows = readSpreadsheet($response)['rows'];
 
+    expect($rows[2])->toBe(['Username', 'Role', '12/10/2026', 'Hadir', 'Terlambat', 'Izin', 'Sakit', 'Tidak hadir'])
+        ->and($rows[3])->toBe(['', '', 'Pagi Ceria', '', '', '', '', ''])
+        ->and($rows[4])->toBe(['ani', 'Announcer', 'Terlambat', 0, 1, 0, 0, 0])
+        ->and($rows)->toHaveCount(5);
+});
+
+it('renders the per person recap without sessions in the range', function () {
+    ($this->crewUser)('ani');
+    $query = ['from' => '2026-10-01', 'to' => '2026-10-26'];
+
+    $this->actingAs($this->hr)
+        ->get(route('absensi.people', $query))
+        ->assertOk()
+        ->assertSee('ani')
+        ->assertSee('Belum ada sesi terjadwal di rentang tanggal ini.');
+
+    $response = $this->actingAs($this->hr)->get(route('absensi.export', $query))->assertOk();
+    ['rows' => $rows, 'merges' => $merges] = readSpreadsheet($response);
+
     expect($rows[2])->toBe(['Username', 'Role', 'Hadir', 'Terlambat', 'Izin', 'Sakit', 'Tidak hadir'])
-        ->and($rows[3])->toBe(['ani', 'Announcer', 0, 1, 0, 0, 0])
-        ->and($rows)->toHaveCount(4);
+        ->and($rows[4])->toBe(['ani', 'Announcer', 0, 0, 0, 0, 0])
+        ->and($merges)->toEqualCanonicalizing(['A3:A4', 'B3:B4', 'C3:C4', 'D3:D4', 'E3:E4', 'F3:F4', 'G3:G4']);
 });
 
 it('exports a session as excel', function () {
