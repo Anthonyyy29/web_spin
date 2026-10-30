@@ -11,6 +11,8 @@ use App\Models\Attendance;
 use App\Models\BroadcastSession;
 use App\Models\Program;
 use App\Models\User;
+use App\Support\AttendanceSpreadsheet;
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -79,56 +81,61 @@ class AbsensiController extends Controller
     }
 
     /**
-     * Download one program's attendance matrix as CSV.
+     * Download one program's attendance matrix as an Excel file.
      */
     public function programExport(Request $request, Program $program): StreamedResponse
     {
         ['from' => $from, 'to' => $to] = $this->optionalDateRange($request);
         ['sessions' => $sessions, 'rows' => $rows] = $this->programMatrix($program, $from, $to);
-        $filename = 'absensi-program-'.Str::slug($program->name).($from || $to ? '-'.($from ?? 'awal').'-'.($to ?? 'akhir') : '').'.csv';
+        $filename = 'absensi-program-'.Str::slug($program->name).($from || $to ? '-'.($from ?? 'awal').'-'.($to ?? 'akhir') : '').'.xlsx';
 
-        return $this->csvDownload($filename, function ($output) use ($sessions, $rows): void {
-            $this->writeCsvRow($output, [
-                'Username',
-                'Posisi',
-                ...$sessions->map(fn (BroadcastSession $session): string => $session->session_date->format('d/m/Y'))->all(),
-                'Hadir', 'Terlambat', 'Tidak hadir', 'Izin', 'Sakit',
-            ]);
+        $header = [
+            'Username',
+            'Posisi',
+            ...$sessions->map(fn (BroadcastSession $session): string => $session->session_date->format('d/m/Y'))->all(),
+            'Hadir', 'Terlambat', 'Izin', 'Sakit', 'Tidak hadir',
+        ];
 
-            foreach ($rows as $row) {
-                $this->writeCsvRow($output, [
-                    $row['user']->username,
-                    $row['position'] === null ? '-' : CrewPosition::from($row['position'])->label(),
-                    ...array_map(fn (?AttendanceStatus $status): string => $status?->label() ?? '', array_values($row['cells'])),
-                    ...array_values($row['totals']),
-                ]);
-            }
-        });
+        $body = $rows->map(fn (array $row): array => [
+            $row['user']->username,
+            $row['position'] === null ? '-' : CrewPosition::from($row['position'])->label(),
+            ...array_map(fn (?AttendanceStatus $status): AttendanceStatus|string => $status ?? '–', array_values($row['cells'])),
+            ...array_values($row['totals']),
+        ]);
+
+        return AttendanceSpreadsheet::download(
+            $filename,
+            'Absensi '.$program->name.' · '.$this->rangeLabel($from, $to),
+            [$header],
+            $body,
+            frozenColumns: 2,
+        );
     }
 
     /**
-     * Download the attendance summary per person as CSV.
+     * Download the attendance summary per person as an Excel file.
      */
     public function export(Request $request): StreamedResponse
     {
         ['from' => $from, 'to' => $to] = $this->dateRange($request);
-        $rows = $this->summaryRows($from, $to);
 
-        return $this->csvDownload("rekap-absensi-{$from}-{$to}.csv", function ($output) use ($rows): void {
-            $this->writeCsvRow($output, ['Username', 'Role', 'Hadir', 'Terlambat', 'Tidak hadir', 'Izin', 'Sakit']);
+        $body = $this->summaryRows($from, $to)->map(fn (array $row): array => [
+            $row['user']->username,
+            $row['user']->crewPosition()->label(),
+            $row['hadir'],
+            $row['terlambat'],
+            $row['izin'],
+            $row['sakit'],
+            $row['tidak_hadir'],
+        ]);
 
-            foreach ($rows as $row) {
-                $this->writeCsvRow($output, [
-                    $row['user']->username,
-                    $row['user']->crewPosition()->label(),
-                    $row['hadir'],
-                    $row['terlambat'],
-                    $row['tidak_hadir'],
-                    $row['izin'],
-                    $row['sakit'],
-                ]);
-            }
-        });
+        return AttendanceSpreadsheet::download(
+            "rekap-absensi-{$from}-{$to}.xlsx",
+            'Rekap absensi per orang · '.$this->rangeLabel($from, $to),
+            [['Username', 'Role', 'Hadir', 'Terlambat', 'Izin', 'Sakit', 'Tidak hadir']],
+            $body,
+            frozenColumns: 2,
+        );
     }
 
     /**
@@ -143,7 +150,7 @@ class AbsensiController extends Controller
     }
 
     /**
-     * Download the attendance of one session as CSV.
+     * Download the attendance of one session as an Excel file.
      */
     public function sessionExport(BroadcastSession $sesi): StreamedResponse
     {
@@ -151,23 +158,25 @@ class AbsensiController extends Controller
         $members = $this->sessionMembers($sesi, now());
         $date = $sesi->session_date?->toDateString();
         $crewcall = $sesi->crewcall_time ? substr($sesi->crewcall_time, 0, 5) : '';
+        $programName = $sesi->program->name;
 
-        return $this->csvDownload('absensi-'.Str::slug($sesi->program->name).'-'.($date ?? 'ditunda').'.csv', function ($output) use ($sesi, $members, $date, $crewcall): void {
-            $this->writeCsvRow($output, ['Program', 'Tanggal', 'Crewcall', 'Username', 'Posisi', 'Status', 'Jam check-in', 'Catatan']);
+        $body = $members->map(fn (array $member): array => [
+            $programName,
+            $date ?? '',
+            $crewcall,
+            $member['user']->username,
+            $member['position'] === null ? '-' : CrewPosition::from($member['position'])->label(),
+            $member['status'],
+            $member['attendance']?->checked_in_at?->format('H:i') ?? '',
+            $member['attendance']?->note ?? '',
+        ]);
 
-            foreach ($members as $member) {
-                $this->writeCsvRow($output, [
-                    $sesi->program->name,
-                    $date ?? '',
-                    $crewcall,
-                    $member['user']->username,
-                    $member['position'] === null ? '-' : CrewPosition::from($member['position'])->label(),
-                    $member['status']->label(),
-                    $member['attendance']?->checked_in_at?->format('H:i') ?? '',
-                    $member['attendance']?->note ?? '',
-                ]);
-            }
-        });
+        return AttendanceSpreadsheet::download(
+            'absensi-'.Str::slug($programName).'-'.($date ?? 'ditunda').'.xlsx',
+            'Absensi '.$programName.' · '.($sesi->session_date?->locale('id')->translatedFormat('l, j M Y') ?? 'ditunda'),
+            [['Program', 'Tanggal', 'Crewcall', 'Username', 'Posisi', 'Status', 'Jam check-in', 'Catatan']],
+            $body,
+        );
     }
 
     /**
@@ -288,7 +297,7 @@ class AbsensiController extends Controller
      * Members are the program crew, every session's crew and anyone with an attendance row; a cell is null when the
      * person was not part of that session. Totals count only sessions whose check-in has closed.
      *
-     * @return array{sessions: Collection<int, BroadcastSession>, rows: Collection<int, array{user: User, position: string|null, cells: array<int, AttendanceStatus|null>, totals: array{hadir: int, terlambat: int, tidak_hadir: int, izin: int, sakit: int}}>}
+     * @return array{sessions: Collection<int, BroadcastSession>, rows: Collection<int, array{user: User, position: string|null, cells: array<int, AttendanceStatus|null>, totals: array{hadir: int, terlambat: int, izin: int, sakit: int, tidak_hadir: int}}>}
      */
     private function programMatrix(Program $program, ?string $from, ?string $to): array
     {
@@ -352,17 +361,32 @@ class AbsensiController extends Controller
     /**
      * Zeroed attendance totals keyed by status value, in the column order used by the recaps.
      *
-     * @return array{hadir: int, terlambat: int, tidak_hadir: int, izin: int, sakit: int}
+     * @return array{hadir: int, terlambat: int, izin: int, sakit: int, tidak_hadir: int}
      */
     private function emptyTotals(): array
     {
         return [
             AttendanceStatus::Hadir->value => 0,
             AttendanceStatus::Terlambat->value => 0,
-            AttendanceStatus::TidakHadir->value => 0,
             AttendanceStatus::Izin->value => 0,
             AttendanceStatus::Sakit->value => 0,
+            AttendanceStatus::TidakHadir->value => 0,
         ];
+    }
+
+    /**
+     * Describe a date range in Indonesian for spreadsheet titles; a missing bound leaves that side open.
+     */
+    private function rangeLabel(?string $from, ?string $to): string
+    {
+        $format = fn (string $date): string => Carbon::parse($date)->locale('id')->translatedFormat('j M Y');
+
+        return match (true) {
+            $from !== null && $to !== null => $format($from).' – '.$format($to),
+            $from !== null => 'mulai '.$format($from),
+            $to !== null => 'sampai '.$format($to),
+            default => 'semua tanggal',
+        };
     }
 
     /**
@@ -458,30 +482,5 @@ class AbsensiController extends Controller
             ])
             ->sortBy(fn (array $member): array => [$this->positionOrder($member['position']), $member['user']->username])
             ->values();
-    }
-
-    /**
-     * Stream a CSV download without a byte order mark.
-     *
-     * @param  callable(resource): void  $writer
-     */
-    private function csvDownload(string $filename, callable $writer): StreamedResponse
-    {
-        return response()->streamDownload(function () use ($writer): void {
-            $output = fopen('php://output', 'w');
-            $writer($output);
-            fclose($output);
-        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
-    }
-
-    /**
-     * Write one CSV row.
-     *
-     * @param  resource  $output
-     * @param  array<int, string|int|null>  $row
-     */
-    private function writeCsvRow($output, array $row): void
-    {
-        fputcsv($output, $row, escape: '');
     }
 }

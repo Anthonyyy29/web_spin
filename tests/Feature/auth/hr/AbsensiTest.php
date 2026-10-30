@@ -31,11 +31,6 @@ beforeEach(function () {
             'note' => $note,
         ]);
     };
-
-    $this->streamed = fn ($response): array => array_map(
-        fn (string $line): array => str_getcsv($line, ',', '"', ''),
-        array_values(array_filter(preg_split('/\r?\n/', $response->streamedContent()))),
-    );
 });
 
 it('shows each crew member\'s status for a session', function () {
@@ -275,7 +270,7 @@ it('defaults the summary range to this month and validates it', function () {
         ->assertSessionHasErrors('to');
 });
 
-it('exports the per person summary as csv', function () {
+it('exports the per person summary as excel', function () {
     $ani = ($this->crewUser)('ani');
     $session = ($this->closedSession)(['session_date' => '2026-10-12']);
     $session->crew()->attach($ani->id, ['position' => 'announcer']);
@@ -284,36 +279,41 @@ it('exports the per person summary as csv', function () {
     $response = $this->actingAs($this->hr)
         ->get(route('absensi.export', ['from' => '2026-10-01', 'to' => '2026-10-26']))
         ->assertOk()
-        ->assertDownload('rekap-absensi-2026-10-01-2026-10-26.csv');
+        ->assertDownload('rekap-absensi-2026-10-01-2026-10-26.xlsx');
 
-    $lines = ($this->streamed)($response);
+    $rows = readSpreadsheet($response)['rows'];
 
-    expect($lines[0])->toBe(['Username', 'Role', 'Hadir', 'Terlambat', 'Tidak hadir', 'Izin', 'Sakit'])
-        ->and($lines[1])->toBe(['ani', 'Announcer', '0', '1', '0', '0', '0'])
-        ->and($lines)->toHaveCount(2);
+    expect($rows[2])->toBe(['Username', 'Role', 'Hadir', 'Terlambat', 'Izin', 'Sakit', 'Tidak hadir'])
+        ->and($rows[3])->toBe(['ani', 'Announcer', 0, 1, 0, 0, 0])
+        ->and($rows)->toHaveCount(4);
 });
 
-it('exports a session as csv', function () {
+it('exports a session as excel', function () {
     $session = ($this->closedSession)();
     $ani = ($this->crewUser)('ani');
     $cici = ($this->crewUser)('cici', 'sound_operator');
     $session->crew()->attach([$ani->id => ['position' => 'announcer'], $cici->id => ['position' => 'sound_operator']]);
     ($this->checkIn)($session, $ani, '2026-10-26 07:40:00', null, 'Macet, banjir');
 
+    $this->actingAs($this->hr)
+        ->get(route('absensi.session', $session))
+        ->assertSee('Ekspor Excel');
+
     $response = $this->actingAs($this->hr)
         ->get(route('absensi.session.export', $session))
         ->assertOk()
-        ->assertDownload('absensi-pagi-ceria-2026-10-26.csv');
+        ->assertDownload('absensi-pagi-ceria-2026-10-26.xlsx');
 
-    $lines = ($this->streamed)($response);
+    $rows = readSpreadsheet($response)['rows'];
 
-    expect($lines[0])->toBe(['Program', 'Tanggal', 'Crewcall', 'Username', 'Posisi', 'Status', 'Jam check-in', 'Catatan'])
-        ->and($lines[1])->toBe(['Pagi Ceria', '2026-10-26', '07:30', 'ani', 'Announcer', 'Terlambat', '07:40', 'Macet, banjir'])
-        ->and($lines[2])->toBe(['Pagi Ceria', '2026-10-26', '07:30', 'cici', 'SO', 'Tidak hadir', '', ''])
-        ->and($lines)->toHaveCount(3);
+    expect($rows[0][0])->toBe('Absensi Pagi Ceria · Senin, 26 Okt 2026')
+        ->and($rows[2])->toBe(['Program', 'Tanggal', 'Crewcall', 'Username', 'Posisi', 'Status', 'Jam check-in', 'Catatan'])
+        ->and($rows[3])->toBe(['Pagi Ceria', '2026-10-26', '07:30', 'ani', 'Announcer', 'Terlambat', '07:40', 'Macet, banjir'])
+        ->and($rows[4])->toBe(['Pagi Ceria', '2026-10-26', '07:30', 'cici', 'SO', 'Tidak hadir', '', ''])
+        ->and($rows)->toHaveCount(5);
 });
 
-it('exports a postponed session as csv without a date', function () {
+it('exports a postponed session as excel without a date', function () {
     $session = BroadcastSession::factory()->for($this->program)->postponed()->create();
     $ani = ($this->crewUser)('ani');
     $session->crew()->attach($ani->id, ['position' => 'announcer']);
@@ -321,9 +321,12 @@ it('exports a postponed session as csv without a date', function () {
     $response = $this->actingAs($this->hr)
         ->get(route('absensi.session.export', $session))
         ->assertOk()
-        ->assertDownload('absensi-pagi-ceria-ditunda.csv');
+        ->assertDownload('absensi-pagi-ceria-ditunda.xlsx');
 
-    expect(($this->streamed)($response)[1])->toBe(['Pagi Ceria', '', '', 'ani', 'Announcer', 'Belum', '', '']);
+    $rows = readSpreadsheet($response)['rows'];
+
+    expect($rows[0][0])->toBe('Absensi Pagi Ceria · ditunda')
+        ->and($rows[3])->toBe(['Pagi Ceria', '', '', 'ani', 'Announcer', 'Belum', '', '']);
 });
 
 it('forbids non hr users from attendance routes', function () {
@@ -433,7 +436,7 @@ describe('per program', function () {
         $row = collect($response->viewData('programs'))->firstWhere('program.id', $this->program->id);
 
         expect($row['closed_sessions'])->toBe(3)
-            ->and($row['totals'])->toBe(['hadir' => 2, 'terlambat' => 1, 'tidak_hadir' => 2, 'izin' => 0, 'sakit' => 1]);
+            ->and($row['totals'])->toBe(['hadir' => 2, 'terlambat' => 1, 'izin' => 0, 'sakit' => 1, 'tidak_hadir' => 2]);
     });
 
     it('shows a crew by date matrix for one program', function () {
@@ -455,8 +458,8 @@ describe('per program', function () {
             ->and($cells('ani'))->toBe(['hadir', 'terlambat', 'tidak_hadir', 'belum'])
             ->and($cells('cici'))->toBe(['sakit', 'tidak_hadir', null, 'belum'])
             ->and($cells('fani'))->toBe(['hadir', null, null, null])
-            ->and($rows['ani']['totals'])->toBe(['hadir' => 1, 'terlambat' => 1, 'tidak_hadir' => 1, 'izin' => 0, 'sakit' => 0])
-            ->and($rows['cici']['totals'])->toBe(['hadir' => 0, 'terlambat' => 0, 'tidak_hadir' => 1, 'izin' => 0, 'sakit' => 1]);
+            ->and($rows['ani']['totals'])->toBe(['hadir' => 1, 'terlambat' => 1, 'izin' => 0, 'sakit' => 0, 'tidak_hadir' => 1])
+            ->and($rows['cici']['totals'])->toBe(['hadir' => 0, 'terlambat' => 0, 'izin' => 0, 'sakit' => 1, 'tidak_hadir' => 1]);
     });
 
     it('filters the program matrix by date range and validates it', function () {
@@ -473,22 +476,29 @@ describe('per program', function () {
             ->assertSessionHasErrors('to');
     });
 
-    it('exports the program matrix as csv', function () {
+    it('exports the program matrix as excel', function () {
+        $this->actingAs($this->hr)
+            ->get(route('absensi.program', $this->program))
+            ->assertSee('Ekspor Excel');
+
         $response = $this->actingAs($this->hr)
             ->get(route('absensi.program.export', $this->program))
             ->assertOk()
-            ->assertDownload('absensi-program-pagi-ceria.csv');
+            ->assertDownload('absensi-program-pagi-ceria.xlsx');
 
-        $lines = ($this->streamed)($response);
+        $rows = readSpreadsheet($response)['rows'];
 
-        expect($lines[0])->toBe(['Username', 'Posisi', '05/10/2026', '12/10/2026', '15/10/2026', '26/10/2026', 'Hadir', 'Terlambat', 'Tidak hadir', 'Izin', 'Sakit'])
-            ->and($lines[1])->toBe(['ani', 'Announcer', 'Hadir', 'Terlambat', 'Tidak hadir', 'Belum', '1', '1', '1', '0', '0'])
-            ->and($lines[2])->toBe(['cici', 'SO', 'Sakit', 'Tidak hadir', '', 'Belum', '0', '0', '1', '0', '1'])
-            ->and($lines[3])->toBe(['fani', '-', 'Hadir', '', '', '', '1', '0', '0', '0', '0'])
-            ->and($lines)->toHaveCount(4);
+        expect($rows[0][0])->toBe('Absensi Pagi Ceria · semua tanggal')
+            ->and($rows[2])->toBe(['Username', 'Posisi', '05/10/2026', '12/10/2026', '15/10/2026', '26/10/2026', 'Hadir', 'Terlambat', 'Izin', 'Sakit', 'Tidak hadir'])
+            ->and($rows[3])->toBe(['ani', 'Announcer', 'Hadir', 'Terlambat', 'Tidak hadir', 'Belum', 1, 1, 0, 0, 1])
+            ->and($rows[4])->toBe(['cici', 'SO', 'Sakit', 'Tidak hadir', '–', 'Belum', 0, 0, 0, 1, 1])
+            ->and($rows[5])->toBe(['fani', '-', 'Hadir', '–', '–', '–', 1, 0, 0, 0, 0])
+            ->and($rows)->toHaveCount(6);
 
-        $this->actingAs($this->hr)
+        $filtered = $this->actingAs($this->hr)
             ->get(route('absensi.program.export', [$this->program, 'from' => '2026-10-10', 'to' => '2026-10-20']))
-            ->assertDownload('absensi-program-pagi-ceria-2026-10-10-2026-10-20.csv');
+            ->assertDownload('absensi-program-pagi-ceria-2026-10-10-2026-10-20.xlsx');
+
+        expect(readSpreadsheet($filtered)['rows'][0][0])->toBe('Absensi Pagi Ceria · 10 Okt 2026 – 20 Okt 2026');
     });
 });

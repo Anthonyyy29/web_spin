@@ -28,7 +28,7 @@
             @if ($from || $to)
                 <a href="{{ route('absensi.program', $program) }}" class="text-sm text-muted underline-offset-4 hover:text-ink hover:underline">Semua tanggal</a>
             @endif
-            <a href="{{ route('absensi.program.export', [$program, ...array_filter(['from' => $from, 'to' => $to])]) }}" class="text-sm font-medium text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ekspor CSV</a>
+            <a href="{{ route('absensi.program.export', [$program, ...array_filter(['from' => $from, 'to' => $to])]) }}" class="text-sm font-medium text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ekspor Excel</a>
         </div>
     </form>
 

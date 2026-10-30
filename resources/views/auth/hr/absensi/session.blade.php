@@ -17,7 +17,7 @@
                 <span class="ml-2 font-sans">{{ $session->status->label() }}</span>
             </p>
         </div>
-        <a href="{{ route('absensi.session.export', $session) }}" class="text-sm font-medium text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ekspor CSV</a>
+        <a href="{{ route('absensi.session.export', $session) }}" class="text-sm font-medium text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ekspor Excel</a>
     </div>
 
     @include('auth.partials.status')
