@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
+use OpenSpout\Reader\XLSX\Options as ReaderOptions;
+use OpenSpout\Reader\XLSX\Reader;
 use Tests\TestCase;
 
 /*
@@ -44,7 +47,40 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Read the first sheet of a downloaded .xlsx response.
+ *
+ * @return array{rows: list<list<mixed>>, merges: list<string>, sheetXml: string, stylesXml: string}
+ */
+function readSpreadsheet(TestResponse $response): array
 {
-    // ..
+    $path = tempnam(sys_get_temp_dir(), 'xlsx').'.xlsx';
+    file_put_contents($path, $response->streamedContent());
+
+    $reader = new Reader(new ReaderOptions(SHOULD_PRESERVE_EMPTY_ROWS: true, SHOULD_LOAD_MERGE_CELLS: true));
+    $reader->open($path);
+
+    $rows = [];
+    $merges = [];
+
+    foreach ($reader->getSheetIterator() as $sheet) {
+        foreach ($sheet->getRowIterator() as $row) {
+            $rows[] = $row->toArray();
+        }
+        $merges = $sheet->getMergeCells();
+
+        break;
+    }
+
+    $reader->close();
+
+    $zip = new ZipArchive;
+    $zip->open($path);
+    $sheetXml = (string) $zip->getFromName('xl/worksheets/sheet1.xml');
+    $stylesXml = (string) $zip->getFromName('xl/styles.xml');
+    $zip->close();
+
+    unlink($path);
+
+    return ['rows' => $rows, 'merges' => $merges, 'sheetXml' => $sheetXml, 'stylesXml' => $stylesXml];
 }
