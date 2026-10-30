@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class AttendanceSpreadsheet
 {
-    /** Baris sheet tempat header pertama berada (judul + baris kosong di atasnya). */
+    /** Zero-based sheet row of the first header row: the title row and a blank row sit above it. */
     private const HEADER_OFFSET = 2;
 
     /**
@@ -87,6 +87,9 @@ final class AttendanceSpreadsheet
         ]);
     }
 
+    /**
+     * Cell style that colours an attendance status.
+     */
     public static function statusStyle(AttendanceStatus $status): Style
     {
         return match ($status) {

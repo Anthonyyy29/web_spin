@@ -308,6 +308,41 @@ it('groups same-day sessions of different programs under one date', function () 
         ->and($merges)->toEqualCanonicalizing(['A3:A4', 'B3:B4', 'C3:D3', 'E3:E4', 'F3:F4', 'G3:G4', 'H3:H4', 'I3:I4']);
 });
 
+it('keeps the per person table wrapper positioned so screen reader text cannot widen the page', function () {
+    $this->actingAs($this->hr)
+        ->get(route('absensi.people', ['from' => '2026-10-01', 'to' => '2026-10-26']))
+        ->assertOk()
+        ->assertSee('class="relative overflow-x-auto', false);
+});
+
+it('labels same-program sessions on one date with their crewcall time', function () {
+    $ani = ($this->crewUser)('ani');
+    $pagi = ($this->closedSession)([
+        'session_date' => '2026-10-12',
+        'crewcall_time' => '07:30:00',
+        'tapping_start' => '08:00:00',
+        'tapping_end' => '09:00:00',
+    ]);
+    $malam = ($this->closedSession)([
+        'session_date' => '2026-10-12',
+        'crewcall_time' => '19:00:00',
+        'tapping_start' => '19:30:00',
+        'tapping_end' => '20:30:00',
+    ]);
+    $pagi->crew()->attach($ani->id, ['position' => 'announcer']);
+    $malam->crew()->attach($ani->id, ['position' => 'announcer']);
+    $query = ['from' => '2026-10-01', 'to' => '2026-10-26'];
+
+    $this->actingAs($this->hr)
+        ->get(route('absensi.people', $query))
+        ->assertOk()
+        ->assertSeeInOrder(['Pagi Ceria 07:30', 'Pagi Ceria 19:00']);
+
+    $response = $this->actingAs($this->hr)->get(route('absensi.export', $query))->assertOk();
+
+    expect(readSpreadsheet($response)['rows'][3])->toBe(['', '', 'Pagi Ceria 07:30', 'Pagi Ceria 19:00', '', '', '', '', '']);
+});
+
 it('exports the per person matrix as excel', function () {
     $ani = ($this->crewUser)('ani');
     $session = ($this->closedSession)(['session_date' => '2026-10-12']);
@@ -339,7 +374,8 @@ it('renders the per person recap without sessions in the range', function () {
         ->get(route('absensi.people', $query))
         ->assertOk()
         ->assertSee('ani')
-        ->assertSee('Belum ada sesi terjadwal di rentang tanggal ini.');
+        ->assertSee('Belum ada sesi terjadwal di rentang tanggal ini.')
+        ->assertDontSee('rowspan="2"', false);
 
     $response = $this->actingAs($this->hr)->get(route('absensi.export', $query))->assertOk();
     ['rows' => $rows, 'merges' => $merges] = readSpreadsheet($response);
@@ -521,6 +557,13 @@ describe('per program', function () {
             ->and($cells('fani'))->toBe(['hadir', null, null, null])
             ->and($rows['ani']['totals'])->toBe(['hadir' => 1, 'terlambat' => 1, 'izin' => 0, 'sakit' => 0, 'tidak_hadir' => 1])
             ->and($rows['cici']['totals'])->toBe(['hadir' => 0, 'terlambat' => 0, 'izin' => 0, 'sakit' => 1, 'tidak_hadir' => 1]);
+    });
+
+    it('keeps the program table wrapper positioned so screen reader text cannot widen the page', function () {
+        $this->actingAs($this->hr)
+            ->get(route('absensi.program', $this->program))
+            ->assertOk()
+            ->assertSee('class="relative overflow-x-auto', false);
     });
 
     it('filters the program matrix by date range and validates it', function () {

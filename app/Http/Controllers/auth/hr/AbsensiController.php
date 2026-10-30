@@ -66,7 +66,8 @@ class AbsensiController extends Controller
         ['from' => $from, 'to' => $to] = $this->dateRange($request);
 
         return view('auth.hr.absensi.people', [
-            ...$this->peopleMatrix($from, $to),
+            ...($matrix = $this->peopleMatrix($from, $to)),
+            'sessionLabels' => $this->sessionLabels($matrix['sessions']),
             'from' => $from,
             'to' => $to,
         ]);
@@ -127,6 +128,7 @@ class AbsensiController extends Controller
     {
         ['from' => $from, 'to' => $to] = $this->dateRange($request);
         ['sessions' => $sessions, 'rows' => $rows] = $this->peopleMatrix($from, $to);
+        $sessionLabels = $this->sessionLabels($sessions);
 
         $topHeader = ['Username', 'Role'];
         $bottomHeader = [null, null];
@@ -137,7 +139,7 @@ class AbsensiController extends Controller
 
             foreach ($group->values() as $index => $session) {
                 $topHeader[] = $index === 0 ? $session->session_date->format('d/m/Y') : null;
-                $bottomHeader[] = $session->program->name;
+                $bottomHeader[] = $sessionLabels[$session->id];
             }
 
             if ($group->count() > 1) {
@@ -425,6 +427,30 @@ class AbsensiController extends Controller
             ->map(fn (User $user): array => ['user' => $user, 'position' => $user->crewPosition()?->value]);
 
         return ['sessions' => $sessions, 'rows' => $this->matrixRows($sessions, $members, now())];
+    }
+
+    /**
+     * Label each session by program name, adding the crewcall time when the same program
+     * has more than one session on the same date.
+     *
+     * @param  Collection<int, BroadcastSession>  $sessions
+     * @return array<int, string>
+     */
+    private function sessionLabels(Collection $sessions): array
+    {
+        $labels = [];
+
+        foreach ($sessions->groupBy(fn (BroadcastSession $session): string => $session->session_date->toDateString()) as $dateGroup) {
+            foreach ($dateGroup->groupBy(fn (BroadcastSession $session): string => $session->program->name) as $name => $sameProgram) {
+                foreach ($sameProgram as $session) {
+                    $labels[$session->id] = $sameProgram->count() > 1
+                        ? $name.' '.substr($session->crewcall_time, 0, 5)
+                        : $name;
+                }
+            }
+        }
+
+        return $labels;
     }
 
     /**

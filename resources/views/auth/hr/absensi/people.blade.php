@@ -30,28 +30,31 @@
     </form>
 
     @php($dateGroups = $sessions->groupBy(fn ($session) => $session->session_date->toDateString()))
-    <div class="overflow-x-auto rounded-lg border border-line bg-white">
+    @php($headerRowspan = $sessions->isEmpty() ? 1 : 2)
+    <div class="relative overflow-x-auto rounded-lg border border-line bg-white">
         <table class="w-full text-left text-sm">
             <thead class="border-b border-line text-muted">
                 <tr>
-                    <th scope="col" rowspan="2" class="sticky left-0 bg-white px-5 py-3 font-medium">Username</th>
-                    <th scope="col" rowspan="2" class="px-5 py-3 font-medium">Role</th>
+                    <th scope="col" @if ($headerRowspan > 1) rowspan="2" @endif class="sticky left-0 bg-white px-5 py-3 font-medium">Username</th>
+                    <th scope="col" @if ($headerRowspan > 1) rowspan="2" @endif class="px-5 py-3 font-medium">Role</th>
                     @foreach ($dateGroups as $group)
-                        <th scope="colgroup" colspan="{{ $group->count() }}" class="px-3 pt-3 pb-1 font-medium whitespace-nowrap">{{ $group->first()->session_date->locale('id')->translatedFormat('d M') }}</th>
+                        <th scope="col" colspan="{{ $group->count() }}" class="px-3 pt-3 pb-1 font-medium whitespace-nowrap">{{ $group->first()->session_date->locale('id')->translatedFormat('d M') }}</th>
                     @endforeach
-                    <th scope="col" rowspan="2" class="border-l border-line px-3 py-3 text-right font-medium">Hadir</th>
-                    <th scope="col" rowspan="2" class="px-3 py-3 text-right font-medium">Terlambat</th>
-                    <th scope="col" rowspan="2" class="px-3 py-3 text-right font-medium">Izin</th>
-                    <th scope="col" rowspan="2" class="px-3 py-3 text-right font-medium">Sakit</th>
-                    <th scope="col" rowspan="2" class="px-3 py-3 text-right font-medium">Tidak hadir</th>
+                    <th scope="col" @if ($headerRowspan > 1) rowspan="2" @endif class="border-l border-line px-3 py-3 text-right font-medium">Hadir</th>
+                    <th scope="col" @if ($headerRowspan > 1) rowspan="2" @endif class="px-3 py-3 text-right font-medium">Terlambat</th>
+                    <th scope="col" @if ($headerRowspan > 1) rowspan="2" @endif class="px-3 py-3 text-right font-medium">Izin</th>
+                    <th scope="col" @if ($headerRowspan > 1) rowspan="2" @endif class="px-3 py-3 text-right font-medium">Sakit</th>
+                    <th scope="col" @if ($headerRowspan > 1) rowspan="2" @endif class="px-3 py-3 text-right font-medium">Tidak hadir</th>
                 </tr>
+                @if ($sessions->isNotEmpty())
                 <tr>
                     @foreach ($sessions as $session)
                         <th scope="col" class="px-3 pt-1 pb-3 font-medium whitespace-nowrap">
-                            <a href="{{ route('absensi.session', $session) }}" class="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">{{ $session->program->name }}</a>
+                            <a href="{{ route('absensi.session', $session) }}" class="underline-offset-4 hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">{{ $sessionLabels[$session->id] }}</a>
                         </th>
                     @endforeach
                 </tr>
+                @endif
             </thead>
             <tbody class="divide-y divide-line">
                 @forelse ($rows as $row)
