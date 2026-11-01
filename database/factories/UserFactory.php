@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<User>
@@ -25,21 +25,43 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
+            'username' => fake()->unique()->userName(),
             'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'role_id' => fn (): ?int => Role::where('name', 'announcer')->value('id'),
         ];
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
+     * Indicate that the user has the role with the given name.
      */
-    public function unverified(): static
+    public function role(string $name): static
     {
         return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
+            'role_id' => fn (): ?int => Role::where('name', $name)->value('id'),
         ]);
+    }
+
+    /**
+     * Indicate that the user has the HR role.
+     */
+    public function hr(): static
+    {
+        return $this->role('human_resource');
+    }
+
+    /**
+     * Indicate that the user has the announcer role.
+     */
+    public function announcer(): static
+    {
+        return $this->role('announcer');
+    }
+
+    /**
+     * Indicate that the user has the SO role.
+     */
+    public function so(): static
+    {
+        return $this->role('sound_operator');
     }
 }

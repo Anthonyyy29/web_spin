@@ -11,17 +11,24 @@ class UserController extends Controller
     {
         if (Auth::attempt($request->only('username', 'password'))) {
             $request->session()->regenerate();
-            if (Auth::user()->role === 'hr') {
-                return redirect()->intended(route('hr.dashboard'));
-            } elseif (Auth::user()->role === 'admin') {
-                return redirect()->intended(route('admin.dashboard'));
-            } elseif (Auth::user()->role === 'announcer') {
-                return redirect()->intended(route('user.dashboard'));
-            } else {
-                return redirect()->intended('/');
+            $area = Auth::user()->area();
+
+            if ($area === null) {
+                return redirect()->route('unavailable');
             }
-        } 
+
+            return redirect()->intended(route($area->homeRoute()));
+        }
 
         return back()->withErrors(['username' => 'Username atau password salah.'])->withInput();
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
     }
 }
