@@ -212,7 +212,8 @@ class AbsensiController extends Controller
     }
 
     /**
-     * Override a member's attendance status (izin or sakit) or restore the status earned by checking in.
+     * Override a member's attendance status with any assignable status, or restore the status earned by checking in.
+     * The check-in time is kept so a corrected check-in stays visible.
      */
     public function update(AbsensiStatusRequest $request, BroadcastSession $sesi, User $user): RedirectResponse
     {

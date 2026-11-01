@@ -57,7 +57,7 @@ it('shows each crew member\'s status for a session', function () {
         ->get(route('absensi.session', $open))
         ->assertOk()
         ->assertSee('Belum')
-        ->assertDontSee('Tidak hadir');
+        ->assertDontSee('>Tidak hadir</td>', false);
 });
 
 it('renders the attendance page of a postponed session', function () {
@@ -123,6 +123,54 @@ it('keeps the check in time when hr overrides the status', function () {
         ->and($attendance->checked_in_at->format('Y-m-d H:i'))->toBe('2026-10-26 07:20');
 });
 
+it('lets hr correct a check in to tidak hadir or terlambat and reset it', function () {
+    $session = ($this->closedSession)();
+    $member = ($this->crewUser)('ani');
+    $session->crew()->attach($member->id, ['position' => 'announcer']);
+    $attendance = ($this->checkIn)($session, $member, '2026-10-26 07:20:00');
+
+    $this->actingAs($this->hr)
+        ->put(route('absensi.update', [$session, $member]), ['status' => 'tidak_hadir', 'note' => 'Check-in dari luar studio'])
+        ->assertRedirect(route('absensi.session', $session));
+
+    expect($attendance->refresh()->status)->toBe(AttendanceStatus::TidakHadir)
+        ->and($attendance->note)->toBe('Check-in dari luar studio')
+        ->and($attendance->checked_in_at->format('Y-m-d H:i'))->toBe('2026-10-26 07:20');
+
+    $this->actingAs($this->hr)
+        ->get(route('absensi.session', $session))
+        ->assertSeeInOrder(['ani', 'Tidak hadir', '07:20', 'Check-in dari luar studio']);
+
+    $this->actingAs($this->hr)
+        ->put(route('absensi.update', [$session, $member]), ['status' => 'terlambat'])
+        ->assertRedirect();
+
+    expect($attendance->refresh()->status)->toBe(AttendanceStatus::Terlambat);
+
+    $this->actingAs($this->hr)
+        ->put(route('absensi.update', [$session, $member]), ['status' => 'reset'])
+        ->assertRedirect();
+
+    expect($attendance->refresh()->status)->toBe(AttendanceStatus::Hadir)
+        ->and($attendance->note)->toBeNull();
+});
+
+it('lets hr mark a member who never checked in as present', function () {
+    $session = ($this->closedSession)();
+    $member = ($this->crewUser)('ani');
+    $session->crew()->attach($member->id, ['position' => 'announcer']);
+
+    $this->actingAs($this->hr)
+        ->put(route('absensi.update', [$session, $member]), ['status' => 'hadir', 'note' => 'Lupa check-in'])
+        ->assertRedirect(route('absensi.session', $session));
+
+    $attendance = Attendance::sole();
+
+    expect($attendance->status)->toBe(AttendanceStatus::Hadir)
+        ->and($attendance->note)->toBe('Lupa check-in')
+        ->and($attendance->checked_in_at)->toBeNull();
+});
+
 it('resets an override back to the checked in status', function () {
     $session = ($this->closedSession)();
     $member = ($this->crewUser)('ani');
@@ -166,7 +214,7 @@ it('rejects invalid status changes', function () {
     $session->crew()->attach($member->id, ['position' => 'announcer']);
 
     $this->actingAs($this->hr)
-        ->put(route('absensi.update', [$session, $member]), ['status' => 'hadir', 'note' => str_repeat('a', 256)])
+        ->put(route('absensi.update', [$session, $member]), ['status' => 'belum', 'note' => str_repeat('a', 256)])
         ->assertSessionHasErrors(['status', 'note']);
 
     expect(Attendance::count())->toBe(0);
@@ -471,6 +519,35 @@ it('preselects the current izin or sakit status in the override select', functio
         ->assertOk()
         ->assertSee('<option value="sakit" selected>', false)
         ->assertDontSee('<option value="izin" selected>', false);
+});
+
+it('offers every assignable status and preselects the current one', function () {
+    $session = ($this->closedSession)();
+    $ani = ($this->crewUser)('ani');
+    $session->crew()->attach($ani->id, ['position' => 'announcer']);
+    ($this->checkIn)($session, $ani, '2026-10-26 07:20:00');
+
+    $this->actingAs($this->hr)
+        ->get(route('absensi.session', $session))
+        ->assertOk()
+        ->assertSeeInOrder([
+            '<option value="hadir" selected>Hadir</option>',
+            '<option value="terlambat" >Terlambat</option>',
+            '<option value="izin" >Izin</option>',
+            '<option value="sakit" >Sakit</option>',
+            '<option value="tidak_hadir" >Tidak hadir</option>',
+            '<option value="reset">Kembalikan</option>',
+        ], false)
+        ->assertDontSee('Pilih status');
+
+    $open = ($this->closedSession)(['session_date' => '2026-10-26', 'crewcall_time' => '10:00:00', 'tapping_start' => '10:30:00', 'tapping_end' => '11:30:00']);
+    $open->crew()->attach($ani->id, ['position' => 'announcer']);
+
+    $this->actingAs($this->hr)
+        ->get(route('absensi.session', $open))
+        ->assertOk()
+        ->assertSee('<option value="" disabled selected>Pilih status…</option>', false)
+        ->assertDontSee('<option value="hadir" selected>', false);
 });
 
 it('labels positions and roles with the crew position labels', function () {

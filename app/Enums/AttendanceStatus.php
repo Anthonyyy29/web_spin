@@ -11,6 +11,16 @@ enum AttendanceStatus: string
     case TidakHadir = 'tidak_hadir';
     case Belum = 'belum';
 
+    /**
+     * Get the statuses HR may set by hand; Belum only describes a check-in still to come.
+     *
+     * @return list<self>
+     */
+    public static function assignable(): array
+    {
+        return [self::Hadir, self::Terlambat, self::Izin, self::Sakit, self::TidakHadir];
+    }
+
     public function label(): string
     {
         return match ($this) {

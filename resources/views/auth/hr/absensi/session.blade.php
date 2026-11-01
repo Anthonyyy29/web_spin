@@ -64,8 +64,12 @@
                                     @method('PUT')
                                     <label for="status-{{ $user->id }}" class="sr-only">Status {{ $user->username }}</label>
                                     <select id="status-{{ $user->id }}" name="status" class="rounded-md border border-line bg-white px-2 py-1.5 text-sm text-ink focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/30">
-                                        <option value="izin" @selected($member['status'] === \App\Enums\AttendanceStatus::Izin)>Izin</option>
-                                        <option value="sakit" @selected($member['status'] === \App\Enums\AttendanceStatus::Sakit)>Sakit</option>
+                                        @if ($member['status'] === \App\Enums\AttendanceStatus::Belum)
+                                            <option value="" disabled selected>Pilih status…</option>
+                                        @endif
+                                        @foreach (\App\Enums\AttendanceStatus::assignable() as $option)
+                                            <option value="{{ $option->value }}" @selected($member['status'] === $option)>{{ $option->label() }}</option>
+                                        @endforeach
                                         <option value="reset">Kembalikan</option>
                                     </select>
                                     <label for="note-{{ $user->id }}" class="sr-only">Catatan {{ $user->username }}</label>

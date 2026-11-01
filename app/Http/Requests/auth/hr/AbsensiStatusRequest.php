@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\auth\hr;
 
+use App\Enums\AttendanceStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class AbsensiStatusRequest extends FormRequest
 {
@@ -23,7 +25,7 @@ class AbsensiStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', 'in:izin,sakit,reset'],
+            'status' => ['required', Rule::in([...array_map(fn (AttendanceStatus $status): string => $status->value, AttendanceStatus::assignable()), 'reset'])],
             'note' => ['nullable', 'string', 'max:255'],
         ];
     }
@@ -50,7 +52,7 @@ class AbsensiStatusRequest extends FormRequest
     {
         return [
             'required' => ':Attribute wajib dipilih.',
-            'status.in' => ':Attribute harus izin, sakit, atau kembalikan.',
+            'status.in' => ':Attribute harus hadir, terlambat, izin, sakit, tidak hadir, atau kembalikan.',
             'note.string' => ':Attribute harus berupa teks.',
             'note.max' => ':Attribute maksimal :max karakter.',
         ];
