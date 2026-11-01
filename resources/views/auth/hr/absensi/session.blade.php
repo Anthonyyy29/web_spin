@@ -34,7 +34,7 @@
         <p class="mb-4 text-sm text-muted">Status absensi hanya bisa diubah untuk sesi terjadwal.</p>
     @endunless
 
-    <div class="overflow-x-auto rounded-lg border border-line bg-white">
+    <div class="relative overflow-x-auto rounded-lg border border-line bg-white">
         <table class="w-full text-left text-sm">
             <thead class="border-b border-line text-muted">
                 <tr>

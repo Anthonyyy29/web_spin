@@ -10,7 +10,7 @@
 
     {{-- Header mobile: panel menu dibuka lewat tombol Menu --}}
     <header class="sticky top-0 z-20 flex items-center justify-between border-b border-line bg-white py-2 pr-2 pl-4 md:hidden">
-        <img src="{{ asset('images/logo.png') }}" alt="Spin The Radio" class="h-8 w-auto">
+        <img src="{{ asset('images/logo.png') }}" alt="Spin The Radio" class="h-10 w-auto">
 
         <details data-mobile-menu class="group">
             <summary class="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal [&::-webkit-details-marker]:hidden">

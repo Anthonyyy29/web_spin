@@ -7,7 +7,7 @@
 
     <p class="mb-6 max-w-3xl text-sm text-muted">Total kehadiran kru per program dari sesi terjadwal yang check-in-nya sudah ditutup. Buka program untuk melihat status tiap kru per tanggal.</p>
 
-    <div class="overflow-x-auto rounded-lg border border-line bg-white">
+    <div class="relative overflow-x-auto rounded-lg border border-line bg-white">
         <table class="w-full text-left text-sm">
             <thead class="border-b border-line text-muted">
                 <tr>

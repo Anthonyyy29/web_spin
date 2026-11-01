@@ -64,7 +64,7 @@
         <a href="{{ route('sesi.index', array_filter(['program' => $selectedProgramId, 'waktu' => 'riwayat'])) }}" @if ($isHistory) aria-current="page" @endif class="{{ $tabClass }} {{ $isHistory ? 'border-signal-strong text-ink' : 'border-transparent text-muted hover:text-ink' }}">Riwayat</a>
     </nav>
 
-    <div class="overflow-x-auto rounded-lg border border-line bg-white">
+    <div class="relative overflow-x-auto rounded-lg border border-line bg-white">
         <table class="w-full text-left text-sm">
             <thead class="border-b border-line text-muted">
                 <tr>

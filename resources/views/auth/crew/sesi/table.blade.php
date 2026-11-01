@@ -1,5 +1,5 @@
 {{-- Tabel sesi saya. Param: $sessions, $emptyMessage, $user, $now, $routePrefix --}}
-<div class="overflow-x-auto rounded-lg border border-line bg-white">
+<div class="relative overflow-x-auto rounded-lg border border-line bg-white">
     <table class="w-full text-left text-sm">
         <thead class="border-b border-line text-muted">
             <tr>
