@@ -23,7 +23,7 @@
                 <p id="to-error" class="mt-1.5 text-sm text-danger">{{ $message }}</p>
             @enderror
         </div>
-        <div class="flex items-center gap-4 pt-7">
+        <div class="flex items-center gap-4 sm:pt-7">
             <button type="submit" class="rounded-md bg-signal-strong px-4 py-2 text-sm font-medium text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Terapkan</button>
             <a href="{{ route('absensi.export', ['from' => $from, 'to' => $to]) }}" class="text-sm font-medium text-signal-strong underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ekspor Excel</a>
         </div>
@@ -35,7 +35,7 @@
         <table class="w-full text-left text-sm">
             <thead class="border-b border-line text-muted">
                 <tr>
-                    <th scope="col" @if ($headerRowspan > 1) rowspan="2" @endif class="sticky left-0 bg-white px-5 py-3 font-medium">Username</th>
+                    <th scope="col" @if ($headerRowspan > 1) rowspan="2" @endif class="sticky left-0 bg-white px-5 py-3 font-medium max-md:max-w-36">Username</th>
                     <th scope="col" @if ($headerRowspan > 1) rowspan="2" @endif class="px-5 py-3 font-medium">Role</th>
                     @foreach ($dateGroups as $group)
                         <th scope="col" colspan="{{ $group->count() }}" class="px-3 pt-3 pb-1 font-medium whitespace-nowrap">{{ $group->first()->session_date->locale('id')->translatedFormat('d M') }}</th>
@@ -59,7 +59,7 @@
             <tbody class="divide-y divide-line">
                 @forelse ($rows as $row)
                     <tr class="hover:bg-canvas/60">
-                        <th scope="row" class="sticky left-0 bg-white px-5 py-3 font-medium whitespace-nowrap">{{ $row['user']->username }}</th>
+                        <th scope="row" class="sticky left-0 bg-white px-5 py-3 font-medium whitespace-nowrap max-md:max-w-36 max-md:whitespace-normal">{{ $row['user']->username }}</th>
                         <td class="px-5 py-3 text-muted">{{ $row['position'] === null ? '-' : \App\Enums\CrewPosition::from($row['position'])->label() }}</td>
                         @foreach ($row['cells'] as $status)
                             @include('auth.hr.absensi._status-cell', ['status' => $status])
