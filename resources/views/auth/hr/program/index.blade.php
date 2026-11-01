@@ -20,8 +20,8 @@
     @enderror
 
     <div class="relative overflow-x-auto rounded-lg border border-line bg-white">
-        <table class="w-full text-left text-sm">
-            <thead class="border-b border-line text-muted">
+        <table class="w-full text-left text-sm max-md:block">
+            <thead class="border-b border-line text-muted max-md:hidden">
                 <tr>
                     <th scope="col" class="px-5 py-3 font-medium">Program</th>
                     <th scope="col" class="px-5 py-3 font-medium">Hari</th>
@@ -31,28 +31,28 @@
                     <th scope="col" class="px-5 py-3 font-medium"><span class="sr-only">Aksi</span></th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-line">
+            <tbody class="divide-y divide-line max-md:block">
                 @forelse ($programs as $program)
-                    <tr class="hover:bg-canvas/60">
-                        <td class="px-5 py-3 font-medium">{{ $program->name }}</td>
-                        <td class="px-5 py-3">{{ $dayNames[$program->day_of_week] ?? '-' }}</td>
-                        <td class="px-5 py-3 tabular-nums">{{ substr($program->crewcall_time, 0, 5) }}</td>
-                        <td class="px-5 py-3 tabular-nums">{{ substr($program->tapping_start, 0, 5) }} - {{ substr($program->tapping_end, 0, 5) }}</td>
-                        <td class="px-5 py-3 whitespace-nowrap text-muted">{{ $program->announcers_count }} announcer, {{ $program->sos_count }} SO</td>
-                        <td class="px-5 py-3">
+                    <tr class="hover:bg-canvas/60 max-md:grid max-md:grid-cols-[1fr_auto] max-md:items-center max-md:gap-x-3 max-md:gap-y-1 max-md:px-4 max-md:py-3">
+                        <td class="px-5 py-3 font-medium max-md:p-0">{{ $program->name }}</td>
+                        <td class="px-5 py-3 max-md:col-span-2 max-md:p-0">{{ $dayNames[$program->day_of_week] ?? '-' }}</td>
+                        <td class="px-5 py-3 tabular-nums max-md:col-span-2 max-md:p-0"><span class="text-muted md:hidden">Crewcall </span>{{ substr($program->crewcall_time, 0, 5) }}</td>
+                        <td class="px-5 py-3 tabular-nums max-md:col-span-2 max-md:p-0"><span class="text-muted md:hidden">Tapping </span>{{ substr($program->tapping_start, 0, 5) }} - {{ substr($program->tapping_end, 0, 5) }}</td>
+                        <td class="px-5 py-3 whitespace-nowrap text-muted max-md:col-span-2 max-md:p-0">{{ $program->announcers_count }} announcer, {{ $program->sos_count }} SO</td>
+                        <td class="px-5 py-3 max-md:col-start-2 max-md:row-start-1 max-md:p-0">
                             <div class="flex items-center justify-end gap-4">
-                                <a href="{{ route('program.edit', $program) }}" class="font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Ubah</a>
+                                <a href="{{ route('program.edit', $program) }}" class="font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal max-md:inline-flex max-md:min-h-11 max-md:items-center">Ubah</a>
                                 <form method="POST" action="{{ route('program.destroy', $program) }}" onsubmit="return confirm(@js('Hapus program '.$program->name.' beserta seluruh sesinya?'))">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-danger underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger">Hapus</button>
+                                    <button type="submit" class="text-danger underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger max-md:inline-flex max-md:min-h-11 max-md:items-center">Hapus</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-5 py-12 text-center">
+                        <td colspan="6" class="px-5 py-12 text-center max-md:block max-md:px-4 max-md:py-10">
                             <p class="text-muted">Belum ada program.</p>
                             <a href="{{ route('program.create') }}" class="mt-2 inline-block font-medium text-signal-strong underline underline-offset-4">Tambah program pertama</a>
                         </td>
