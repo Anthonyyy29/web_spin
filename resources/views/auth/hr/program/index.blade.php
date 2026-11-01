@@ -51,7 +51,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
+                    <tr class="max-md:block">
                         <td colspan="6" class="px-5 py-12 text-center max-md:block max-md:px-4 max-md:py-10">
                             <p class="text-muted">Belum ada program.</p>
                             <a href="{{ route('program.create') }}" class="mt-2 inline-block font-medium text-signal-strong underline underline-offset-4">Tambah program pertama</a>

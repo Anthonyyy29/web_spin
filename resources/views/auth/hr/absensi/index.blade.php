@@ -38,7 +38,7 @@
                         <td class="{{ $countClass }} {{ $row['totals']['tidak_hadir'] > 0 ? 'font-medium text-danger' : '' }}"><span class="{{ $countLabelClass }} font-normal">Tidak hadir</span>{{ $row['totals']['tidak_hadir'] }}</td>
                     </tr>
                 @empty
-                    <tr>
+                    <tr class="max-md:block">
                         <td colspan="8" class="px-5 py-12 text-center text-muted max-md:block max-md:px-4 max-md:py-10">Belum ada program. Buat program dulu di menu Program.</td>
                     </tr>
                 @endforelse

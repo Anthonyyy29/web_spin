@@ -8,10 +8,10 @@
             <h1 class="text-2xl font-semibold tracking-tight">Sesi</h1>
             <p class="mt-1 text-sm text-muted">Sesi siaran per program. Tambah sesi, ubah jadwal atau kru, tunda, atau batalkan per sesi.</p>
         </div>
-        <form method="GET" action="{{ route('sesi.index') }}" class="flex items-end gap-2">
-            <div>
+        <form method="GET" action="{{ route('sesi.index') }}" class="flex w-full items-end gap-2 md:w-auto">
+            <div class="min-w-0 flex-1 md:flex-none">
                 <label for="program" class="mb-1.5 block text-sm font-medium">Program</label>
-                <select id="program" name="program" class="rounded-md border border-line bg-white px-3 py-2 text-sm text-ink focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/30">
+                <select id="program" name="program" class="w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/30 md:w-auto">
                     <option value="">Semua program</option>
                     @foreach ($programs as $program)
                         <option value="{{ $program->id }}" @selected($selectedProgramId === $program->id)>{{ $program->name }}</option>
@@ -21,8 +21,8 @@
             @if ($isHistory)
                 <input type="hidden" name="waktu" value="riwayat">
             @endif
-            <button type="submit" class="rounded-md border border-line bg-white px-4 py-2 text-sm font-medium text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Terapkan</button>
-            <a href="{{ route('sesi.create', array_filter(['program' => $selectedProgramId])) }}" class="rounded-md bg-signal-strong px-4 py-2 text-sm font-medium text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Tambah sesi</a>
+            <button type="submit" class="rounded-md border border-line bg-white px-4 py-2 text-sm font-medium whitespace-nowrap text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Terapkan</button>
+            <a href="{{ route('sesi.create', array_filter(['program' => $selectedProgramId])) }}" class="rounded-md bg-signal-strong px-4 py-2 text-sm font-medium whitespace-nowrap text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">Tambah sesi</a>
         </form>
     </div>
 
@@ -65,8 +65,8 @@
     </nav>
 
     <div class="relative overflow-x-auto rounded-lg border border-line bg-white">
-        <table class="w-full text-left text-sm">
-            <thead class="border-b border-line text-muted">
+        <table class="w-full text-left text-sm max-md:block">
+            <thead class="border-b border-line text-muted max-md:hidden">
                 <tr>
                     <th scope="col" class="px-4 py-3 font-medium">Program</th>
                     <th scope="col" class="px-4 py-3 font-medium">Crewcall</th>
@@ -79,9 +79,9 @@
             {{-- Satu tbody per tanggal; tanggal hari ini ditandai garis oranye --}}
             @forelse ($sessions->groupBy(fn ($session) => $session->session_date->toDateString()) as $daySessions)
                 @php($day = $daySessions->first()->session_date)
-                <tbody class="divide-y divide-line border-t border-line first-of-type:border-t-0">
-                    <tr>
-                        <th scope="rowgroup" colspan="6" class="relative bg-canvas/70 px-4 py-2 text-left font-semibold tabular-nums {{ $day->isToday() ? 'before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-signal' : '' }}">
+                <tbody class="divide-y divide-line border-t border-line first-of-type:border-t-0 max-md:block">
+                    <tr class="max-md:block">
+                        <th scope="rowgroup" colspan="6" class="relative bg-canvas/70 max-md:block px-4 py-2 text-left font-semibold tabular-nums {{ $day->isToday() ? 'before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-signal' : '' }}">
                             {{ $day->locale('id')->translatedFormat('l, d M Y') }}
                             @if ($day->isToday())
                                 <span class="ml-2 text-xs font-medium text-signal-strong">Hari ini</span>
@@ -89,15 +89,15 @@
                         </th>
                     </tr>
                     @foreach ($daySessions as $session)
-                        <tr class="hover:bg-canvas/60">
-                            <td class="px-4 py-3 whitespace-nowrap font-medium">{{ $session->program->name }}</td>
-                            <td class="px-4 py-3 tabular-nums">{{ substr($session->crewcall_time, 0, 5) }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap tabular-nums">{{ substr($session->tapping_start, 0, 5) }}–{{ substr($session->tapping_end, 0, 5) }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap {{ $session->status === \App\Enums\SessionStatus::Cancelled ? 'text-danger' : 'text-muted' }}">{{ $session->status->label() }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-muted">{{ $session->crew->where('pivot.position', 'announcer')->count() }} announcer, {{ $session->crew->where('pivot.position', \App\Enums\CrewPosition::So->value)->count() }} SO</td>
-                            <td class="px-2 py-1.5 text-right">
+                        <tr class="hover:bg-canvas/60 max-md:relative max-md:grid max-md:grid-cols-2 max-md:gap-x-3 max-md:gap-y-1 max-md:py-3 max-md:pr-14 max-md:pl-4">
+                            <td class="px-4 py-3 whitespace-nowrap font-medium max-md:col-span-2 max-md:p-0 max-md:whitespace-normal">{{ $session->program->name }}</td>
+                            <td class="px-4 py-3 tabular-nums max-md:p-0"><span class="text-muted md:hidden">Crewcall </span>{{ substr($session->crewcall_time, 0, 5) }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap tabular-nums max-md:p-0"><span class="text-muted md:hidden">Tapping </span>{{ substr($session->tapping_start, 0, 5) }}–{{ substr($session->tapping_end, 0, 5) }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap max-md:p-0 {{ $session->status === \App\Enums\SessionStatus::Cancelled ? 'text-danger' : 'text-muted' }}">{{ $session->status->label() }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-muted max-md:p-0">{{ $session->crew->where('pivot.position', 'announcer')->count() }} announcer, {{ $session->crew->where('pivot.position', \App\Enums\CrewPosition::So->value)->count() }} SO</td>
+                            <td class="px-2 py-1.5 text-right max-md:absolute max-md:top-1.5 max-md:right-1.5 max-md:p-0">
                                 @php($menuItemClass = 'block w-full px-3 py-2 text-left hover:bg-canvas focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-signal')
-                                <button type="button" popovertarget="sesi-aksi-{{ $session->id }}" aria-label="Aksi sesi {{ $session->program->name }}, {{ $session->session_date->locale('id')->translatedFormat('d M Y') }}" class="inline-flex size-9 items-center justify-center rounded-md text-muted hover:bg-canvas hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">
+                                <button type="button" popovertarget="sesi-aksi-{{ $session->id }}" aria-label="Aksi sesi {{ $session->program->name }}, {{ $session->session_date->locale('id')->translatedFormat('d M Y') }}" class="inline-flex size-9 max-md:size-11 items-center justify-center rounded-md text-muted hover:bg-canvas hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal">
                                     <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" class="size-5"><circle cx="4.5" cy="10" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="15.5" cy="10" r="1.5"/></svg>
                                 </button>
                                 <div id="sesi-aksi-{{ $session->id }}" popover data-anchored-popover class="m-0 inset-auto min-w-36 rounded-md border border-line bg-white py-1 text-sm text-ink shadow-lg">
@@ -120,9 +120,9 @@
                     @endforeach
                 </tbody>
             @empty
-                <tbody>
-                    <tr>
-                        <td colspan="6" class="px-4 py-12 text-center text-muted">{{ $isHistory ? 'Belum ada riwayat sesi.' : 'Belum ada sesi mendatang.' }}</td>
+                <tbody class="max-md:block">
+                    <tr class="max-md:block">
+                        <td colspan="6" class="px-4 py-12 text-center text-muted max-md:block max-md:px-4 max-md:py-10">{{ $isHistory ? 'Belum ada riwayat sesi.' : 'Belum ada sesi mendatang.' }}</td>
                     </tr>
                 </tbody>
             @endforelse
