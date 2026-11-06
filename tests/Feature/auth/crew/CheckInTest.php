@@ -246,7 +246,7 @@ it('renders the check-in error on the page', function () {
 it('redirects a sound operator to their sessions after login', function () {
     $user = User::factory()->so()->create(['password' => 'secret-pass']);
 
-    $this->post(route('login'), ['username' => $user->username, 'password' => 'secret-pass'])
+    $this->post(route('login.store'), ['username' => $user->username, 'password' => 'secret-pass'])
         ->assertRedirect(route('so.sesi.index'));
 });
 

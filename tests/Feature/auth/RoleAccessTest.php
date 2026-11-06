@@ -23,7 +23,7 @@ it('keeps a role without an area out of every area', function (string $url) {
 it('redirects each kadiv to their area after login', function (string $role, string $routeName) {
     $user = User::factory()->role($role)->create(['password' => 'secret-pass']);
 
-    $this->post(route('login'), ['username' => $user->username, 'password' => 'secret-pass'])
+    $this->post(route('login.store'), ['username' => $user->username, 'password' => 'secret-pass'])
         ->assertRedirect(route($routeName));
 })->with([
     ['kadiv_human_resource', 'hr.dashboard'],
@@ -89,7 +89,7 @@ it('offers kadiv crew in the program form and rejects other roles', function () 
 it('sends a role without an area to the unavailable page after login', function () {
     $user = User::factory()->role('creative')->create(['password' => 'secret-pass']);
 
-    $this->post(route('login'), ['username' => $user->username, 'password' => 'secret-pass'])
+    $this->post(route('login.store'), ['username' => $user->username, 'password' => 'secret-pass'])
         ->assertRedirect(route('unavailable'));
 });
 

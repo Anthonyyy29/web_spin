@@ -109,7 +109,7 @@ it('gives members with two jobs one account per job', function () {
 it('lets a seeded member log in with the full name and the default password', function () {
     $this->seed();
 
-    $this->post(route('login'), ['username' => 'Priscilla Christiana Nahadin', 'password' => Gen7MemberSeeder::DEFAULT_PASSWORD])
+    $this->post(route('login.store'), ['username' => 'Priscilla Christiana Nahadin', 'password' => Gen7MemberSeeder::DEFAULT_PASSWORD])
         ->assertRedirect(route('announcer.dashboard'));
 
     $this->assertAuthenticatedAs(User::where('username', 'Priscilla Christiana Nahadin')->sole());
@@ -118,6 +118,6 @@ it('lets a seeded member log in with the full name and the default password', fu
 it('lets a member log in with a username that has a job suffix', function () {
     $this->seed();
 
-    $this->post(route('login'), ['username' => 'Noval Rasyah Kurnia Putra (Announcer)', 'password' => Gen7MemberSeeder::DEFAULT_PASSWORD])
+    $this->post(route('login.store'), ['username' => 'Noval Rasyah Kurnia Putra (Announcer)', 'password' => Gen7MemberSeeder::DEFAULT_PASSWORD])
         ->assertRedirect(route('announcer.dashboard'));
 });

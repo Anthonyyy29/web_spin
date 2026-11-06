@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    public function showLoginForm()
+    {
+        return view('guest.login');
+    }
+
     public function login(Request $request)
     {
         if (Auth::attempt($request->only('username', 'password'))) {
@@ -29,6 +34,6 @@ class UserController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return redirect()->route('login');
     }
 }

@@ -103,7 +103,7 @@ it('changes the password and lets the user log in with it', function () {
     ])->assertRedirect(route('profil.edit'))->assertSessionHas('status', 'Password diganti.');
 
     auth()->logout();
-    $this->post(route('login'), ['username' => 'Ani Lestari', 'password' => 'baru'])->assertRedirect(route('announcer.dashboard'));
+    $this->post(route('login.store'), ['username' => 'Ani Lestari', 'password' => 'baru'])->assertRedirect(route('announcer.dashboard'));
 });
 
 it('rejects a wrong current password only in the password form', function () {

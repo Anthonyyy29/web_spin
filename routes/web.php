@@ -11,8 +11,8 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Guest
-Route::get('/login', fn () => view('guest.login'))->name('login');
-Route::post('/login', [UserController::class, 'login'])->name('login');
+Route::get('/', [UserController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [UserController::class, 'login'])->name('login.store');
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 
 // admin HR
@@ -54,5 +54,5 @@ Route::group(['middleware' => ['auth', 'role:kadiv_announcer,announcer,kadiv_sou
 
 Route::view('/belum-tersedia', 'auth.belum-tersedia')->middleware('auth')->name('unavailable');
 
-Route::get('/', fn () => view('main'));
+// Route::get('/', fn () => view('main'));
 // Route::get('/test', fn () => view('auth.announcer.dashboard.index'));
