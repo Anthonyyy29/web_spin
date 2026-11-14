@@ -2,6 +2,7 @@
 
 use App\Enums\UserRole;
 use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 
@@ -32,5 +33,5 @@ test('tanpa password di config, lingkungan testing memakai password bawaan', fun
 test('seeder berhenti di production bila password kosong', function () {
     config(['seed.passwords' => ['admin' => null, 'hr' => null, 'panitia' => null]]);
     app()->detectEnvironment(fn () => 'production');
-    expect(fn () => $this->seed())->toThrow(RuntimeException::class, 'SEED_ADMIN_PASSWORD');
+    expect(fn () => app(DatabaseSeeder::class)->run())->toThrow(RuntimeException::class, 'SEED_ADMIN_PASSWORD');
 });
