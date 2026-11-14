@@ -47,7 +47,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "trap 'kill 0' INT TERM EXIT; php artisan queue:listen --tries=1 --timeout=0 & php artisan pail --timeout=0 & php artisan serve"
+            "@php artisan serve"
         ],
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",
