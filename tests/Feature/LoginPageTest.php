@@ -24,3 +24,9 @@ test('yang sudah login dialihkan ke dashboard', function () {
     $this->actingAs(User::factory()->create())->get('/login')
         ->assertRedirect('/dashboard')->assertSessionHas('success', 'login berhasil');
 });
+
+test('pesan kilat berkutip tetap utuh di skrip', function () {
+    $this->withSession(['error' => 'kata "kutip" dan \\ garis'])->get('/login')
+        ->assertOk()
+        ->assertSee(json_encode('kata "kutip" dan \\ garis', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT), false);
+});
