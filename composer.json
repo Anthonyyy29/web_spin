@@ -43,13 +43,11 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
-            "@php artisan migrate --force",
-            "npm install --ignore-scripts",
-            "npm run build"
+            "@php artisan migrate --force"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "@php artisan dev"
+            "trap 'kill 0' INT TERM EXIT; php artisan queue:listen --tries=1 --timeout=0 & php artisan pail --timeout=0 & php artisan serve"
         ],
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",
