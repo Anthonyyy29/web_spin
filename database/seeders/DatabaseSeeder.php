@@ -24,6 +24,6 @@ class DatabaseSeeder extends Seeder
             User::updateOrCreate(['username' => $data['username']], $data);
         }
 
-        $this->call([CrewSeeder::class, ProgramPodcastSeeder::class, EpisodeSeeder::class, NewsSeeder::class, SponsorSeeder::class]);
+        $this->call([CrewSeeder::class, ProgramPodcastSeeder::class, ProgramCrewSeeder::class, EpisodeSeeder::class, NewsSeeder::class, SponsorSeeder::class]);
     }
 }

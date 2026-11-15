@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Content;
 use App\Models\Crew;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 uses(RefreshDatabase::class);
@@ -27,6 +29,18 @@ test('seeder aman dijalankan dua kali', function () {
     $this->seed();
 
     expect(User::count())->toBe(2);
+});
+
+test('seeder mengisi crew tiap program dan aman dijalankan dua kali', function () {
+    $this->seed();
+    $this->seed();
+
+    $kTime = Content::where('title', 'K-TIME')->first();
+
+    expect(DB::table('content_crew')->count())->toBe(31)
+        ->and($kTime->crews->pluck('name')->all())->toContain('Priscilla Christiana Nahadin', 'Dhini Aulya')
+        ->and(Content::where('title', 'SPINVERSE')->first()->crews)->toHaveCount(0)
+        ->and(Crew::where('name', 'Salwa Syafira')->first()->contents)->toHaveCount(2);
 });
 
 test('seeder crew memuat anggota Gen 7 dengan jabatan dan nama yang valid', function () {
