@@ -9,7 +9,7 @@ class NewsSeeder extends Seeder
 {
     /**
      * Isi berita dari repo lama (data/news.json). ID lama dipertahankan agar
-     * aman dijalankan berulang. Gambarnya sudah ada di public/assets/uploads.
+     * aman dijalankan berulang. Gambarnya sudah ada di public/assets/uploads/news.
      */
     public function run(): void
     {
@@ -20,7 +20,7 @@ class NewsSeeder extends Seeder
                 'title' => $data['title'],
                 'category' => $data['category'],
                 'description' => $data['description'],
-                'image' => basename($data['image']),
+                'image' => 'news/'.basename($data['image']),
                 'video' => $data['video'] ?: null,
             ]);
         }

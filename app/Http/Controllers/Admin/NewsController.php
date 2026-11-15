@@ -10,6 +10,8 @@ use Illuminate\View\View;
 
 class NewsController extends ImageCrudController
 {
+    protected string $uploadFolder = 'news';
+
     protected int $maxImageKb = 5012;
 
     protected function modelClass(): string
