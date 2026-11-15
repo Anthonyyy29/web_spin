@@ -17,6 +17,11 @@ abstract class ImageCrudController extends Controller
     protected int $maxImageKb = 2048;
 
     /**
+     * Subfolder di public/assets/uploads untuk gambar menu ini ('' = langsung di folder utama).
+     */
+    protected string $uploadFolder = '';
+
+    /**
      * @return class-string<Model>
      */
     abstract protected function modelClass(): string;
@@ -71,7 +76,7 @@ abstract class ImageCrudController extends Controller
 
         if ($request->hasFile('image')) {
             $this->deleteUpload($model->image);
-            $data['image'] = $this->storeUpload($request->file('image'));
+            $data['image'] = $this->storeUpload($request->file('image'), $this->uploadFolder);
         }
 
         $model->fill($data)->save();

@@ -12,26 +12,25 @@ abstract class Controller
     protected const string UPLOAD_FOLDER = 'assets/uploads';
 
     /**
-     * Simpan berkas ke public/assets/uploads (atau subfolder) dan kembalikan nama barunya.
+     * Simpan berkas ke public/assets/uploads (atau subfolder) dan kembalikan path
+     * relatif terhadap folder itu, mis. "crew/1700000000_ab12.png".
      */
     protected function storeUpload(UploadedFile $file, string $subfolder = ''): string
     {
         $name = time().'_'.bin2hex(random_bytes(10)).'.'.$file->getClientOriginalExtension();
-        $file->move($this->uploadPath($subfolder), $name);
+        $file->move(public_path(trim(self::UPLOAD_FOLDER.'/'.$subfolder, '/')), $name);
 
-        return $name;
+        return trim($subfolder.'/'.$name, '/');
     }
 
-    protected function deleteUpload(?string $name, string $subfolder = ''): void
+    /**
+     * Hapus berkas berdasarkan path relatif yang dikembalikan storeUpload.
+     */
+    protected function deleteUpload(?string $path): void
     {
-        if ($name !== null && $name !== '') {
-            @unlink($this->uploadPath($subfolder).'/'.basename($name));
+        if ($path !== null && $path !== '') {
+            @unlink(public_path(self::UPLOAD_FOLDER.'/'.ltrim(str_replace('..', '', $path), '/')));
         }
-    }
-
-    private function uploadPath(string $subfolder): string
-    {
-        return public_path(trim(self::UPLOAD_FOLDER.'/'.$subfolder, '/'));
     }
 
     /**

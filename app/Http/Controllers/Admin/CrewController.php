@@ -10,6 +10,8 @@ use Illuminate\View\View;
 
 class CrewController extends ImageCrudController
 {
+    protected string $uploadFolder = 'crew';
+
     protected function modelClass(): string
     {
         return Crew::class;

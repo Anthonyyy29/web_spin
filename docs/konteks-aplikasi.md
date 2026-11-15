@@ -44,7 +44,7 @@ Seluruh grup `/dashboard` memakai `auth` + `actioncheck` (`PreventRapidPosts`: P
 
 ## Kode penting
 
-- `app/Http/Controllers/Controller.php`: basis untuk helper bersama: `storeUpload`/`deleteUpload` (ke `public/assets/uploads[/sub]`), `downloadExcel`, dan `encodeId`/`decodeId` (penyamar ID URL publik, **akan dihapus**, lihat `docs/catatan.md`).
+- `app/Http/Controllers/Controller.php`: basis untuk helper bersama: `storeUpload`/`deleteUpload` (ke `public/assets/uploads[/sub]`; nilai kolom `image` berupa path relatif, mis. `crew/abc.png`, `program/abc.png`; `ImageCrudController::$uploadFolder` menentukan subfolder tiap menu), `downloadExcel`, dan `encodeId`/`decodeId` (penyamar ID URL publik, **akan dihapus**, lihat `docs/catatan.md`).
 - `Admin/ImageCrudController`: dasar crew/news/sponsor/podcast (validasi gambar, simpan, hapus berkas, catat `AuditLog`). Subclass hanya mengisi `modelClass()`, `auditName()`, `fieldRules()`, `prepare()`.
 - `AuthController`: batas 5 gagal / 60 detik per IP, catat `AdminHistory::recordLogin`, pesan kilat `login berhasil` / `login gagal` / `Terlalu banyak percobaan. Coba lagi nanti.` / `Anda telah logout.`.
 - Middleware: `role`, `actioncheck`, `api.token` (`VerifyApiToken`, header `Authorization` = `API_ACCESS_TOKEN`, kosong = tolak semua).

@@ -13,6 +13,8 @@ use Illuminate\View\View;
 
 class PodcastController extends ImageCrudController
 {
+    protected string $uploadFolder = 'program';
+
     protected function modelClass(): string
     {
         return Content::class;
