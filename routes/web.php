@@ -4,6 +4,7 @@ use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\Admin\Absensi\AbsensiController;
 use App\Http\Controllers\Admin\Absensi\CrewController as AbsensiCrewController;
 use App\Http\Controllers\Admin\Absensi\HistoryController;
+use App\Http\Controllers\Admin\Absensi\ProgramController;
 use App\Http\Controllers\Admin\CrewController as AdminCrewController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\PodcastController;
@@ -86,6 +87,8 @@ Route::prefix('dashboard')->middleware(['auth', 'actioncheck'])->group(function 
         Route::post('crew/simpan', [AbsensiCrewController::class, 'simpan']);
         Route::post('crew/update', [AbsensiCrewController::class, 'update']);
         Route::get('crew/delete/{rfid}', [AbsensiCrewController::class, 'delete']);
+        Route::get('program', [ProgramController::class, 'index']);
+        Route::post('program/update', [ProgramController::class, 'update']);
     });
 });
 

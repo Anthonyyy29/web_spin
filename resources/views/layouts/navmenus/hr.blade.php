@@ -14,3 +14,12 @@
         </p>
     </a>
 </li>
+
+<li class="nav-item {{ $navmenu === 'Program' ? 'active' : '' }}">
+    <a href="/dashboard/absensi/program" class="nav-link {{ $navmenu === 'Program' ? 'active' : '' }}">
+        <i class="nav-icon bi bi-broadcast"></i>
+        <p>
+            Program
+        </p>
+    </a>
+</li>
