@@ -306,6 +306,8 @@
                 document.getElementById("tapResult").innerHTML =
                     `<div class="alert alert-${data.status === 'success' ? 'success' : 'danger'}">
                 ${data.message}
+                ${data.program ? `<div><small>${data.program}</small></div>` : ''}
+                ${data.status_absen === 'Terlambat' ? '<div><strong>Terlambat</strong></div>' : ''}
             </div>`;
 
                 document.getElementById("rfid_uid").value = "";

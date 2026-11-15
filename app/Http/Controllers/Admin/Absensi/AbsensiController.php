@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Absensi;
 
 use App\Http\Controllers\Controller;
 use App\Models\AbsensiLog;
+use App\Models\BroadcastSession;
 use App\Models\RfidCrew;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,15 +28,38 @@ class AbsensiController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Kartu tidak terdaftar']);
         }
 
-        $sudahAbsen = AbsensiLog::where('rfid_uid', $uid)->whereDate('tanggal', today())->exists();
+        $sesi = BroadcastSession::findForTap($kartu->crew, now());
+
+        $sudahAbsen = AbsensiLog::where('rfid_uid', $uid)
+            ->when($sesi, fn ($query) => $query->where('session_id', $sesi->id))
+            ->unless($sesi, fn ($query) => $query->whereNull('session_id')->whereDate('tanggal', today()))
+            ->exists();
 
         if ($sudahAbsen) {
-            return response()->json(['status' => 'warning', 'message' => 'Anda sudah absen hari ini']);
+            $pesan = $sesi ? 'Anda sudah absen di sesi ini' : 'Anda sudah absen hari ini';
+
+            return response()->json(['status' => 'warning', 'message' => $pesan]);
         }
 
         $jam = now()->format('H:i:s');
-        AbsensiLog::create(['rfid_uid' => $uid, 'tanggal' => today()->toDateString(), 'jam_masuk' => $jam, 'status' => 'Hadir']);
+        $statusAbsen = $sesi?->statusAt(now()) ?? 'Hadir';
 
-        return response()->json(['status' => 'success', 'message' => 'Absen berhasil', 'nama' => $kartu->crew?->name, 'jam' => $jam]);
+        AbsensiLog::create([
+            'rfid_uid' => $uid,
+            'session_id' => $sesi?->id,
+            'tanggal' => today()->toDateString(),
+            'jam_masuk' => $jam,
+            'status' => $statusAbsen,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => $sesi ? 'Absen berhasil' : 'Dicatat sebagai tamu',
+            'nama' => $kartu->crew?->name,
+            'jam' => $jam,
+            'jenis' => $sesi ? 'sesi' : 'tamu',
+            'program' => $sesi?->content->title,
+            'status_absen' => $statusAbsen,
+        ]);
     }
 }
