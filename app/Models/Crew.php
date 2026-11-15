@@ -26,6 +26,8 @@ class Crew extends Model
         'Head of Podcast' => '#3498DB',
         'Human Resource' => '#16A085',
         'Public Relation' => '#1ABC9C',
+        'Partnership' => '#2980B9',
+        'Media Relation' => '#E67E22',
         'Editor Video' => '#C0392B',
         'Design & Publishing' => '#F1C40F',
         'Creative' => '#34495E',

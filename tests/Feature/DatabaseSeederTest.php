@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Crew;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -26,4 +27,14 @@ test('seeder aman dijalankan dua kali', function () {
     $this->seed();
 
     expect(User::count())->toBe(2);
+});
+
+test('seeder crew memuat anggota Gen 7 dengan jabatan dan nama yang valid', function () {
+    $this->seed();
+    $this->seed();
+
+    expect(Crew::count())->toBe(79)
+        ->and(Crew::whereNotIn('role', array_keys(Crew::ROLES))->count())->toBe(0)
+        ->and(Crew::all()->every(fn (Crew $crew): bool => mb_strlen($crew->name) <= 30))->toBeTrue()
+        ->and(Crew::sortedByRole()->first()->name)->toBe('Nurul Afifah Azzahra');
 });

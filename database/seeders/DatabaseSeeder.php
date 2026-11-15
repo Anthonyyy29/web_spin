@@ -23,5 +23,7 @@ class DatabaseSeeder extends Seeder
         foreach ($akun as $data) {
             User::updateOrCreate(['username' => $data['username']], $data);
         }
+
+        $this->call(CrewSeeder::class);
     }
 }
