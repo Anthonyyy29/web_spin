@@ -73,7 +73,7 @@ class BroadcastSession extends Model
                 $session->startsAt()->subMinutes(self::TAP_WINDOW_MINUTES),
                 $session->endsAt(),
             ))
-            ->sortBy(fn (self $session): int => abs($session->startsAt()->diffInSeconds($at)))
+            ->sortBy(fn (self $session): float => abs($session->startsAt()->diffInSeconds($at)))
             ->first();
     }
 }

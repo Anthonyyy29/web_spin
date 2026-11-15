@@ -80,3 +80,12 @@ test('hapus sesi menjadikan log tamu', function () {
     expect($log->fresh())->not->toBeNull()
         ->and($log->fresh()->session_id)->toBeNull();
 });
+
+test('findForTap: tap bermikrodetik tetap memilih sesi terdekat', function () {
+    $crew = Crew::factory()->create();
+    $pertama = sessionFor($crew, '10:00:00', '11:00:00');
+    $kedua = sessionFor($crew, '10:00:01', '11:00:00');
+
+    expect(BroadcastSession::findForTap($crew, today()->setTime(10, 0, 0, 345678))?->id)->toBe($pertama->id)
+        ->and(BroadcastSession::findForTap($crew, today()->setTime(10, 0, 0, 600000))?->id)->toBe($kedua->id);
+});
