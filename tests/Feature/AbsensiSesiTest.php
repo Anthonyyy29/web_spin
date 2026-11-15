@@ -5,6 +5,7 @@ use App\Models\BroadcastSession;
 use App\Models\Content;
 use App\Models\Crew;
 use App\Models\RfidCrew;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -94,4 +95,21 @@ test('tamu tidak menghalangi absen sesi kemudian', function () {
 
     expect(AbsensiLog::count())->toBe(2)
         ->and(AbsensiLog::whereNotNull('session_id')->first()->session_id)->toBe($sesi->id);
+});
+
+test('judul program dikirim apa adanya sebagai data JSON', function () {
+    $sesi = siapkanSesiHariIni();
+    $sesi->content->update(['title' => '<img src=x onerror=alert(1)>']);
+    $this->travelTo(today()->setTime(9, 55));
+
+    $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
+        ->assertJson(['program' => '<img src=x onerror=alert(1)>']);
+});
+
+test('view absensi tidak memasukkan data hasil tap ke innerHTML', function () {
+    $this->actingAs(User::factory()->role('hr')->create())
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertDontSee('${data.program}', false)
+        ->assertSee('program.textContent = data.program', false);
 });

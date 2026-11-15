@@ -303,12 +303,24 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("tapResult").innerHTML =
-                    `<div class="alert alert-${data.status === 'success' ? 'success' : 'danger'}">
-                ${data.message}
-                ${data.program ? `<div><small>${data.program}</small></div>` : ''}
-                ${data.status_absen === 'Terlambat' ? '<div><strong>Terlambat</strong></div>' : ''}
-            </div>`;
+                const alert = document.createElement("div");
+                alert.className = `alert alert-${data.status === 'success' ? 'success' : 'danger'}`;
+                alert.append(data.message);
+
+                if (data.program) {
+                    const program = document.createElement("div");
+                    program.className = "small";
+                    program.textContent = data.program;
+                    alert.append(program);
+                }
+
+                if (data.status_absen === 'Terlambat') {
+                    const terlambat = document.createElement("strong");
+                    terlambat.textContent = "Terlambat";
+                    alert.append(terlambat);
+                }
+
+                document.getElementById("tapResult").replaceChildren(alert);
 
                 document.getElementById("rfid_uid").value = "";
                 document.getElementById("rfid_uid").focus();
