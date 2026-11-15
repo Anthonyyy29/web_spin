@@ -28,7 +28,7 @@ test('hr melihat tabel hari ini, riwayat, dan ekspor excel; peran lain ditolak',
     $this->actingAs(User::factory()->role('hr')->create());
     $this->get('/dashboard')->assertOk()->assertSee('Siti')->assertSee('08:01:00');
     $this->get('/dashboard/absensi/history')->assertOk();
-    $this->getJson('/dashboard/absensi/history/all')->assertJsonPath('data.0.nama', 'Siti')->assertJsonPath('data.0.divisi', 'Announcer');
+    $this->getJson('/dashboard/absensi/history/all?jenis=tamu')->assertJsonPath('data.0.nama', 'Siti')->assertJsonPath('data.0.divisi', 'Announcer');
     $this->getJson('/dashboard/absensi/history/byUid/AB12')->assertJsonCount(1, 'data');
     $this->get('/dashboard/absensi/export-excel')->assertOk()->assertDownload();
 

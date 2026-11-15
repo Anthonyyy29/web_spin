@@ -50,6 +50,7 @@
                             <th>ID</th>
                             <th>Nama</th>
                             <th>Divisi</th>
+                            <th>Program</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,13 +61,46 @@
                                     <td>{{ $row['rfid_uid'] }}</td>
                                     <td>{{ $row['nama'] }}</td>
                                     <td>{{ $row['divisi'] }}</td>
+                                    <td>{{ $row['program'] }}</td>
                                 </tr>
                             @endforeach
                         @else
                             <tr>
-                                <td colspan="4" class="text-center">Belum ada absensi hari ini</td>
+                                <td colspan="5" class="text-center">Belum ada absensi hari ini</td>
                             </tr>
                         @endif
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TAMU -->
+        <section class="quickaccess mb-4">
+            <h5 class="fw-semibold mb-3">Tamu Hari Ini</h5>
+
+            <div class="table-responsive">
+                <table class="tabelhadir table table-striped align-middle">
+                    <thead>
+                        <tr class="table-dark">
+                            <th>Waktu Masuk</th>
+                            <th>ID</th>
+                            <th>Nama</th>
+                            <th>Divisi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($tamu_hari_ini as $row)
+                            <tr>
+                                <td>{{ $row['jam_masuk'] }}</td>
+                                <td>{{ $row['rfid_uid'] }}</td>
+                                <td>{{ $row['nama'] }}</td>
+                                <td>{{ $row['divisi'] }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="text-center">Belum ada tamu hari ini</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

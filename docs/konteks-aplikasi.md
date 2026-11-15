@@ -36,7 +36,7 @@ Login: `admin`, `hr`, password `password` (ditulis langsung di `database/seeders
 | Publik | `/` → `/home`, `/home`, `/crew`, `/listen`, `/listen/search`, `/listen/content/{token}`, `/news`, `/news/category/{c}`, `/news/details/{token}`, `/aboutus`, `POST /aboutus/sendmail` |
 | Auth | `/login`, `POST /login/checklogin`, `/dashboard/logout` (GET, sama dengan repo lama) |
 | Admin | `/dashboard/{crew,podcast,news,sponsor}` (+ `save`, `delete/{id}`, `filter/…`, episode di `podcast/episode/…`) |
-| HR | `/dashboard/absensi/{history,history/all,history/byUid/{rfid},export-excel,crew,crew/simpan,crew/update,crew/delete/{rfid},tap}` |
+| HR | `/dashboard/absensi/{history,history/all,history/byUid/{rfid},export-excel,crew,crew/simpan,crew/update,crew/delete/{rfid},tap,program,program/update,sesi,sesi/simpan,sesi/update,sesi/delete/{id}}`; riwayat dan ekspor menerima `?jenis=sesi|tamu` (default sesi) |
 | API | `GET api/podcastlist`, `GET api/checklatestpodcast/{segmen}`, `POST api/uploadpodcast` (middleware `api.token`) |
 | Alat RFID | `GET|POST /tap-absen` (tanpa CSRF, dikecualikan di `bootstrap/app.php`) |
 
@@ -48,11 +48,11 @@ Seluruh grup `/dashboard` memakai `auth` + `actioncheck` (`PreventRapidPosts`: P
 - `Admin/ImageCrudController`: dasar crew/news/sponsor/podcast (validasi gambar, simpan, hapus berkas, catat `AuditLog`). Subclass hanya mengisi `modelClass()`, `auditName()`, `fieldRules()`, `prepare()`.
 - `AuthController`: batas 5 gagal / 60 detik per IP, catat `AdminHistory::recordLogin`, pesan kilat `login berhasil` / `login gagal` / `Terlalu banyak percobaan. Coba lagi nanti.` / `Anda telah logout.`.
 - Middleware: `role`, `actioncheck`, `api.token` (`VerifyApiToken`, header `Authorization` = `API_ACCESS_TOKEN`, kosong = tolak semua).
-- Model berguna: `Crew::ROLES` (jabatan berurut + warna grafik), `Crew::sortedByRole()`, `News::CATEGORIES`, `News::descriptionRows()`, `News::extractInstagramReelId()`, `Episode::extractSpotifyEpisodeId()`, trait `CountsByWeekday` (grafik mingguan), `AuditLog::record()`, `AbsensiLog::withCrew()`.
+- Model berguna: `Crew::ROLES` (jabatan berurut + warna grafik), `Crew::sortedByRole()`, `News::CATEGORIES`, `News::descriptionRows()`, `News::extractInstagramReelId()`, `Episode::extractSpotifyEpisodeId()`, trait `CountsByWeekday` (grafik mingguan), `AuditLog::record()`, `AbsensiLog::withCrew()`, `AbsensiLog::withSession()`, `BroadcastSession::findForTap()` (sesi hari ini untuk tap; null = tamu).
 
 ## Tabel
 
-`users`, `sessions`, `admin_history`, `audit_logs`, `crews`, `contents` (segmen podcast), `episodes` (`id_content` → contents), `news`, `sponsors`, `rfid_crews` (PK `rfid_uid` string, `crew_id`), `absensi_logs` (unik `rfid_uid`+`tanggal`). Tanpa soft delete (repo lama punya `deleted_at`, tidak dibawa).
+`users`, `sessions`, `admin_history`, `audit_logs`, `crews`, `contents` (segmen podcast), `episodes` (`id_content` → contents), `news`, `sponsors`, `rfid_crews` (PK `rfid_uid` string, `crew_id`), `absensi_logs` (`session_id` nullable, null = tamu, `nullOnDelete`; unik `rfid_uid`+`session_id`), `broadcast_sessions` (`content_id`, `tanggal`, `jam_mulai`, `jam_selesai`), `content_crew` (penugasan crew ke program). Tanpa soft delete (repo lama punya `deleted_at`, tidak dibawa).
 
 ## View (`resources/views`)
 

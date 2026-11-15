@@ -79,13 +79,20 @@ class DashboardController extends Controller
         return view('admin.absensi.index', [
             'navmenu' => 'Dashboard',
             'tanggal' => now()->format('d F Y'),
-            'absensi_hari_ini' => AbsensiLog::withCrew()
+            'absensi_hari_ini' => AbsensiLog::withCrew()->withSession()
                 ->whereDate('absensi_logs.tanggal', today())
+                ->whereNotNull('absensi_logs.session_id')
                 ->orderByDesc('absensi_logs.jam_masuk')
                 ->get(),
-            'chartStatus' => AbsensiLog::query()->tap($month)
+            'tamu_hari_ini' => AbsensiLog::withCrew()
+                ->whereDate('absensi_logs.tanggal', today())
+                ->whereNull('absensi_logs.session_id')
+                ->orderByDesc('absensi_logs.jam_masuk')
+                ->get(),
+            'chartStatus' => AbsensiLog::query()->tap($month)->whereNotNull('session_id')
                 ->select('status', DB::raw('count(id) as total'))->groupBy('status')->get(),
             'chartTrend' => AbsensiLog::query()
+                ->whereNotNull('session_id')
                 ->where('tanggal', '>=', today()->subDays(7)->toDateString())
                 ->select('tanggal', DB::raw('count(id) as total'))->groupBy('tanggal')->orderBy('tanggal')->get(),
             'chartDivisi' => AbsensiLog::withCrew()->tap($month)

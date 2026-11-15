@@ -34,6 +34,19 @@ class AbsensiLog extends Model
     }
 
     /**
+     * Absensi beserta judul program dan jam mulai sesinya (null untuk tamu).
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeWithSession(Builder $query): void
+    {
+        $query
+            ->leftJoin('broadcast_sessions', 'broadcast_sessions.id', '=', 'absensi_logs.session_id')
+            ->leftJoin('contents', 'contents.id', '=', 'broadcast_sessions.content_id')
+            ->addSelect('contents.title as program', 'broadcast_sessions.jam_mulai as jam_sesi');
+    }
+
+    /**
      * @return BelongsTo<BroadcastSession, $this>
      */
     public function session(): BelongsTo
