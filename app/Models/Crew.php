@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\CrewFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 
 class Crew extends Model
@@ -56,5 +57,13 @@ class Crew extends Model
             ->filter(fn (self $crew): bool => in_array($crew->role, $roles, true))
             ->sortBy(fn (self $crew): int => array_search($crew->role, $roles, true))
             ->values();
+    }
+
+    /**
+     * @return BelongsToMany<Content, $this>
+     */
+    public function contents(): BelongsToMany
+    {
+        return $this->belongsToMany(Content::class, 'content_crew');
     }
 }

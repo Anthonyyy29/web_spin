@@ -6,6 +6,7 @@ use Database\Factories\AbsensiLogFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AbsensiLog extends Model
 {
@@ -17,7 +18,7 @@ class AbsensiLog extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['rfid_uid', 'tanggal', 'jam_masuk', 'status'];
+    protected $fillable = ['rfid_uid', 'session_id', 'tanggal', 'jam_masuk', 'status'];
 
     /**
      * Absensi beserta nama dan divisi crew pemilik kartu.
@@ -30,5 +31,13 @@ class AbsensiLog extends Model
             ->leftJoin('rfid_crews', 'rfid_crews.rfid_uid', '=', 'absensi_logs.rfid_uid')
             ->leftJoin('crews', 'crews.id', '=', 'rfid_crews.crew_id')
             ->select('absensi_logs.*', 'crews.name as nama', 'crews.role as divisi');
+    }
+
+    /**
+     * @return BelongsTo<BroadcastSession, $this>
+     */
+    public function session(): BelongsTo
+    {
+        return $this->belongsTo(BroadcastSession::class, 'session_id');
     }
 }
