@@ -23,3 +23,12 @@
         </p>
     </a>
 </li>
+
+<li class="nav-item {{ $navmenu === 'Sesi' ? 'active' : '' }}">
+    <a href="/dashboard/absensi/sesi" class="nav-link {{ $navmenu === 'Sesi' ? 'active' : '' }}">
+        <i class="nav-icon bi bi-calendar-event"></i>
+        <p>
+            Sesi
+        </p>
+    </a>
+</li>
