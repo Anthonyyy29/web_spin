@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Blade;
@@ -12,7 +11,7 @@ function tampilkanLayout(string $navmenu = 'Dashboard'): string
     return Blade::render('<x-layouts.dashboard :navmenu="$navmenu">ISI-HALAMAN</x-layouts.dashboard>', ['navmenu' => $navmenu]);
 }
 
-test('layout memuat kerangka adminlte dan nama peran', function (UserRole $role, string $nama) {
+test('layout memuat kerangka adminlte dan nama peran', function (string $role, string $nama) {
     $this->actingAs(User::factory()->role($role)->create());
     $html = tampilkanLayout();
 
@@ -24,7 +23,7 @@ test('layout memuat kerangka adminlte dan nama peran', function (UserRole $role,
         ->toContain('Sign out')
         ->toContain(route('logout'))
         ->toContain('ISI-HALAMAN');
-})->with([[UserRole::Admin, 'Admin'], [UserRole::Hr, 'Hr'], [UserRole::Panitia, 'Panitia']]);
+})->with([['admin', 'Admin'], ['hr', 'Hr'], ['panitia', 'Panitia']]);
 
 test('judul mengikuti navmenu', function () {
     $this->actingAs(User::factory()->create());

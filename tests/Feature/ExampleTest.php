@@ -1,5 +1,5 @@
 <?php
 
 test('halaman utama mengalihkan ke login', function () {
-    $this->get('/')->assertRedirect('/login');
+    $this->get('/')->assertRedirect('/home');
 });

@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -14,8 +13,8 @@ beforeEach(function () {
 });
 
 test('peran yang cocok lolos, lainnya 403', function () {
-    $hr = User::factory()->role(UserRole::Hr)->create();
-    $panitia = User::factory()->role(UserRole::Panitia)->create();
+    $hr = User::factory()->role('hr')->create();
+    $panitia = User::factory()->role('panitia')->create();
 
     $this->actingAs($hr)->get('/_t/hr')->assertOk();
     $this->actingAs($hr)->get('/_t/staff')->assertOk();

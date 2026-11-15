@@ -52,7 +52,7 @@
 <!--end::Head-->
 <!--begin::Body-->
 
-@php($role = ucfirst(auth()->user()->getRawOriginal('role')))
+@php($role = ucfirst(auth()->user()->role))
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
     <!--begin::App Wrapper-->
@@ -181,7 +181,7 @@
                                 <p>Dashboard</p>
                             </a>
                         </li>
-                        @includeIf('layouts.navmenus.'.auth()->user()->getRawOriginal('role'))
+                        @includeIf('layouts.navmenus.'.auth()->user()->role)
                     </ul>
                     <!--end::Sidebar Menu-->
                 </nav>

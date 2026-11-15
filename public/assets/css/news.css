@@ -1,0 +1,679 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
+a:hover,
+a:active,
+a:focus {
+    color: #353535;
+    outline: none;
+    text-decoration: none;
+}
+
+.back-to-top {
+    position: fixed;
+    display: none;
+    background: #353535;
+    color: #ffffff;
+    width: 44px;
+    height: 44px;
+    text-align: center;
+    line-height: 1;
+    font-size: 16px;
+    right: 15px;
+    bottom: 15px;
+    transition: background 0.5s;
+    z-index: 11;
+}
+
+.back-to-top:hover {
+    background: #E47A2E;
+}
+
+.back-to-top i {
+    padding-top: 12px;
+    color: #ffffff;
+}
+
+.form-control:focus,
+.custom-select:focus {
+    box-shadow: none;
+    border-color: #E47A2E;
+}
+
+.custom-radio,
+.custom-checkbox {
+    margin-bottom: 15px;
+}
+
+.custom-radio .custom-control-label::before,
+.custom-checkbox .custom-control-label::before {
+    border-color: #353535;
+    border-radius: 0;
+}
+
+.custom-radio .custom-control-input:checked~.custom-control-label::before,
+.custom-checkbox .custom-control-input:checked~.custom-control-label::before {
+    color: #ffffff;
+    background: #E47A2E;
+}
+
+.navbar-dark .navbar-nav .nav-link,
+.navbar-dark .navbar-nav .nav-link:focus,
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link.active {
+    padding: 10px 10px 8px 10px;
+    color: #ffffff;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link.active {
+    background: rgba(228, 122, 46, .2);
+    border-bottom: 2px solid #E47A2E;
+    transition: none;
+}
+
+.header .dropdown-menu {
+    margin-top: 0;
+    border: 0;
+    border-radius: 0;
+    background: #f8f9fa;
+}
+
+@media (min-width: 768px) {
+    .header,
+    .header .navbar {
+        background: #353535 !important;
+    }
+    
+    .header .navbar-brand {
+        display: none;
+    }
+    
+    .header a.nav-link {
+        padding: 8px 15px;
+        font-size: 15px;
+        text-transform: uppercase;
+    }
+}
+
+@media (max-width: 768px) {   
+    .header,
+    .header .navbar {
+        background: #333333 !important;
+    }
+    
+    .header a.nav-link {
+        padding: 5px;
+    }
+    
+    .header .dropdown-menu {
+        box-shadow: none;
+    }
+}
+
+
+/**********************************/
+/********** Top News CSS **********/
+/**********************************/
+.top-news {
+    position: relative;
+    width: 100%;
+    padding: 30px 0 0 0;
+}
+
+.top-news .col-md-6 {
+    margin-bottom: 30px;
+}
+
+.top-news .tn-img {
+    position: relative;
+    overflow: hidden;
+}
+
+.top-news .tn-img img {
+    width: 100%;
+}
+
+.top-news .tn-img:hover img {
+    filter: blur(5px);
+    -webkit-filter: blur(5px);
+}
+
+.top-news .tn-content {
+    position: absolute;
+    top: 0; 
+    right: 0;
+    bottom: 0; 
+    left: 0;
+    padding: 15px 10px 15px 20px;
+    background-image: linear-gradient(rgba(0, 0, 0, .0), rgba(0, 0, 0, .3), rgba(0, 0, 0, .9));
+    display: flex;
+    align-items: flex-end;
+}
+
+.top-news .tn-content a.tn-date{
+    display: block;
+    width: 100%;
+    margin-bottom: 5px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 400;
+    transition: .3s;
+    letter-spacing: 1px;
+}
+
+.top-news .tn-content a.tn-date i {
+    margin-right: 5px;
+}
+
+.top-news .tn-content a.tn-date:hover {
+    text-decoration: underline;
+}
+
+.top-news .tn-content a.tn-title {
+    display: block;
+    width: 100%;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 400;
+    transition: .3s;
+}
+
+.top-news .tn-left .tn-content a.tn-title {
+    font-size: 35px;
+    font-weight: 700;
+}
+
+.top-news .tn-content a.tn-title:hover {
+    color: #E47A2E;
+}
+
+
+/**********************************/
+/******* Category News CSS ********/
+/**********************************/
+.cat-news {
+    position: relative;
+    width: 100%;
+    padding: 0;
+}
+
+.cat-news .col-md-6 {
+    margin-bottom: 30px;
+}
+
+.cat-news h2 {
+    color: #353535;
+    font-size: 35px;
+    font-weight: 700;
+    margin-left: 40px;
+}
+
+.cat-news h2 i {
+    position: absolute;
+    /*top: 8px*/
+    left: 15px;
+    font-size: 28px;
+}
+
+.cat-news .cn-img {
+    position: relative;
+    overflow: hidden;
+}
+
+.cat-news .cn-img img {
+    width: 100%;
+}
+
+.cat-news .cn-img:hover img {
+    filter: blur(5px);
+    -webkit-filter: blur(5px);
+}
+
+.cat-news .cn-content {
+    position: absolute;
+    top: 0; 
+    right: 0;
+    bottom: 0; 
+    left: 0;
+    padding: 15px 10px 15px 20px;
+    background-image: linear-gradient(rgba(0, 0, 0, .0), rgba(0, 0, 0, .3), rgba(0, 0, 0, .9));
+    display: flex;
+    align-items: flex-end;
+}
+
+.cat-news .cn-content a.cn-date {
+    display: block;
+    width: 100%;
+    margin-bottom: 5px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 400;
+    transition: .3s;
+    letter-spacing: 1px;
+}
+
+.cat-news .cn-content a.cn-date i {
+    margin-right: 5px;
+}
+
+.cat-news .cn-content a.cn-date:hover {
+    text-decoration: underline;
+}
+
+.cat-news .cn-content a.cn-title {
+    display: block;
+    width: 100%;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 400;
+    transition: .3s;
+}
+
+.cat-news .cn-content a.cn-title:hover {
+    color: #E47A2E;
+}
+
+.cat-news .slick-prev,
+.cat-news .slick-next {
+    top: -35px;
+    width: 28px;
+    height: 28px;
+    z-index: 1;
+    transition: .5s;
+    color: #ffffff;
+    background: #353535;
+}
+
+.cat-news .slick-prev {
+    left: calc(100% - 85px);
+}
+
+.cat-news .slick-next {
+    right: 14px;
+}
+
+.cat-news .slick-prev:hover,
+.cat-news .slick-prev:focus,
+.cat-news .slick-next:hover,
+.cat-news .slick-next:focus {
+    color: #ffffff;
+    background: #E47A2E;
+}
+
+.cat-news .slick-prev::before,
+.cat-news .slick-next::before {
+    font-family: "Font Awesome 5 Free";
+    font-size: 18px;
+    font-weight: 900;
+    color: #ffffff;
+}
+
+.cat-news .slick-prev::before {
+    content: "\f104";
+}
+
+.cat-news .slick-next::before {
+    content: "\f105";
+}
+
+/* Membuat gambar selalu buram */
+.view-more {
+    position: relative;
+    overflow: hidden;
+}
+
+.view-more img {
+    width: 100%;
+    filter: blur(5px); /* Gambar selalu buram */
+    transform: scale(1.1); /* Sedikit diperbesar */
+}
+
+/* Overlay untuk menempatkan tombol di tengah */
+.cn-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Pusatkan tombol */
+    text-align: center;
+}
+
+/* Desain tombol */
+.view-more-btn {
+    display: inline-block;
+    background-color: rgba(255, 69, 0, 0.8);
+    /*Warnaoranyetransparan*/color: white;
+    padding: 12px 25px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s ease-in-out, transform 0.2s;
+}
+
+/* Efek hover pada tombol */
+.view-more-btn:hover {
+    background-color: rgba(255, 69, 0, 1);
+    transform: scale(1.1);
+}
+
+
+/**********************************/
+/********** Main News CSS *********/
+/**********************************/
+.main-news {
+    position: relative;
+    width: 100%;
+    padding: 0;
+}
+
+.main-news .col-md-6,
+.main-news .col-md-12 {
+    margin-bottom: 30px;
+}
+
+.main-news h2 {
+    color: #353535;
+    font-size: 35px;
+    font-weight: 700;
+    margin-left: 40px;
+}
+
+.main-news h2 i {
+    position: absolute;
+    top: 8px;
+    left: 15px;
+    font-size: 28px;
+}
+
+.main-news .mn-img {
+    position: relative;
+    overflow: hidden;
+}
+
+.main-news .mn-img img {
+    width: 100%;
+}
+
+.main-news .mn-content {
+    position: relative;
+    width: 100%;
+    padding: 15px 0 0 0;
+}
+
+.main-news .mn-content a.mn-title {
+    display: block;
+    width: 100%;
+    color: #353535;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 32px;
+    margin-bottom: 10px;
+}
+
+.main-news .mn-content a.mn-title:hover {
+    color: #E47A2E;
+}
+
+.main-news .mn-content a.mn-date {
+    display: block;
+    width: 100%;
+    margin-bottom: 5px;
+    color: #757575;
+    font-size: 14px;
+    font-weight: 400;
+    transition: .3s;
+    letter-spacing: 1px;
+}
+
+.main-news .mn-content a.mn-date i {
+    margin-right: 5px;
+}
+
+.main-news .mn-content a.mn-date:hover {
+    text-decoration: underline;
+}
+
+.main-news .mn-content p {
+    margin: 0;
+}
+
+.main-news .mn-list {
+    position: relative;
+    width: 100%;
+    float: left;
+    margin-bottom: 30px;
+}
+
+.main-news .mn-list .mn-img {
+    position: relative;
+    width: 100px;
+    margin-right: 15px;
+    float: left;
+    overflow: hidden;
+}
+
+.main-news .mn-list .mn-img img {
+    width: 100%;
+}
+
+.main-news .mn-list .mn-content {
+    position: relative;
+    float: left;
+    width: calc(100% - 115px);
+    padding: 0;
+}
+
+.main-news .mn-list .mn-content a.mn-title {
+    display: block;
+    width: 100%;
+    color: #353535;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 20px;
+    margin-bottom: 5px;
+}
+
+.main-news .mn-list .mn-content a.mn-title:hover {
+    color: #E47A2E;
+}
+
+.main-news .mn-list .mn-content a.mn-date {
+    display: block;
+    width: 100%;
+    margin-bottom: 0;
+    color: #757575;
+    font-size: 14px;
+    font-weight: 400;
+    transition: .3s;
+    letter-spacing: 1px;
+}
+
+.main-news .mn-list .mn-content a.mn-date i {
+    margin-right: 5px;
+}
+
+.main-news .mn-list .mn-content a.mn-date:hover {
+    text-decoration: underline;
+}
+
+/**********************************/
+/*********** Sidebar CSS **********/
+/**********************************/
+.sidebar {
+    position: relative;
+    width: 100%;
+}
+
+.sidebar .sidebar-widget {
+    position: relative;
+    width: 100%;
+    margin-bottom: 45px;
+}
+
+.sidebar .sidebar-widget h2 {
+    color: #353535;
+    font-size: 35px;
+    font-weight: 700;
+    margin-left: 40px;
+}
+
+.sidebar .sidebar-widget h2 i {
+    position: absolute;
+    top: 8px;
+    left: 0;
+    font-size: 28px;
+}
+
+.sidebar .sidebar-widget .category {
+    position: relative;
+}
+
+.sidebar .sidebar-widget .category .fa-ul {
+    margin-left: 23px;
+}
+
+.sidebar .sidebar-widget .category .fa-ul li {
+    margin-bottom: 10px;
+}
+
+.sidebar .sidebar-widget .category .fa-ul li i {
+    color: #353535;
+}
+
+.sidebar .sidebar-widget .category .fa-ul li a {
+    color: #353535;
+}
+
+.sidebar .sidebar-widget .category .fa-ul li a:hover {
+    color: #E47A2E;
+}
+
+.sidebar .sidebar-widget .tags {
+    position: relative;
+}
+
+.sidebar .sidebar-widget .tags a {
+    display: inline-block;
+    margin-bottom: 5px;
+    padding: 5px 10px;
+    color: #353535;
+    background: #ffffff;
+    border: 1px solid #353535;
+}
+
+.sidebar .sidebar-widget .tags a:hover {
+    color: #ffffff;
+    background: #E47A2E;
+    border: 1px solid #E47A2E;
+}
+
+.sidebar .sidebar-widget .image a {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+}
+
+.sidebar .sidebar-widget .image img {
+    max-width: 100%;
+    transition: .3s;
+}
+
+.sidebar .sidebar-widget .image img:hover {
+    transform: scale(1.1);
+    filter: blur(3px);
+    -webkit-filter: blur(3px);
+}
+
+
+/**********************************/
+/********* Breadcrumb CSS *********/
+/**********************************/
+.breadcrumb-wrap {
+    position: relative;
+    width: 100%;
+    background: #ffffff;
+}
+
+.breadcrumb-wrap .breadcrumb {
+    margin: 25px 0 0 140px;
+    padding: 0;
+    background: none;
+}
+
+.breadcrumb-wrap .breadcrumb li a {
+    text-decoration: none;
+}
+
+.breadcrumb-wrap .breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+    color: #353535;
+}
+
+.breadcrumb-wrap .breadcrumb .breadcrumb-item.active {
+    color: #353535;
+}
+
+/**********************************/
+/********* Single News CSS ********/
+/**********************************/
+/* Single News Section */
+.single-news {
+    max-width: 900px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.single-news .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Video Section */
+.sn-img video {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Content Section */
+.sn-content {
+    padding: 20px;
+}
+
+.sn-content .sn-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #353535;
+    text-decoration: none;
+}
+
+.sn-content .sn-date {
+    font-size: 14px;
+    color: #E47A2E;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.sn-content p {
+    font-size: 16px;
+    text-align: justify;
+    color: #555;
+    margin-bottom: 0;
+    line-height: 1.6;
+}

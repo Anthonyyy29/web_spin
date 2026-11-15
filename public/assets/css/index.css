@@ -1,0 +1,853 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f8f9fa; 
+  background-image: linear-gradient(135deg, #bbb1b2 0%, #e3eeff 100%);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  background-size: cover; 
+  background-repeat: no-repeat;
+  background-attachment: fixed; 
+}
+
+header {
+  position: relative;
+  width: 100vw;
+  height: 350px; 
+  display: flex;
+  align-items: center; 
+  justify-content: center; 
+  text-align: center;
+  color: white;
+  overflow: hidden;
+}
+
+header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('/assets/img/s.jpg') center/cover no-repeat;
+  filter: blur(10px);
+  z-index: -1;
+}
+
+header .text-container {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 80%;
+}
+
+header h1 {
+  font-size: 2.8rem; /* Ukuran teks lebih besar */
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+header h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.carousel-control-prev, 
+.carousel-control-next {
+  width: 5%; /* Sedikit diperbesar agar lebih mudah diklik */
+  opacity: 0.7; /* Sedikit lebih jelas */
+}
+
+.carousel-control-next:hover, 
+.carousel-control-prev:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  transition: background-color 0.3s ease-in-out;
+  border-radius: 15px;
+}
+
+/* Gaya untuk tombol View More */
+.btn-custom {
+background-color: #1638a5; /* Warna oranye */
+color: white;
+font-size: 18px;
+font-weight: 600;
+padding: 10px 20px;
+border-radius: 8px;
+border: none;
+transition: all 0.3s ease-in-out;
+}
+
+.btn-custom:hover { 
+  background-color: #324fac; /*Warnamerahlebihgelap*/
+  transform: scale(1.05); 
+}
+
+/* Efek animasi saat ditekan */
+.btn-custom:active {
+transform: scale(0.95);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link.active {
+    background: rgba(228, 122, 46, .2);
+    border-bottom: 2px solid #E47A2E;
+    transition: none;
+}
+
+#crew-slider {
+  margin-top: 30px;
+}
+
+.post-slide {
+  margin: 20px 100px 20px 120px;
+  border-radius: 15px;
+  padding-top: 1px;
+  box-shadow: 0px 14px 22px -9px #bbcbd8;
+  width: 50%;
+}
+
+.post-slide .post-img {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  margin-left: -10px;
+}
+
+.post-slide .post-img img {
+  width: 100%;
+  height: auto;
+  transform: scale(1, 1);
+  transition: transform 0.2s linear;
+}
+
+.post-slide:hover .post-img img {
+  transform: scale(1.1, 1.1);
+}
+
+.post-slide .over-layer {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  background: linear-gradient(-45deg, rgba(6, 190, 244, 0.75) 0%, rgba(45, 112, 253, 0.6) 100%);
+  transition: all 0.50s linear;
+}
+
+.post-slide:hover .over-layer {
+  opacity: 1;
+  text-decoration: none;
+}
+
+.post-slide .over-layer i {
+  position: relative;
+  top: 45%;
+  text-align: center;
+  display: block;
+  color: #fff;
+  font-size: 25px;
+}
+
+.owl-controls .owl-buttons .owl-prev {
+  background: #fff;
+  position: absolute;
+  top: -13%;
+  left: 110px;
+  padding: 0 18px 0 15px;
+  border-radius: 50px;
+  box-shadow: 3px 14px 25px -10px #92b4d0;
+  transition: background 0.5s ease 0s;
+}
+
+.owl-controls .owl-buttons .owl-next {
+  background: #fff;
+  position: absolute;
+  top: -13%;
+  right: 30px;
+  padding: 0 15px 0 18px;
+  border-radius: 50px;
+  box-shadow: -3px 14px 25px -10px #92b4d0;
+  transition: background 0.5s ease 0s;
+}
+
+.owl-controls .owl-buttons .owl-prev:after,
+.owl-controls .owl-buttons .owl-next:after {
+  content: "\f104";
+  font-family: FontAwesome;
+  color: #333;
+  font-size: 30px;
+}
+
+.owl-controls .owl-buttons .owl-next:after {
+  content: "\f105";
+}
+
+.hidden-podcast {
+  filter: blur(5px); 
+  opacity: 0.5; 
+  transition: all 0.5s ease-in-out;
+}
+
+.show-podcast {
+  filter: blur(0);
+  opacity: 1;
+}
+
+#podcast-gallery img {
+  transition: transform 0.3s ease-in-out; 
+  margin: 0 20px 20px 0;
+  width: 80%;
+}
+
+#podcast-gallery img:hover {
+  transform: scale(1.1); 
+}
+
+@media only screen and (max-width:1280px) {
+  .post-slide .post-content {
+      padding: 0px 15px 25px 15px;
+  }
+}
+
+
+button:focus, input:focus, textarea:focus {
+	outline: 0;
+}
+
+.logo_wrapper {
+  width: 100%;
+  min-height: 60vh; /* Mengurangi tinggi agar tidak terlalu besar */
+  display: flex;
+  flex-direction: column; /* Mengatur tata letak vertikal */
+  align-items: center;
+  justify-content: center; /* Memastikan card berada di tengah */
+  padding: 20px;
+  margin-top: 10px;
+}
+
+.logo_card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px; /* Membuat card lebih membulat */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Efek bayangan */
+  text-align: center;
+  max-width: 80%;
+  width: 100%;
+}
+
+.logo_card h2 {
+  color: black;
+  margin-bottom: 20px; /* Mengatur jarak antara h2 dan slider */
+}
+
+.logo_active {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.logo_active img {
+  width: 2990px !important;
+}
+
+.logo_active .owl-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.owl-carousel .owl-stage {
+  display: flex;
+  align-items: center;
+}
+
+/* Efek hover pada gambar */
+.img-hover {
+  transition: transform 0.3s ease-in-out;
+}
+
+.img-hover:hover {
+  transform: scale(1.05);
+}
+
+/* Menyesuaikan tampilan card */
+.card {
+  background: white;
+  border-radius: 12px;
+}
+
+.list-group-item {
+  border: none;
+  /*background-color: transparent;*/
+   background-color: white;
+}
+
+/* Styling Section */
+.organization_detail_section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px 20px;
+  margin-bottom: -60px;
+}
+
+/* Styling Card */
+.location_card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Styling Judul */
+.location_card h2 {
+  font-size: 2rem;
+  color: #007bff;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* Styling Keterangan */
+.location_card p {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: justify;
+}
+
+/* Styling Peta dan Form Kontak */
+.contact_map_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Styling Location Map */
+.location_map {
+  width: 100%;
+  min-height: 350px; /* Sama dengan contact form */
+  display: flex;
+  align-items: center;
+}
+
+.location_map iframe {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+/* Styling Form Kontak */
+.contact_form {
+  width: 100%;
+  min-height: 350px; /* Sama dengan location map */
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.contact_form h3 {
+  text-align: center;
+  color: #007bff;
+}
+
+.contact_form label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.contact_form input,
+.contact_form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.contact_form textarea {
+  height: 100px;
+}
+
+.contact_form button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.contact_form button:hover {
+  background: #0056b3;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .contact_map_container {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: stretch; /* Agar tingginya sejajar */
+  }
+  .location_map, .contact_form {
+      width: 48%;
+  }
+}
+
+.wrapper .title{
+  text-align: center;
+  margin-top: 30px;
+}
+
+.title h4{
+  display: inline-block;
+  padding: 20px;
+  color: #585757;
+  font-size: 50px;
+  font-weight: 500;
+  letter-spacing: 1.2px;
+  word-spacing: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  text-transform: uppercase;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+  word-wrap: break-word;
+}
+
+.wrapper .card_Container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 40px 0;
+}
+
+.card_Container .card {
+  position: relative;
+  width: 170px;
+  height: 250px;
+  margin: 20px;
+  overflow: hidden;
+  box-shadow: 0 30px 30px -20px rgba(0, 0, 0, 1),
+              inset 0 0 0 1000px rgba(67, 52, 109, .6);
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+/* Efek Hover */
+.card:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 40px 50px -20px rgba(0, 0, 0, 0.8), 
+              0 0 15px rgba(67, 52, 109, 0.9);
+}
+
+/* Efek Floating (Melayang) */
+@keyframes floating {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+.card {
+  animation: floating 3s infinite ease-in-out;
+}
+
+/* Gambar */
+.card .imbBx, .imbBx img {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Efek gambar zoom saat hover */
+.card:hover .imbBx img {
+  transform: scale(1.1);
+}
+
+/* Konten */
+.card .content {
+  position: absolute;
+  bottom: -160px;
+  width: 100%;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 -10px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  transition: bottom 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  transition-delay: 0.50s;
+  opacity: 0;
+  -webkit-transition: bottom 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  -moz-transition: bottom 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  -ms-transition: bottom 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  -o-transition: bottom 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Efek Hover untuk Menampilkan Konten */
+.card:hover .content {
+  bottom: 0;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+/* Nama */
+.content .contentBx h3 {
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 2px;
+  font-weight: 500;
+  font-size: 14px;
+  text-align: center;
+  margin: 20px 0 15px;
+  line-height: 1.1em;
+  transition: 0.5s;
+  transition-delay: 0.6s;
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.card:hover .content .contentBx h3 {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Social Media */
+.content .sci {
+  position: relative;
+  bottom: 10=px;
+  display: flex;
+  justify-content: center;
+}
+
+.content .sci li {
+  list-style: none;
+  margin: 0 10px;
+  transform: translateY(40px);
+  transition: 0.5s;
+  opacity: 0;
+  transition-delay: calc(0.2s * var(--i));
+}
+
+.card:hover .content .sci li {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Ikon */
+.content .sci li a {
+  color: #fff;
+  font-size: 20px;
+  transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+  margin: 0 10px 0 -20px;
+}
+
+/* Efek Hover Ikon */
+.content .sci li a:hover {
+  transform: scale(1.2);
+  color: #ffcc00;
+}
+
+#podcast-gallery-listen img {
+  transition: transform 0.3s ease-in-out;
+  margin: 0 20px 20px 0;
+}
+
+#podcast-gallery-listen img:hover {
+  transform: scale(1.1); 
+}
+
+.title {
+  margin-top: -40px;
+}
+
+/**********************************/
+/********* Breadcrumb CSS *********/
+/**********************************/
+.breadcrumb-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.breadcrumb-wrap .breadcrumb {
+  margin: 25px 0 40px 140px;
+  padding: 0;
+  background: none;
+}
+
+.breadcrumb-wrap .breadcrumb li a {
+  text-decoration: none;
+}
+
+.breadcrumb-wrap .breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+  color: #353535;
+}
+
+.breadcrumb-wrap .breadcrumb .breadcrumb-item.active {
+  color: #353535;
+}
+
+/* Podcast Section */
+.podcast-section {
+  text-align: center;
+  padding: 0 20px 30px;
+  color: white;
+}
+
+/* Segment Cover */
+.segment-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  margin-bottom: 30px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.segment-cover img {
+  width: 200px;
+  border-radius: 10px;
+  margin-right: 20px;
+}
+
+.segment-info h2 {
+  font-size: 2rem;
+  color: #1e1e2f;
+}
+
+.segment-info p {
+  font-size: 1rem;
+  color: #666;
+}
+
+/* Podcast Container */
+.podcast-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+/* Podcast Card */
+.podcast-card {
+  margin: 20px 0 0;
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out;
+}
+
+.podcast-card:hover {
+  transform: translateY(-5px);
+}
+
+.podcast-card img {
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
+  margin-right: 20px;
+  object-fit: cover;
+}
+
+.podcast-content {
+  text-align: left;
+  flex: 1;
+}
+
+.podcast-content h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-top: -30px; /* Mengurangi jarak atas h3 */
+}
+
+.podcast-content p {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 10px;
+  text-align: justify;
+}
+
+/* Responsive Spotify Embed */
+.podcast-content iframe {
+  width: 100%;
+  height: 200px;
+  border-radius: 8px;
+  border: none;
+}
+
+.read-more {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease, transform 0.2s;
+}
+
+.read-more:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+.read-more:active {
+  transform: scale(0.95);
+}
+
+/* Main Button Style */
+.radio_btn {
+  position: fixed;
+  right: 84px;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+  background-color: #23f310;
+  color: black;
+  padding: 16px;
+  border-radius: 60px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  transition: width 0.4s ease, padding 0.3s ease;
+  overflow: hidden;
+  width: 90px;
+  z-index: 1000;
+}
+
+.radio_btn.expanded {
+  width: 280px;
+  padding: 16px 24px 16px 16px;
+}
+
+/* Icon Circle */
+.icon-circle {
+  background-color: white;
+  color: #23f310;
+  height: 60px;
+  width: 60px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.icon-circle i {
+  font-size: 30px;
+}
+
+/* Label */
+.radio-label {
+  font-size: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.radio_btn.expanded .radio-label {
+  opacity: 1;
+}
+
+/* Wave Animation */
+.wave {
+  display: flex;
+  align-items: flex-end;
+  height: 24px;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.wave span {
+  display: block;
+  width: 4px;
+  height: 100%;
+  background: black;
+  animation: waveAnim 1s infinite ease-in-out;
+}
+
+.wave span:nth-child(1) { animation-delay: 0s; }
+.wave span:nth-child(2) { animation-delay: 0.1s; }
+.wave span:nth-child(3) { animation-delay: 0.2s; }
+.wave span:nth-child(4) { animation-delay: 0.3s; }
+.wave span:nth-child(5) { animation-delay: 0.4s; }
+
+.radio_btn.expanded .wave {
+  opacity: 1;
+}
+
+@keyframes waveAnim {
+  0%, 100% { height: 6px; }
+  50% { height: 22px; }
+}
+
+/* Floating Hint */
+.radio_hint {
+  position: fixed;
+  bottom: 115px; /* slightly above the big button */
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 1001;
+}
+
+.hint-text {
+  background: #217609;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 18px;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+.hint-arrow {
+  font-size: 30px;
+  color: #23f310;
+  animation: bounceArrow 1s infinite;
+}
+
+@keyframes bounceArrow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}

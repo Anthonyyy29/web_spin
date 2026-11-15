@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -9,10 +8,10 @@ use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
 
-test('user menyimpan username, peran sebagai enum, dan password ter-hash', function () {
-    $user = User::factory()->role(UserRole::Hr)->create(['username' => 'hr', 'password' => 'rahasia']);
+test('user menyimpan username, peran, dan password ter-hash', function () {
+    $user = User::factory()->role('hr')->create(['username' => 'hr', 'password' => 'rahasia']);
 
-    expect($user->fresh()->role)->toBe(UserRole::Hr)
+    expect($user->fresh()->role)->toBe('hr')
         ->and($user->getRawOriginal('password'))->not->toBe('rahasia')
         ->and(Hash::check('rahasia', $user->password))->toBeTrue();
 });

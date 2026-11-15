@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Models\AdminHistory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,12 +11,12 @@ function masuk(string $username = 'admin', string $password = 'rahasia')
     return test()->post('/login/checklogin', ['username' => $username, 'password' => $password]);
 }
 
-test('tiap peran bisa login', function (UserRole $role) {
-    User::factory()->role($role)->create(['username' => $role->value, 'password' => 'rahasia']);
+test('tiap peran bisa login', function (string $role) {
+    User::factory()->role($role)->create(['username' => $role, 'password' => 'rahasia']);
 
-    masuk($role->value)->assertRedirect('/dashboard')->assertSessionHas('success', 'login berhasil');
+    masuk($role)->assertRedirect('/dashboard')->assertSessionHas('success', 'login berhasil');
     $this->assertAuthenticated();
-})->with([UserRole::Admin, UserRole::Hr, UserRole::Panitia]);
+})->with(['admin', 'hr', 'panitia']);
 
 test('password salah ditolak', function () {
     User::factory()->create(['username' => 'admin', 'password' => 'rahasia']);
