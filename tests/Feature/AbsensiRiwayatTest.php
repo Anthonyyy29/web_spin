@@ -52,7 +52,7 @@ test('history/all memisahkan sesi dan tamu, default sesi', function () {
         ->assertJsonPath('data.0.nama', 'Sari Sesi');
 });
 
-test('ekspor mengikuti jenis', function () {
+test('ekspor excel dapat diunduh untuk kedua jenis', function () {
     siapkanLogSesiDanTamu();
 
     $this->get('/dashboard/absensi/export-excel?jenis=sesi')->assertOk()->assertDownload();

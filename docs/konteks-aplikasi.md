@@ -63,7 +63,7 @@ Seluruh grup `/dashboard` memakai `auth` + `actioncheck` (`PreventRapidPosts`: P
 
 ## Tes (`tests/Feature`)
 
-Login/logout/seeder/middleware/layout (bagian 1), `SitusPublikTest`, `AdminTest`, `AbsensiTest`. Tes yang mengunggah berkas membersihkan file di `public/assets/uploads` lewat `afterEach`.
+Login/logout/seeder/middleware/layout (bagian 1), `SitusPublikTest`, `AdminTest`, `AbsensiTest`, `BroadcastSessionTest`, `AbsensiSesiTest`, `AbsensiProgramTest`, `AbsensiSesiCrudTest`, `AbsensiRiwayatTest`. Tes yang mengunggah berkas membersihkan file di `public/assets/uploads` lewat `afterEach`.
 
 ## Aturan kerja proyek
 

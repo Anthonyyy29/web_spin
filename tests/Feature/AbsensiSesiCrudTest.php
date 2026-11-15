@@ -68,3 +68,29 @@ test('hapus sesi menjadikan absensinya tamu', function () {
 test('peran lain ditolak', function () {
     $this->actingAs(User::factory()->role('admin')->create())->get('/dashboard/absensi/sesi')->assertForbidden();
 });
+
+test('tanggal sesi tidak bisa diubah bila sudah ada absensi', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $sesi = BroadcastSession::factory()->create(['tanggal' => today()->toDateString(), 'jam_mulai' => '10:00:00', 'jam_selesai' => '11:00:00']);
+    AbsensiLog::factory()->create(['session_id' => $sesi->id]);
+
+    $this->post('/dashboard/absensi/sesi/update', [
+        'id' => $sesi->id, 'content_id' => $sesi->content_id, 'tanggal' => today()->addWeek()->toDateString(), 'jam_mulai' => '09:00', 'jam_selesai' => '11:00',
+    ])->assertRedirect('/dashboard/absensi/sesi')->assertSessionHas('error');
+
+    $sesi->refresh();
+    expect($sesi->tanggal->toDateString())->toBe(today()->toDateString())
+        ->and($sesi->jam_mulai)->toBe('10:00:00');
+});
+
+test('sesi yang sudah ada absensi tetap bisa diubah jamnya bila tanggal sama', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $sesi = BroadcastSession::factory()->create(['tanggal' => today()->toDateString(), 'jam_mulai' => '10:00:00', 'jam_selesai' => '11:00:00']);
+    AbsensiLog::factory()->create(['session_id' => $sesi->id]);
+
+    $this->post('/dashboard/absensi/sesi/update', [
+        'id' => $sesi->id, 'content_id' => $sesi->content_id, 'tanggal' => today()->toDateString(), 'jam_mulai' => '10:00', 'jam_selesai' => '12:00',
+    ])->assertRedirect('/dashboard/absensi/sesi')->assertSessionHas('success');
+
+    expect(substr($sesi->fresh()->jam_selesai, 0, 5))->toBe('12:00');
+});

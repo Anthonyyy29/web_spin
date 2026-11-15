@@ -28,11 +28,12 @@ class AbsensiController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Kartu tidak terdaftar']);
         }
 
-        $sesi = BroadcastSession::findForTap($kartu->crew, now());
+        $sekarang = now()->startOfSecond();
+        $sesi = BroadcastSession::findForTap($kartu->crew, $sekarang);
 
         $sudahAbsen = AbsensiLog::where('rfid_uid', $uid)
             ->when($sesi, fn ($query) => $query->where('session_id', $sesi->id))
-            ->unless($sesi, fn ($query) => $query->whereNull('session_id')->whereDate('tanggal', today()))
+            ->unless($sesi, fn ($query) => $query->whereNull('session_id')->whereDate('tanggal', $sekarang->toDateString()))
             ->exists();
 
         if ($sudahAbsen) {
@@ -41,13 +42,13 @@ class AbsensiController extends Controller
             return response()->json(['status' => 'warning', 'message' => $pesan]);
         }
 
-        $jam = now()->format('H:i:s');
-        $statusAbsen = $sesi?->statusAt(now()) ?? 'Hadir';
+        $jam = $sekarang->format('H:i:s');
+        $statusAbsen = $sesi?->statusAt($sekarang) ?? 'Hadir';
 
         AbsensiLog::create([
             'rfid_uid' => $uid,
             'session_id' => $sesi?->id,
-            'tanggal' => today()->toDateString(),
+            'tanggal' => $sekarang->toDateString(),
             'jam_masuk' => $jam,
             'status' => $statusAbsen,
         ]);

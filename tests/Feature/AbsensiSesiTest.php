@@ -113,3 +113,18 @@ test('view absensi tidak memasukkan data hasil tap ke innerHTML', function () {
         ->assertDontSee('${data.program}', false)
         ->assertSee('program.textContent = data.program', false);
 });
+
+test('tap sepersekian detik setelah jam selesai tetap dicatat di sesi', function () {
+    siapkanSesiHariIni();
+    $this->travelTo(today()->setTime(11, 0, 0, 400000));
+
+    $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])->assertJson(['jenis' => 'sesi']);
+});
+
+test('tap sepersekian detik setelah jam mulai tidak dianggap terlambat', function () {
+    siapkanSesiHariIni();
+    $this->travelTo(today()->setTime(10, 0, 0, 300000));
+
+    $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
+        ->assertJson(['jenis' => 'sesi', 'status_absen' => 'Hadir', 'jam' => '10:00:00']);
+});

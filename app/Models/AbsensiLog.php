@@ -35,6 +35,7 @@ class AbsensiLog extends Model
 
     /**
      * Absensi beserta judul program dan jam mulai sesinya (null untuk tamu).
+     * Panggil setelah withCrew(), karena memakai addSelect.
      *
      * @param  Builder<self>  $query
      */

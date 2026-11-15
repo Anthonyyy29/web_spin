@@ -17,7 +17,7 @@ class ProgramController extends Controller
     {
         return view('admin.absensi.program', [
             'navmenu' => 'Program',
-            'programs' => Content::with('crews')->get(),
+            'programs' => Content::with('crews')->orderBy('title')->get(),
             'crew_list' => Crew::sortedByRole(),
         ]);
     }

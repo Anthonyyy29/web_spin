@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin\Absensi;
 
 use App\Http\Controllers\Controller;
+use App\Models\AbsensiLog;
 use App\Models\BroadcastSession;
 use App\Models\Content;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -42,7 +44,16 @@ class SesiController extends Controller
     {
         $request->validate(['id' => ['required', 'exists:broadcast_sessions,id']]);
 
-        BroadcastSession::findOrFail($request->input('id'))->update($this->validated($request));
+        $sesi = BroadcastSession::findOrFail($request->input('id'));
+        $data = $this->validated($request);
+
+        $tanggalBerubah = $sesi->tanggal->toDateString() !== Carbon::parse($data['tanggal'])->toDateString();
+
+        if ($tanggalBerubah && AbsensiLog::where('session_id', $sesi->id)->exists()) {
+            return redirect(self::LIST_URL)->with('error', 'Tanggal sesi tidak bisa diubah karena sudah ada absensi. Tambah sesi baru untuk jadwal yang baru.');
+        }
+
+        $sesi->update($data);
 
         return redirect(self::LIST_URL)->with('success', 'Sesi berhasil diperbarui');
     }
