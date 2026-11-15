@@ -35,11 +35,6 @@ return [
         ],
     ],
 
-    'recaptcha' => [
-        'site_key' => env('RECAPTCHA_SITE_KEY'),
-        'secret' => env('RECAPTCHA_SECRET'),
-    ],
-
     'podcast_api' => [
         'token' => env('API_ACCESS_TOKEN'),
     ],

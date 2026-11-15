@@ -31,7 +31,7 @@ test('menu admin hanya untuk admin', function (string $role, int $status) {
     foreach (['/dashboard/crew', '/dashboard/podcast', '/dashboard/news', '/dashboard/sponsor'] as $url) {
         $this->get($url)->assertStatus($status);
     }
-})->with([['admin', 200], ['hr', 403], ['panitia', 403]]);
+})->with([['admin', 200], ['hr', 403]]);
 
 test('crew: simpan dengan gambar, ubah, filter, dan hapus tercatat di audit log', function () {
     masukSebagai('admin');

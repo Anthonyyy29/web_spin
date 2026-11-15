@@ -17,8 +17,11 @@ test('tiap peran melihat dashboard miliknya', function (string $role, string $te
 })->with([
     ['admin', 'Total Podcast'],
     ['hr', 'Tap Kartu Absensi'],
-    ['panitia', 'dashboard/lomba/jenis/poster'],
 ]);
+
+test('peran tak dikenal ditolak 403 di dashboard', function () {
+    $this->actingAs(User::factory()->role('tamu')->create())->get('/dashboard')->assertForbidden();
+});
 
 test('alur penuh: login, dashboard, logout', function () {
     User::factory()->create(['username' => 'admin', 'password' => 'rahasia']);

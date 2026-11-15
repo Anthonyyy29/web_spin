@@ -23,7 +23,7 @@ test('layout memuat kerangka adminlte dan nama peran', function (string $role, s
         ->toContain('Sign out')
         ->toContain(route('logout'))
         ->toContain('ISI-HALAMAN');
-})->with([['admin', 'Admin'], ['hr', 'Hr'], ['panitia', 'Panitia']]);
+})->with([['admin', 'Admin'], ['hr', 'Hr']]);
 
 test('judul mengikuti navmenu', function () {
     $this->actingAs(User::factory()->create());

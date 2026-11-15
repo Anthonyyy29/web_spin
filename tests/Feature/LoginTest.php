@@ -16,7 +16,7 @@ test('tiap peran bisa login', function (string $role) {
 
     masuk($role)->assertRedirect('/dashboard')->assertSessionHas('success', 'login berhasil');
     $this->assertAuthenticated();
-})->with(['admin', 'hr', 'panitia']);
+})->with(['admin', 'hr']);
 
 test('password salah ditolak', function () {
     User::factory()->create(['username' => 'admin', 'password' => 'rahasia']);

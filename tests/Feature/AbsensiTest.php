@@ -32,7 +32,7 @@ test('hr melihat tabel hari ini, riwayat, dan ekspor excel; peran lain ditolak',
     $this->getJson('/dashboard/absensi/history/byUid/AB12')->assertJsonCount(1, 'data');
     $this->get('/dashboard/absensi/export-excel')->assertOk()->assertDownload();
 
-    $this->actingAs(User::factory()->role('panitia')->create())->get('/dashboard/absensi/history')->assertForbidden();
+    $this->actingAs(User::factory()->role('admin')->create())->get('/dashboard/absensi/history')->assertForbidden();
 });
 
 test('kartu crew: tambah, tolak duplikat, ubah, hapus', function () {

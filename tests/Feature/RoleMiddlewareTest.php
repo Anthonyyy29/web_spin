@@ -14,12 +14,12 @@ beforeEach(function () {
 
 test('peran yang cocok lolos, lainnya 403', function () {
     $hr = User::factory()->role('hr')->create();
-    $panitia = User::factory()->role('panitia')->create();
+    $admin = User::factory()->role('admin')->create();
 
     $this->actingAs($hr)->get('/_t/hr')->assertOk();
     $this->actingAs($hr)->get('/_t/staff')->assertOk();
-    $this->actingAs($panitia)->get('/_t/hr')->assertForbidden();
-    $this->actingAs($panitia)->get('/_t/staff')->assertForbidden();
+    $this->actingAs($admin)->get('/_t/hr')->assertForbidden();
+    $this->actingAs(User::factory()->role('tamu')->create())->get('/_t/staff')->assertForbidden();
 });
 
 test('peran tak dikenal di database ditolak 403, bukan 500', function () {

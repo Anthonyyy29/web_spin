@@ -12,7 +12,7 @@ uses(RefreshDatabase::class);
 
 test('halaman publik terbuka dan root mengarah ke home', function (string $url) {
     $this->get($url)->assertOk();
-})->with(['/home', '/listen', '/news', '/aboutus', '/crew', '/lomba/guidebook']);
+})->with(['/home', '/listen', '/news', '/aboutus', '/crew']);
 
 test('root dialihkan ke home', function () {
     $this->get('/')->assertRedirect('/home');

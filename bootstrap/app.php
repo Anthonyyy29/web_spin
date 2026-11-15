@@ -3,7 +3,6 @@
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\PreventRapidPosts;
 use App\Http\Middleware\VerifyApiToken;
-use App\Http\Middleware\VerifyRecaptcha;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,7 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: ['tap-absen', 'api/uploadpodcast']);
 
         $middleware->alias([
-            'recaptcha' => VerifyRecaptcha::class,
             'api.token' => VerifyApiToken::class,
             'role' => EnsureUserHasRole::class,
             'actioncheck' => PreventRapidPosts::class,

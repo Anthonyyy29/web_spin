@@ -5,7 +5,6 @@ use App\Http\Controllers\Admin\Absensi\AbsensiController;
 use App\Http\Controllers\Admin\Absensi\CrewController as AbsensiCrewController;
 use App\Http\Controllers\Admin\Absensi\HistoryController;
 use App\Http\Controllers\Admin\CrewController as AdminCrewController;
-use App\Http\Controllers\Admin\Lomba\LombaPagesController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\PodcastController;
 use App\Http\Controllers\Admin\SponsorController;
@@ -14,7 +13,6 @@ use App\Http\Controllers\CrewController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ListenController;
-use App\Http\Controllers\Lomba\LombaController;
 use App\Http\Controllers\NewsController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,17 +35,6 @@ Route::prefix('news')->group(function () {
 Route::prefix('aboutus')->group(function () {
     Route::get('/', [AboutUsController::class, 'index'])->name('aboutus');
     Route::post('sendmail', [AboutUsController::class, 'sendMail']);
-});
-
-Route::prefix('lomba')->group(function () {
-    Route::redirect('/', '/lomba/guidebook');
-    Route::get('guidebook', [LombaController::class, 'guidebook']);
-    Route::get('pendaftaran', [LombaController::class, 'pendaftaranView']);
-    Route::get('reset-pendaftaran', [LombaController::class, 'resetPendaftaran']);
-    Route::get('pengumpulan-karya', [LombaController::class, 'pengumpulanView']);
-    Route::get('whatsapp-group', [LombaController::class, 'whatsappPage']);
-    Route::post('daftar', [LombaController::class, 'daftar'])->middleware('recaptcha');
-    Route::post('submit-karya', [LombaController::class, 'submitKarya'])->middleware('recaptcha');
 });
 
 Route::get('/login', [AuthController::class, 'index'])->name('login');
@@ -99,13 +86,6 @@ Route::prefix('dashboard')->middleware(['auth', 'actioncheck'])->group(function 
         Route::post('crew/simpan', [AbsensiCrewController::class, 'simpan']);
         Route::post('crew/update', [AbsensiCrewController::class, 'update']);
         Route::get('crew/delete/{rfid}', [AbsensiCrewController::class, 'delete']);
-    });
-
-    Route::prefix('lomba')->middleware('role:panitia')->group(function () {
-        Route::get('/', [DashboardController::class, 'index']);
-        Route::get('jenis/{jenis}', [LombaPagesController::class, 'pesertaByJenis']);
-        Route::get('karya/{jenis}', [LombaPagesController::class, 'karyaByJenis']);
-        Route::get('hapus/{id}', [LombaPagesController::class, 'hapusPendaftaran']);
     });
 });
 

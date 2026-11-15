@@ -9,7 +9,6 @@ use App\Models\Content;
 use App\Models\Crew;
 use App\Models\Episode;
 use App\Models\News;
-use App\Models\PendaftaranLomba;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -23,9 +22,9 @@ class DashboardController extends Controller
     public function index(Request $request): View
     {
         return match ($request->user()->role) {
+            'admin' => $this->admin(),
             'hr' => $this->hr(),
-            'panitia' => $this->panitia(),
-            default => $this->admin(),
+            default => abort(403),
         };
     }
 
@@ -91,19 +90,6 @@ class DashboardController extends Controller
                 ->select('tanggal', DB::raw('count(id) as total'))->groupBy('tanggal')->orderBy('tanggal')->get(),
             'chartDivisi' => AbsensiLog::withCrew()->tap($month)
                 ->reorder()->select('crews.role as divisi', DB::raw('count(absensi_logs.id) as total'))->groupBy('crews.role')->get(),
-        ]);
-    }
-
-    private function panitia(): View
-    {
-        $total = fn (string $jenis): int => PendaftaranLomba::where('jenis_lomba', $jenis)->count();
-
-        return view('admin.lomba.index', [
-            'navmenu' => 'Dashboard',
-            'total_lomba_poster' => $total('poster'),
-            'total_lomba_podcast' => $total('podcast'),
-            'total_lomba_konten' => $total('konten'),
-            'total_lomba_presenter' => $total('presenter'),
         ]);
     }
 }

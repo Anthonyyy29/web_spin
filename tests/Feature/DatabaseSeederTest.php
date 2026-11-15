@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Hash;
 
 uses(RefreshDatabase::class);
 
-test('seeder membuat tiga akun yang bisa dipakai login', function (string $username, string $role) {
+test('seeder membuat dua akun yang bisa dipakai login', function (string $username, string $role) {
     $this->seed();
 
     $user = User::firstWhere('username', $username);
@@ -19,12 +19,11 @@ test('seeder membuat tiga akun yang bisa dipakai login', function (string $usern
 })->with([
     ['admin', 'admin'],
     ['hr', 'hr'],
-    ['panitia', 'panitia'],
 ]);
 
 test('seeder aman dijalankan dua kali', function () {
     $this->seed();
     $this->seed();
 
-    expect(User::count())->toBe(3);
+    expect(User::count())->toBe(2);
 });
