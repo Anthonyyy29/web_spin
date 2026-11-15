@@ -12,8 +12,9 @@ class CrewSeeder extends Seeder
      * Isi anggota Gen 7. Kadiv disimpan dengan jabatan divisinya dan ditulis
      * paling awal di divisi itu. Yang menjabat ganda memakai jabatan utamanya.
      * Foto diambil dari FOTO_KABINET_GEN7 (nama berkas = nama crew, boleh diakhiri
-     * "_jabatan") lalu disalin ke public/assets/uploads. Crew tanpa foto memakai
-     * berkas pertama di public/assets/uploads sebagai pengganti.
+     * "_jabatan") lalu disalin ke public/assets/uploads. Bila folder itu tidak ada,
+     * dipakai foto yang sudah ada di public/assets/uploads. Crew tanpa foto sama
+     * sekali memakai berkas pertama di public/assets/uploads sebagai pengganti.
      */
     public function run(): void
     {
@@ -105,11 +106,12 @@ class CrewSeeder extends Seeder
 
         foreach ($anggota as [$nama, $jabatan]) {
             $berkas = $this->cariFoto($sumberFoto, $nama);
-            $tanpaFoto[] = $berkas === null ? $nama : null;
+            $foto = $berkas === null ? $this->fotoTerunggah($nama) : $this->salinFoto($berkas, $nama);
+            $tanpaFoto[] = $foto === null ? $nama : null;
 
             Crew::updateOrCreate(['name' => $nama], [
                 'role' => $jabatan,
-                'image' => $berkas === null ? $pengganti : $this->salinFoto($berkas, $nama),
+                'image' => $foto ?? $pengganti,
             ]);
         }
 
@@ -158,6 +160,17 @@ class CrewSeeder extends Seeder
         }
 
         return null;
+    }
+
+    /**
+     * Foto yang sudah ada di public/assets/uploads (nama = slug nama crew), dipakai
+     * saat folder sumber tidak ada, mis. di device lain setelah clone.
+     */
+    private function fotoTerunggah(string $nama): ?string
+    {
+        $berkas = glob(public_path('assets/uploads/'.Str::slug($nama).'.{jpg,jpeg,png}'), GLOB_BRACE) ?: [];
+
+        return $berkas === [] ? null : basename($berkas[0]);
     }
 
     /**
