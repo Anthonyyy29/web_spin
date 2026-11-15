@@ -31,5 +31,6 @@ class AboutUsController extends Controller
         });
 
         return redirect('/aboutus')->with('success', 'Your message has been sent successfully!');
+
     }
 }

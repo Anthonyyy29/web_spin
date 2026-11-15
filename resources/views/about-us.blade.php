@@ -34,30 +34,36 @@
         </div>
         <!-- Konten -->
         <div class="col-lg-8">
-          <h1 class="fw-bold text-primary">Kabinet Karsa Falah</h1>
+          <h1 class="fw-bold text-primary">Kabinet Sonavara</h1>
           <p class="text-justify">
-            "Karsa" berasal dari bahasa Jawa yang berarti niat atau tekad, sementara "Falah" berasal dari bahasa Arab yang bermakna keberhasilan. Dengan demikian, Karsa Falah merepresentasikan sebuah kabinet yang berorientasi pada upaya pencapaian keberhasilan. Kabinet ini berperan dalam merumuskan serta mengimplementasikan kebijakan yang bertujuan untuk meningkatkan kesejahteraan Spin The Radio FM Gen 5.
+            "Sona" berasal dari kata sonus bahasa Latin yang berarti suara atau bunyi. Kata ini merepresentasikan identitas utama Spin The Radio FM sebagai media yang lahir dari suara, komunikasi, dan penyampaian cerita.
+          </p>
+          <p class="text-justify">
+            "Vara" dapat dikaitkan dengan bahasa Sanskerta, yang memiliki makna unggul, terbaik, atau pilihan. Makna ini menggambarkan harapan untuk menghadirkan kualitas terbaik dalam setiap proses, karya, dan kontribusi yang diberikan oleh anggota Spin The Radio FM.
+          </p>
+          <p class="text-justify">
+            Perpaduan Sonus + Vara dapat dimaknai sebagai “suara yang unggul” atau “suara yang membawa nilai terbaik.” Nama ini menggambarkan semangat untuk menjadikan setiap suara yang ada di dalam Spin The Radio FM bukan sekadar terdengar, tetapi mampu berkembang menjadi gagasan, karya, dan kontribusi yang bermakna.
           </p>
 
           <!-- Visi -->
           <h3 class="mt-4 text-secondary">Visi</h3>
           <ol class="list-group list-group-flush">
-            <li class="list-group-item">Menjadikan STRFM menjadi radio kampus yang terkemuka dalam memberikan informasi, hiburan, dan edukasi kepada komunitas kampus serta masyarakat luas, dengan mengutamakan kreativitas dan inovasi dalam setiap siarannya.
+            <li class="list-group-item">Menjadikan Spin The Radio FM sebagai media kampus yang inovatif, profesional, inspiratif, dalam perkembangan media digital, serta menjadi wadah kolaborasi yang mampu mengembangkan potensi, kreativitas, dan prestasi mahasiswa melalui karya yang berdampak positif bagi lingkungan kampus.
             </li>
           </ol>
 
           <!-- Misi -->
           <h3 class="mt-4 text-secondary">Misi</h3>
           <ol class="list-group list-group-flush">
-            <li class="list-group-item">1. Memberikan Informasi Berkualitas: Menyediakan program siaran yang informatif dan aktual untuk memenuhi kebutuhan informasi anggota kampus dan pendengar.
+            <li class="list-group-item">1. Menghadirkan program siaran dan konten digital yang kreatif, informatif, edukatif, serta relevan dengan kebutuhan dan minat mahasiswa.
             </li>
-            <li class="list-group-item">2. Menjadi Sarana Hiburan Unggulan: Menghadirkan program-program hiburan yang menarik dan bervariasi, mencakup musik, talkshow, dan konten-konten menarik lainnya.
+            <li class="list-group-item">2. Membangun budaya organisasi yang komunikatif, kolaboratif, inklusif, dan menjunjung tinggi rasa kekeluargaan, sehingga tercipta lingkungan yang nyaman untuk belajar, berkarya, dan berkembang bersama.
             </li>
-            <li class="list-group-item">3. Mendorong Kreativitas dan Inovasi: Mengembangkan bakat dan kreativitas anggota dengan memberikan ruang untuk berekspresi melalui siaran radio yang beragam dan inovatif.
+            <li class="list-group-item">3. Mengembangkan kompetensi anggota melalui pelatihan, dan praktik langsung di bidang penyiaran, produksi konten, desain kreatif, videografi, serta pengelolaan media digital.
             </li>
-            <li class="list-group-item">4. Menjadi Bagian dari Komunitas Kampus: Menjadi jembatan antara mahasiswa, dosen, dan staf dengan menyediakan platform untuk diskusi, perdebatan, serta berbagai kegiatan kampus lainnya.
+            <li class="list-group-item">4. Memperluas kolaborasi dengan organisasi mahasiswa, komunitas, institusi pendidikan, media, untuk meningkatkan eksistensi dan dampak positif Spin The Radio FM.
             </li>
-            <li class="list-group-item">5. Menginspirasi dan Mendidik Pendengar: Menyampaikan nilai-nilai positif dan mendidik melalui konten-konten yang menginspirasi dan memberi wawasan kepada pendengar.
+            <li class="list-group-item">5. Menjunjung tinggi etika, integritas, disiplin, dan profesionalisme dalam setiap proses kerja, penyelenggaraan program, serta aktivitas penyiaran sebagai wujud komitmen terhadap kualitas dan tanggung jawab organisasi.
             </li>
           </ol>
         </div>

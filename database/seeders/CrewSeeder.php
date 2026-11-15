@@ -4,17 +4,22 @@ namespace Database\Seeders;
 
 use App\Models\Crew;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class CrewSeeder extends Seeder
 {
     /**
      * Isi anggota Gen 7. Kadiv disimpan dengan jabatan divisinya dan ditulis
      * paling awal di divisi itu. Yang menjabat ganda memakai jabatan utamanya.
-     * Foto sementara memakai berkas pertama di public/assets/uploads.
+     * Foto diambil dari FOTO_KABINET_GEN7 (nama berkas = nama crew, boleh diakhiri
+     * "_jabatan") lalu disalin ke public/assets/uploads. Crew tanpa foto memakai
+     * berkas pertama di public/assets/uploads sebagai pengganti.
      */
     public function run(): void
     {
-        $gambar = basename(glob(public_path('assets/uploads/*.{png,jpg}'), GLOB_BRACE)[0] ?? 'logo.png');
+        $pengganti = basename(glob(public_path('assets/uploads/*.{png,jpg}'), GLOB_BRACE)[0] ?? 'logo.png');
+        $sumberFoto = $this->petaFoto(base_path('FOTO_KABINET_GEN7'));
+        $tanpaFoto = [];
 
         $anggota = [
             ['Nurul Afifah Azzahra', 'General Manager'],
@@ -99,7 +104,70 @@ class CrewSeeder extends Seeder
         ];
 
         foreach ($anggota as [$nama, $jabatan]) {
-            Crew::updateOrCreate(['name' => $nama], ['role' => $jabatan, 'image' => $gambar]);
+            $berkas = $this->cariFoto($sumberFoto, $nama);
+            $tanpaFoto[] = $berkas === null ? $nama : null;
+
+            Crew::updateOrCreate(['name' => $nama], [
+                'role' => $jabatan,
+                'image' => $berkas === null ? $pengganti : $this->salinFoto($berkas, $nama),
+            ]);
         }
+
+        $tanpaFoto = array_filter($tanpaFoto);
+
+        if ($tanpaFoto !== []) {
+            $this->command?->warn('Foto tidak ditemukan: '.implode(', ', $tanpaFoto));
+        }
+    }
+
+    /**
+     * Petakan nama (bagian sebelum "_jabatan") ke path berkas. Berkas tanpa
+     * akhiran jabatan didahulukan bila satu orang punya lebih dari satu foto.
+     *
+     * @return array<string, string>
+     */
+    private function petaFoto(string $folder): array
+    {
+        $berkas = glob($folder.'/*.{jpg,jpeg,png}', GLOB_BRACE) ?: [];
+        usort($berkas, fn (string $a, string $b): int => substr_count($b, '_') <=> substr_count($a, '_'));
+
+        $peta = [];
+        foreach ($berkas as $path) {
+            $peta[Str::before(pathinfo($path, PATHINFO_FILENAME), '_')] = $path;
+        }
+
+        return $peta;
+    }
+
+    /**
+     * Cocokkan persis; bila gagal, cocokkan awalan agar nama singkat seperti "Chelsea Alya Mukhbita W." tetap ketemu.
+     *
+     * @param  array<string, string>  $peta
+     */
+    private function cariFoto(array $peta, string $nama): ?string
+    {
+        if (isset($peta[$nama])) {
+            return $peta[$nama];
+        }
+
+        $awalan = rtrim($nama, '.');
+        foreach ($peta as $kunci => $path) {
+            if (str_starts_with($kunci, $awalan)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Salin ke public/assets/uploads dengan nama tetap (slug nama) agar seeder aman dijalankan ulang.
+     */
+    private function salinFoto(string $path, string $nama): string
+    {
+        $tujuan = Str::slug($nama).'.'.pathinfo($path, PATHINFO_EXTENSION);
+        copy($path, public_path('assets/uploads/'.$tujuan));
+
+        return $tujuan;
     }
 }
