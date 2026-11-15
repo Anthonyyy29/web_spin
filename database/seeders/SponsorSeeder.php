@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 class SponsorSeeder extends Seeder
 {
     /**
-     * Isi logo sponsor dari repo lama. Berkasnya sudah ada di public/assets/uploads.
+     * Isi logo sponsor dari repo lama. Berkasnya sudah ada di public/assets/uploads/sponsor.
      */
     public function run(): void
     {
@@ -49,8 +49,11 @@ class SponsorSeeder extends Seeder
             '1746168810_e8caded8f8c7bee6d006.jpg',
         ];
 
+        // Baris hasil seeder lama menyimpan nama berkas tanpa folder; hapus agar tidak ganda.
+        Sponsor::whereIn('image', $logo)->delete();
+
         foreach ($logo as $image) {
-            Sponsor::firstOrCreate(['image' => $image]);
+            Sponsor::firstOrCreate(['image' => 'sponsor/'.$image]);
         }
     }
 }

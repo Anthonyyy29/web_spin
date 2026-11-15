@@ -7,6 +7,8 @@ use Illuminate\View\View;
 
 class SponsorController extends ImageCrudController
 {
+    protected string $uploadFolder = 'sponsor';
+
     protected function modelClass(): string
     {
         return Sponsor::class;

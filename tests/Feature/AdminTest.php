@@ -18,7 +18,7 @@ function masukSebagai(string $role): void
 }
 
 afterEach(function () {
-    foreach (glob(public_path('assets/uploads/{,crew/,program/,news/}*_*.png'), GLOB_BRACE) ?: [] as $berkas) {
+    foreach (glob(public_path('assets/uploads/{,crew/,program/,news/,sponsor/}*_*.png'), GLOB_BRACE) ?: [] as $berkas) {
         if (filemtime($berkas) > time() - 120) {
             @unlink($berkas);
         }
