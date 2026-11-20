@@ -28,7 +28,7 @@ afterEach(function () {
 test('menu admin hanya untuk admin', function (string $role, int $status) {
     masukSebagai($role);
 
-    foreach (['/dashboard/crew', '/dashboard/podcast', '/dashboard/news', '/dashboard/sponsor'] as $url) {
+    foreach (['/dashboard/crew', '/dashboard/news', '/dashboard/sponsor'] as $url) {
         $this->get($url)->assertStatus($status);
     }
 })->with([['admin', 200], ['hr', 403]]);

@@ -15,8 +15,8 @@
     </a>
 </li>
 
-<li class="nav-item {{ $navmenu === 'Program' ? 'active' : '' }}">
-    <a href="/dashboard/absensi/program" class="nav-link {{ $navmenu === 'Program' ? 'active' : '' }}">
+<li class="nav-item {{ in_array($navmenu, ['Podcast', 'Episode'], true) ? 'active' : '' }}">
+    <a href="/dashboard/podcast" class="nav-link {{ in_array($navmenu, ['Podcast', 'Episode'], true) ? 'active' : '' }}">
         <i class="nav-icon bi bi-broadcast"></i>
         <p>
             Program

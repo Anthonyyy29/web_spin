@@ -4,7 +4,6 @@ use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\Admin\Absensi\AbsensiController;
 use App\Http\Controllers\Admin\Absensi\CrewController as AbsensiCrewController;
 use App\Http\Controllers\Admin\Absensi\HistoryController;
-use App\Http\Controllers\Admin\Absensi\ProgramController;
 use App\Http\Controllers\Admin\Absensi\SesiController;
 use App\Http\Controllers\Admin\CrewController as AdminCrewController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
@@ -46,14 +45,7 @@ Route::prefix('dashboard')->middleware(['auth', 'actioncheck'])->group(function 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::middleware('role:admin')->group(function () {
-        Route::prefix('crew')->group(function () {
-            Route::get('/', [AdminCrewController::class, 'index']);
-            Route::post('save', [AdminCrewController::class, 'save']);
-            Route::get('delete/{id}', [AdminCrewController::class, 'delete']);
-            Route::get('filter/{role}', [AdminCrewController::class, 'filter']);
-        });
-
+    Route::middleware('role:admin,hr')->group(function () {
         Route::prefix('podcast')->group(function () {
             Route::get('/', [PodcastController::class, 'index']);
             Route::post('save', [PodcastController::class, 'save']);
@@ -62,6 +54,15 @@ Route::prefix('dashboard')->middleware(['auth', 'actioncheck'])->group(function 
             Route::get('episode/open/{contentId}', [PodcastController::class, 'openEpisode']);
             Route::post('episode/save', [PodcastController::class, 'saveEpisode']);
             Route::get('episode/delete/{id}', [PodcastController::class, 'deleteEpisode']);
+        });
+    });
+
+    Route::middleware('role:admin')->group(function () {
+        Route::prefix('crew')->group(function () {
+            Route::get('/', [AdminCrewController::class, 'index']);
+            Route::post('save', [AdminCrewController::class, 'save']);
+            Route::get('delete/{id}', [AdminCrewController::class, 'delete']);
+            Route::get('filter/{role}', [AdminCrewController::class, 'filter']);
         });
 
         Route::prefix('news')->group(function () {
@@ -88,8 +89,6 @@ Route::prefix('dashboard')->middleware(['auth', 'actioncheck'])->group(function 
         Route::post('crew/simpan', [AbsensiCrewController::class, 'simpan']);
         Route::post('crew/update', [AbsensiCrewController::class, 'update']);
         Route::get('crew/delete/{rfid}', [AbsensiCrewController::class, 'delete']);
-        Route::get('program', [ProgramController::class, 'index']);
-        Route::post('program/update', [ProgramController::class, 'update']);
         Route::get('sesi', [SesiController::class, 'index']);
         Route::post('sesi/simpan', [SesiController::class, 'simpan']);
         Route::post('sesi/update', [SesiController::class, 'update']);
