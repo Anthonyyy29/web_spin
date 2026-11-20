@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\CrewFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -47,7 +48,7 @@ class Crew extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['name', 'image', 'role', 'about', 'linkedin_link', 'instagram_link'];
+    protected $fillable = ['name', 'image', 'role', 'extra_role', 'about', 'linkedin_link', 'instagram_link'];
 
     /**
      * Crew diurutkan menurut urutan jabatan; jabatan di luar daftar tidak ikut.
@@ -64,6 +65,18 @@ class Crew extends Model
             ->filter(fn (self $crew): bool => in_array($crew->role, $roles, true))
             ->sortBy(fn (self $crew): int => array_search($crew->role, $roles, true))
             ->values();
+    }
+
+    /**
+     * Crew yang jabatan utama atau tambahannya boleh ditugaskan ke program.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeCanJoinProgram(Builder $query): void
+    {
+        $query->where(fn (Builder $query) => $query
+            ->whereIn('role', self::PROGRAM_ROLES)
+            ->orWhereIn('extra_role', self::PROGRAM_ROLES));
     }
 
     /**

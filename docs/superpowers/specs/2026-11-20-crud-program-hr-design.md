@@ -54,6 +54,20 @@ Pemilik memilih A, dengan penugasan crew ditambahkan ke form yang sama dan halam
 4. `AbsensiProgramTest` diganti dengan tes untuk form baru (perlu izin pemilik karena menghapus berkas tes).
 5. `AdminTest` "menu admin hanya untuk admin": `/dashboard/podcast` dikeluarkan dari daftar yang ditolak untuk HR; `crew`, `news`, `sponsor` tetap 403 untuk HR.
 
+## Revisi 2026-11-20: jabatan tambahan opsional (usulan pemilik)
+
+Temuan setelah implementasi: crew berjabatan ganda disimpan dengan jabatan utamanya (mis. Syavirni = Sekretaris, Noval dan Shafa = Bendahara), jadi tidak muncul di dropdown tiga jabatan dan penugasan lamanya tidak bisa dikelola. Pemilik memilih menambah **satu jabatan tambahan opsional** pada crew.
+
+- **Skema:** migrasi menambah `crews.extra_role` (string 30, nullable). `Crew::$fillable` memuatnya. Jabatan utama (`role`) tidak berubah.
+- **Form Crew admin (`admin/crew.blade.php`, `Admin\CrewController`):** pilihan "Jabatan tambahan (opsional)" berisi kosong plus `Crew::ROLES`. Aturan: `nullable`, `in:` jabatan di `Crew::ROLES`, `different:role`. Modal ubah mengisi nilainya. Kartu crew admin menampilkan jabatan tambahan bila ada (cara tampil diserahkan ke pelaksana).
+- **Dropdown program:** crew masuk ke grup sebuah jabatan bila `role` **atau** `extra_role` sama dengan jabatan itu. Orang berjabatan utama Announcer dan tambahan Sound Operator muncul di kedua grup. Tiga dropdown tidak berubah.
+- **Validasi `crew_ids.*` dan sinkronisasi:** "berhak ditugaskan" berarti `role` atau `extra_role` termasuk `Crew::PROGRAM_ROLES`. Crew yang tidak memenuhi itu tetap dipertahankan saat simpan (aturan lama).
+- **Tidak berubah:** situs publik, grafik jabatan, kolom divisi di riwayat/ekspor/grafik absensi, filter menu Crew tetap memakai jabatan utama. Jabatan tambahan hanya untuk penugasan program.
+- **Seeder (nilai dari pemilik, 2026-11-20):** `CrewSeeder` mengisi `extra_role` untuk tepat tiga orang berjabatan ganda: Syavirni Dwi Amalia (utama Sekretaris) = `Sound Operator`; Noval Rasyah Kurnia Putra (utama Bendahara) = `Announcer`; Shafa Dhiya Raihanah (utama Bendahara) = `Announcer`. Data proyek (spec role-jabatan-profil 2026-10-24) menyebut hanya tiga orang itu yang ganda; anggota ganda lain diisi admin lewat form Crew bila ada. Tidak ada jabatan baru "Lainnya". `ProgramCrewSeeder` tidak berubah.
+- **Crew di dua dropdown:** orang yang jabatan utama dan tambahannya sama-sama termasuk tiga jabatan program muncul di dua dropdown; centang di satu dropdown mencerminkan centang di dropdown lain bernilai sama, dan id ganda pada permintaan tidak ditolak, hanya disimpan sekali (aturan `distinct` dihapus; `unique()` di sinkronisasi menjamin satu baris).
+- **Tes:** crew berjabatan tambahan muncul di grup dropdown yang benar dan bisa disimpan; jabatan utama bukan tiga jabatan tapi tambahan cocok diterima validasi; `extra_role` sama dengan `role` atau di luar daftar ditolak di form Crew; seeder mengisi `extra_role` untuk tiga orang itu; grafik dan situs publik tidak terpengaruh.
+- **Keputusan penulis:** tidak ada pencabutan penugasan otomatis bila jabatan tambahan dihapus dari crew (penugasan tetap; terlihat sebagai "jabatan lain" tak terkelola seperti sebelumnya, tetapi admin bisa mengisi ulang). Batas satu jabatan tambahan.
+
 ## Tes yang dibutuhkan
 
 - HR membuka `/dashboard/podcast` dan episode (200); `crew`, `news`, `sponsor` tetap 403 untuk HR.

@@ -43,6 +43,16 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="CrewExtraRole" class="form-label">Jabatan tambahan (opsional)</label>
+                        <select class="form-select" id="CrewExtraRole" name="extra_role">
+                            <option value="">— Tidak ada —</option>
+                            @foreach ($roleList as $role)
+                                <option value="{{ $role }}">{{ $role }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="CrewAbout" class="form-label">About</label>
                         <textarea class="form-control" id="CrewAbout" name="about" rows="3"></textarea>
                     </div>
@@ -99,6 +109,9 @@
                     <img class="card-img-top" src="/assets/uploads/{{ $crew['image'] }}" style="object-fit: cover;" alt="Card image cap">
                     <div class="card-body">
                         <p class="card-text"><b>{{ $crew['name'] }}</b></p>
+                        @if ($crew['extra_role'])
+                            <p class="card-text"><small class="text-muted">+ {{ $crew['extra_role'] }}</small></p>
+                        @endif
                     </div>
                     <div class="card-footer d-flex justify-content-center justify-content-md-end">
                         <div class="btn-group" role="group">
@@ -106,6 +119,7 @@
                                 data-id="{{ $crew['id'] }}"
                                 data-name="{{ $crew['name'] }}"
                                 data-role="{{ $crew['role'] }}"
+                                data-extrarole="{{ $crew['extra_role'] }}"
                                 data-about="{{ $crew['about'] }}"
                                 data-image="{{ $crew['image'] }}"
                                 data-instagramlink="{{ isset($crew['instagram_link']) ? $crew['instagram_link'] : '' }}"
@@ -135,6 +149,7 @@
                 document.getElementById("CrewId").value = this.getAttribute("data-id");
                 document.getElementById("CrewName").value = this.getAttribute("data-name");
                 document.getElementById("CrewRole").value = this.getAttribute("data-role");
+                document.getElementById("CrewExtraRole").value = this.getAttribute("data-extrarole") || "";
                 document.getElementById("CrewAbout").value = this.getAttribute("data-about");
                 document.getElementById("CrewInstagramLink").value = this.getAttribute("data-instagramlink");
                 document.getElementById("CrewLinkedinLink").value = this.getAttribute("data-linkedinlink");

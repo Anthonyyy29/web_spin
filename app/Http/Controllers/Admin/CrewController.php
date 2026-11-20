@@ -27,6 +27,7 @@ class CrewController extends ImageCrudController
         return [
             'name' => ['required', 'max:30'],
             'role' => ['required', Rule::in(array_keys(Crew::ROLES))],
+            'extra_role' => ['nullable', Rule::in(array_keys(Crew::ROLES)), 'different:role'],
             'about' => ['nullable'],
             'instagram_link' => ['nullable'],
             'linkedin_link' => ['nullable'],

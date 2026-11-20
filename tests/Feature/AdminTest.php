@@ -68,6 +68,46 @@ test('simpan menolak gambar salah dan jabatan di luar daftar', function () {
     expect(Crew::count())->toBe(0);
 });
 
+test('crew menyimpan jabatan tambahan opsional dan mengosongkannya', function () {
+    masukSebagai('admin');
+
+    $this->post('/dashboard/crew/save', ['name' => 'Budi', 'role' => 'Bendahara', 'extra_role' => 'Announcer', 'image' => UploadedFile::fake()->image('a.png')])
+        ->assertSessionHas('success', 'Data berhasil disimpan.');
+    $crew = Crew::firstOrFail();
+    expect($crew->extra_role)->toBe('Announcer');
+
+    $this->travel(2)->seconds();
+    $this->post('/dashboard/crew/save', ['id' => $crew->id, 'name' => 'Budi', 'role' => 'Bendahara', 'extra_role' => ''])
+        ->assertSessionHas('success');
+    expect($crew->fresh()->extra_role)->toBeNull();
+});
+
+test('jabatan tambahan sama dengan utama atau di luar daftar ditolak', function (string $role, string $extraRole) {
+    masukSebagai('admin');
+
+    $this->post('/dashboard/crew/save', ['name' => 'Budi', 'role' => $role, 'extra_role' => $extraRole, 'image' => UploadedFile::fake()->image('a.png')])
+        ->assertSessionHas('error');
+    expect(Crew::count())->toBe(0);
+})->with([['Announcer', 'Announcer'], ['Announcer', 'Bos Besar']]);
+
+test('kartu crew admin menampilkan jabatan tambahan', function () {
+    masukSebagai('admin');
+    Crew::factory()->create(['role' => 'Bendahara', 'extra_role' => 'Announcer']);
+
+    $this->get('/dashboard/crew')->assertOk()
+        ->assertSee('Announcer')
+        ->assertSee('data-extrarole="Announcer"', false);
+});
+
+test('scope canJoinProgram memilih menurut jabatan utama atau tambahan', function () {
+    $a = Crew::factory()->create(['role' => 'Announcer']);
+    $b = Crew::factory()->create(['role' => 'Bendahara', 'extra_role' => 'Sound Operator']);
+    Crew::factory()->create(['role' => 'Bendahara', 'extra_role' => null]);
+    Crew::factory()->create(['role' => 'Creative', 'extra_role' => 'Creative']);
+
+    expect(Crew::canJoinProgram()->pluck('id')->all())->toEqualCanonicalizing([$a->id, $b->id]);
+});
+
 test('news mengubah tautan reel jadi id dan podcast menyimpan episode dengan embed spotify', function () {
     masukSebagai('admin');
 
