@@ -1,6 +1,6 @@
 # Konteks aplikasi SPIN
 
-Ringkasan untuk coding agent supaya tidak perlu membaca seluruh kode. Diperbarui 2026-11-15, branch `port-radio-web`.
+Ringkasan untuk coding agent supaya tidak perlu membaca seluruh kode. Diperbarui 2026-11-20, branch `crud-program-hr`.
 
 ## Apa ini
 
@@ -19,7 +19,7 @@ Website Spin The Radio (radio kampus Universitas Esa Unggul Bekasi) dalam Larave
 sail up -d
 sail artisan migrate:fresh --seed                   # dua akun
 sail artisan db:seed --class=SampleContentSeeder    # data contoh
-php artisan test --compact                          # 80 tes
+php artisan test --compact                          # suite penuh (jumlah tes berubah; jalankan untuk melihat)
 vendor/bin/pint --format agent
 ```
 
@@ -27,7 +27,7 @@ Login: `admin`, `hr`, password `password` (ditulis langsung di `database/seeders
 
 ## Peran dan akses
 
-`users.role` di-cast ke enum `App\Enums\UserRole` (Admin, Hr). Dua akun bersama, bukan per orang. Middleware `role:<peran>` (`EnsureUserHasRole`, 403) membatasi: admin hanya menu admin, hr hanya absensi. `GET /dashboard` menampilkan isi sesuai peran (`DashboardController`: `admin()`, `hr()`; peran lain 403).
+`users.role` di-cast ke enum `App\Enums\UserRole` (Admin, Hr). Dua akun bersama, bukan per orang. Middleware `role:<peran>` (`EnsureUserHasRole`, 403) membatasi: crew/news/sponsor hanya admin, absensi hanya hr, **podcast dipakai bersama admin dan hr** (`role:admin,hr`; di menu HR bernama "Program", `/dashboard/podcast`). `GET /dashboard` menampilkan isi sesuai peran (`DashboardController`: `admin()`, `hr()`; peran lain 403).
 
 ## Rute (`routes/web.php`)
 
@@ -35,8 +35,9 @@ Login: `admin`, `hr`, password `password` (ditulis langsung di `database/seeders
 |---|---|
 | Publik | `/` → `/home`, `/home`, `/crew`, `/listen`, `/listen/search`, `/listen/content/{token}`, `/news`, `/news/category/{c}`, `/news/details/{token}`, `/aboutus`, `POST /aboutus/sendmail` |
 | Auth | `/login`, `POST /login/checklogin`, `/dashboard/logout` (GET, sama dengan repo lama) |
-| Admin | `/dashboard/{crew,podcast,news,sponsor}` (+ `save`, `delete/{id}`, `filter/…`, episode di `podcast/episode/…`) |
-| HR | `/dashboard/absensi/{history,history/all,history/byUid/{rfid},export-excel,crew,crew/simpan,crew/update,crew/delete/{rfid},tap,program,program/update,sesi,sesi/simpan,sesi/update,sesi/delete/{id}}`; riwayat dan ekspor menerima `?jenis=sesi|tamu` (default sesi) |
+| Admin | `/dashboard/{crew,news,sponsor}` (+ `save`, `delete/{id}`, `filter/…`) |
+| Admin + HR | `/dashboard/podcast` (+ `save`, `delete/{id}`, `filter/…`, episode di `podcast/episode/…`) |
+| HR | `/dashboard/absensi/{history,history/all,history/byUid/{rfid},export-excel,crew,crew/simpan,crew/update,crew/delete/{rfid},tap,sesi,sesi/simpan,sesi/update,sesi/delete/{id}}`; riwayat dan ekspor menerima `?jenis=sesi|tamu` (default sesi) |
 | API | `GET api/podcastlist`, `GET api/checklatestpodcast/{segmen}`, `POST api/uploadpodcast` (middleware `api.token`) |
 | Alat RFID | `GET|POST /tap-absen` (tanpa CSRF, dikecualikan di `bootstrap/app.php`) |
 
@@ -45,10 +46,10 @@ Seluruh grup `/dashboard` memakai `auth` + `actioncheck` (`PreventRapidPosts`: P
 ## Kode penting
 
 - `app/Http/Controllers/Controller.php`: basis untuk helper bersama: `storeUpload`/`deleteUpload` (ke `public/assets/uploads[/sub]`; nilai kolom `image` berupa path relatif, mis. `crew/abc.png`, `program/abc.png`; `ImageCrudController::$uploadFolder` menentukan subfolder tiap menu), `downloadExcel`, dan `encodeId`/`decodeId` (penyamar ID URL publik, **akan dihapus**, lihat `docs/catatan.md`).
-- `Admin/ImageCrudController`: dasar crew/news/sponsor/podcast (validasi gambar, simpan, hapus berkas, catat `AuditLog`). Subclass hanya mengisi `modelClass()`, `auditName()`, `fieldRules()`, `prepare()`.
+- `Admin/ImageCrudController`: dasar crew/news/sponsor/podcast (validasi gambar, simpan, hapus berkas, catat `AuditLog`). Subclass hanya mengisi `modelClass()`, `auditName()`, `fieldRules()`, `prepare()`, dan opsional hook `afterSave(Model, Request)` (dipakai `PodcastController` untuk sinkron `crew_ids[]`: hanya jabatan `Crew::PROGRAM_ROLES`; crew jabatan lain tetap; validasi menolak jabatan lain). `PodcastController::delete` menolak program yang masih punya sesi (`Program masih punya sesi siaran. Hapus sesinya dulu di menu Sesi.`). Form di `admin/podcast.blade.php` punya tiga dropdown crew (satu per jabatan) dengan chip.
 - `AuthController`: batas 5 gagal / 60 detik per IP, catat `AdminHistory::recordLogin`, pesan kilat `login berhasil` / `login gagal` / `Terlalu banyak percobaan. Coba lagi nanti.` / `Anda telah logout.`.
 - Middleware: `role`, `actioncheck`, `api.token` (`VerifyApiToken`, header `Authorization` = `API_ACCESS_TOKEN`, kosong = tolak semua).
-- Model berguna: `Crew::ROLES` (jabatan berurut + warna grafik), `Crew::sortedByRole()`, `News::CATEGORIES`, `News::descriptionRows()`, `News::extractInstagramReelId()`, `Episode::extractSpotifyEpisodeId()`, trait `CountsByWeekday` (grafik mingguan), `AuditLog::record()`, `AbsensiLog::withCrew()`, `AbsensiLog::withSession()`, `BroadcastSession::findForTap()` (sesi hari ini untuk tap; null = tamu).
+- Model berguna: `Crew::ROLES` (jabatan berurut + warna grafik), `Crew::PROGRAM_ROLES` (Announcer, Sound Operator, Human Resource), `Crew::sortedByRole()`, `News::CATEGORIES`, `News::descriptionRows()`, `News::extractInstagramReelId()`, `Episode::extractSpotifyEpisodeId()`, trait `CountsByWeekday` (grafik mingguan), `AuditLog::record()`, `AbsensiLog::withCrew()`, `AbsensiLog::withSession()`, `BroadcastSession::findForTap()` (sesi hari ini untuk tap; null = tamu).
 
 ## Tabel
 
@@ -63,7 +64,7 @@ Seluruh grup `/dashboard` memakai `auth` + `actioncheck` (`PreventRapidPosts`: P
 
 ## Tes (`tests/Feature`)
 
-Login/logout/seeder/middleware/layout (bagian 1), `SitusPublikTest`, `AdminTest`, `AbsensiTest`, `BroadcastSessionTest`, `AbsensiSesiTest`, `AbsensiProgramTest`, `AbsensiSesiCrudTest`, `AbsensiRiwayatTest`. Tes yang mengunggah berkas membersihkan file di `public/assets/uploads` lewat `afterEach`.
+Login/logout/seeder/middleware/layout (bagian 1), `SitusPublikTest`, `AdminTest`, `AbsensiTest`, `BroadcastSessionTest`, `AbsensiSesiTest`, `ProgramHrTest` (HR kelola program, penugasan crew, penjaga hapus), `AbsensiSesiCrudTest`, `AbsensiRiwayatTest`. Tes yang mengunggah berkas membersihkan file di `public/assets/uploads` lewat `afterEach`.
 
 ## Aturan kerja proyek
 
