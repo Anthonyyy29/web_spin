@@ -35,6 +35,8 @@ class PodcastController extends ImageCrudController
         return [
             'title' => ['required', 'max:255'],
             'description' => ['required'],
+            'jam_mulai_default' => ['nullable', 'date_format:H:i', 'required_with:jam_selesai_default'],
+            'jam_selesai_default' => ['nullable', 'date_format:H:i', 'required_with:jam_mulai_default', 'after:jam_mulai_default'],
             'crew_ids' => ['array'],
             'crew_ids.*' => ['integer', Rule::exists('crews', 'id')->where(
                 fn ($query) => $query->whereIn('role', Crew::PROGRAM_ROLES)->orWhereIn('extra_role', Crew::PROGRAM_ROLES)

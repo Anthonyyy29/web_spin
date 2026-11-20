@@ -16,7 +16,7 @@ class Content extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['title', 'description', 'image'];
+    protected $fillable = ['title', 'description', 'image', 'jam_mulai_default', 'jam_selesai_default'];
 
     /**
      * @return HasMany<Episode, $this>

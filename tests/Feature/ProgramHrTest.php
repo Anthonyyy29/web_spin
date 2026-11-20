@@ -251,3 +251,65 @@ test('jabatan tambahan di luar tiga jabatan tidak membuat crew layak', function 
 
     expect($content->crews()->count())->toBe(0);
 });
+
+test('program menyimpan jam default dan mengosongkannya', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+
+    $this->post('/dashboard/podcast/save', [
+        'title' => 'Program Jam', 'description' => 'Deskripsi', 'image' => UploadedFile::fake()->image('a.png'),
+        'jam_mulai_default' => '10:00', 'jam_selesai_default' => '11:00',
+    ])->assertSessionHas('success');
+
+    $content = Content::firstOrFail();
+    expect(substr($content->jam_mulai_default, 0, 5))->toBe('10:00')
+        ->and(substr($content->jam_selesai_default, 0, 5))->toBe('11:00');
+
+    $this->travel(2)->seconds();
+    $this->post('/dashboard/podcast/save', [
+        'id' => $content->id, 'title' => 'Program Jam', 'description' => 'Deskripsi',
+        'jam_mulai_default' => '', 'jam_selesai_default' => '',
+    ])->assertSessionHas('success');
+
+    $content->refresh();
+    expect($content->jam_mulai_default)->toBeNull()->and($content->jam_selesai_default)->toBeNull();
+});
+
+test('jam default ditolak bila hanya satu terisi, selesai tidak setelah mulai, atau format salah', function (string $mulai, string $selesai) {
+    $this->actingAs(User::factory()->role('hr')->create());
+
+    $this->post('/dashboard/podcast/save', [
+        'title' => 'Program Jam', 'description' => 'Deskripsi', 'image' => UploadedFile::fake()->image('a.png'),
+        'jam_mulai_default' => $mulai, 'jam_selesai_default' => $selesai,
+    ])->assertSessionHas('error');
+
+    expect(Content::count())->toBe(0);
+})->with([
+    ['10:00', ''],
+    ['', '11:00'],
+    ['11:00', '10:00'],
+    ['10:00', '10:00'],
+    ['25:99', '11:00'],
+    ['10:00', 'jam'],
+]);
+
+test('mengubah program tanpa isian jam tidak menghapus jam default', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $content = Content::factory()->create(['jam_mulai_default' => '10:00', 'jam_selesai_default' => '11:00']);
+
+    $this->post('/dashboard/podcast/save', [
+        'id' => $content->id, 'title' => 'Judul Baru', 'description' => 'Deskripsi',
+    ])->assertSessionHas('success');
+
+    $content->refresh();
+    expect(substr($content->jam_mulai_default, 0, 5))->toBe('10:00')
+        ->and(substr($content->jam_selesai_default, 0, 5))->toBe('11:00');
+});
+
+test('modal program membawa jam default di tombol Edit', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    Content::factory()->create(['jam_mulai_default' => '10:00:00', 'jam_selesai_default' => '11:00:00']);
+
+    $this->get('/dashboard/podcast')
+        ->assertSee('data-jam-mulai="10:00"', false)
+        ->assertSee('data-jam-selesai="11:00"', false);
+});

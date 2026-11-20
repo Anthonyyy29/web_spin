@@ -35,6 +35,18 @@
                         <div class="invalid-feedback">Please enter your description.</div>
                     </div>
 
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label for="podcastJamMulai" class="form-label">Jam mulai default</label>
+                            <input type="time" class="form-control" id="podcastJamMulai" name="jam_mulai_default">
+                        </div>
+                        <div class="col-6">
+                            <label for="podcastJamSelesai" class="form-label">Jam selesai default (opsional)</label>
+                            <input type="time" class="form-control" id="podcastJamSelesai" name="jam_selesai_default">
+                        </div>
+                        <p class="text-secondary mt-1 mb-0" style="font-size: smaller">Dipakai tombol "Apply waktu default" di menu Sesi. Isi keduanya atau kosongkan keduanya.</p>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Crew program ini</label>
                         <p class="text-secondary" style="font-size: smaller">Dipakai mencocokkan tap RFID ke sesi siaran. Hanya tiga jabatan (jabatan utama atau tambahan): Announcer, Sound Operator, dan Human Resource.</p>
@@ -98,6 +110,8 @@
                                 data-title="{{ $podcast['title'] }}"
                                 data-description="{{ $podcast['description'] }}"
                                 data-image="{{ $podcast['image'] }}"
+                                data-jam-mulai="{{ $podcast->jam_mulai_default ? substr($podcast->jam_mulai_default, 0, 5) : '' }}"
+                                data-jam-selesai="{{ $podcast->jam_selesai_default ? substr($podcast->jam_selesai_default, 0, 5) : '' }}"
                                 data-crews="{{ $podcast->crews->pluck('id')->toJson() }}">
                                 Edit
                             </button>
@@ -122,6 +136,8 @@
                 document.getElementById("podcastId").value = targetButton.getAttribute("data-id");
                 document.getElementById("podcastTitle").value = targetButton.getAttribute("data-title");
                 document.getElementById("podcastDescription").value = targetButton.getAttribute("data-description");
+                document.getElementById("podcastJamMulai").value = targetButton.getAttribute("data-jam-mulai") || "";
+                document.getElementById("podcastJamSelesai").value = targetButton.getAttribute("data-jam-selesai") || "";
 
                 let imageSrc = "/assets/uploads/" + targetButton.getAttribute("data-image");
                 document.getElementById("previewImage").src = imageSrc;
@@ -139,6 +155,8 @@
                 document.getElementById("podcastId").value = this.getAttribute("data-id");
                 document.getElementById("podcastTitle").value = this.getAttribute("data-title");
                 document.getElementById("podcastDescription").value = this.getAttribute("data-description");
+                document.getElementById("podcastJamMulai").value = this.getAttribute("data-jam-mulai") || "";
+                document.getElementById("podcastJamSelesai").value = this.getAttribute("data-jam-selesai") || "";
 
                 let imageSrc = "/assets/uploads/" + this.getAttribute("data-image");
                 document.getElementById("previewImage").src = imageSrc;
@@ -179,6 +197,8 @@
 
         if (isCreate) {
             fillCrewChecks([]);
+            document.getElementById("podcastJamMulai").value = "";
+            document.getElementById("podcastJamSelesai").value = "";
         }
 
         if (input) {
