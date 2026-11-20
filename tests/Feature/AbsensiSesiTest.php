@@ -27,7 +27,7 @@ function siapkanSesiHariIni(): BroadcastSession
 
 test('tap di jendela sesi mencatat absen sesi', function () {
     $sesi = siapkanSesiHariIni();
-    $this->travelTo(today()->setTime(9, 55));
+    $this->travelTo(today()->setTime(10, 30));
 
     $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
         ->assertJson([
@@ -41,14 +41,24 @@ test('tap di jendela sesi mencatat absen sesi', function () {
     expect(AbsensiLog::first()->session_id)->toBe($sesi->id);
 });
 
-test('tap setelah jam mulai dicatat Terlambat', function () {
+test('tap setelah jam selesai dicatat Terlambat', function () {
     siapkanSesiHariIni();
-    $this->travelTo(today()->setTime(10, 5));
+    $this->travelTo(today()->setTime(11, 5));
 
     $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
         ->assertJson(['status' => 'success', 'status_absen' => 'Terlambat']);
 
     expect(AbsensiLog::first()->status)->toBe('Terlambat');
+});
+
+test('tap sebelum jam mulai menjadi tamu', function () {
+    siapkanSesiHariIni();
+    $this->travelTo(today()->setTime(9, 55));
+
+    $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
+        ->assertJson(['status' => 'success', 'jenis' => 'tamu']);
+
+    expect(AbsensiLog::first()->session_id)->toBeNull();
 });
 
 test('tap kedua di sesi yang sama ditolak', function () {
@@ -90,7 +100,7 @@ test('tamu tidak menghalangi absen sesi kemudian', function () {
     $this->travelTo(today()->setTime(8, 0));
     $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])->assertJson(['jenis' => 'tamu']);
 
-    $this->travelTo(today()->setTime(9, 30));
+    $this->travelTo(today()->setTime(10, 30));
     $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])->assertJson(['jenis' => 'sesi']);
 
     expect(AbsensiLog::count())->toBe(2)
@@ -100,7 +110,7 @@ test('tamu tidak menghalangi absen sesi kemudian', function () {
 test('judul program dikirim apa adanya sebagai data JSON', function () {
     $sesi = siapkanSesiHariIni();
     $sesi->content->update(['title' => '<img src=x onerror=alert(1)>']);
-    $this->travelTo(today()->setTime(9, 55));
+    $this->travelTo(today()->setTime(10, 30));
 
     $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
         ->assertJson(['program' => '<img src=x onerror=alert(1)>']);

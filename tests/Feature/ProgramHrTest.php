@@ -132,7 +132,7 @@ test('tap memakai crew yang ditugaskan lewat form', function () {
         'jam_selesai' => '11:00:00',
     ]);
 
-    $this->travelTo(today()->setTime(9, 55));
+    $this->travelTo(today()->setTime(10, 30));
 
     $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
         ->assertJson(['status' => 'success', 'jenis' => 'sesi']);

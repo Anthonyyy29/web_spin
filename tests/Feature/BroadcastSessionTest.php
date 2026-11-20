@@ -23,14 +23,16 @@ function sessionFor(Crew $crew, string $mulai = '10:00:00', string $selesai = '1
     ]);
 }
 
-test('findForTap: cocok di jendela, batas inklusif', function () {
+test('findForTap: cocok dari jam mulai sampai satu jam setelah selesai, batas inklusif', function () {
     $crew = Crew::factory()->create();
     $session = sessionFor($crew);
 
-    expect(BroadcastSession::findForTap($crew, today()->setTime(9, 0, 0))?->id)->toBe($session->id)
-        ->and(BroadcastSession::findForTap($crew, today()->setTime(8, 59, 59)))->toBeNull()
+    expect(BroadcastSession::findForTap($crew, today()->setTime(9, 59, 59)))->toBeNull()
+        ->and(BroadcastSession::findForTap($crew, today()->setTime(10, 0, 0))?->id)->toBe($session->id)
         ->and(BroadcastSession::findForTap($crew, today()->setTime(11, 0, 0))?->id)->toBe($session->id)
-        ->and(BroadcastSession::findForTap($crew, today()->setTime(11, 0, 1)))->toBeNull();
+        ->and(BroadcastSession::findForTap($crew, today()->setTime(11, 0, 1))?->id)->toBe($session->id)
+        ->and(BroadcastSession::findForTap($crew, today()->setTime(12, 0, 0))?->id)->toBe($session->id)
+        ->and(BroadcastSession::findForTap($crew, today()->setTime(12, 0, 1)))->toBeNull();
 });
 
 test('findForTap: tamu bila crew null atau di luar program atau hari lain', function () {
@@ -46,21 +48,38 @@ test('findForTap: tamu bila crew null atau di luar program atau hari lain', func
         ->and(BroadcastSession::findForTap($other, $at))->toBeNull();
 });
 
-test('findForTap: dua sesi cocok, pilih jam mulai terdekat', function () {
+test('findForTap: dua sesi, pilih yang sedang berjalan atau jam mulai terdekat', function () {
     $crew = Crew::factory()->create();
     $pertama = sessionFor($crew, '10:00:00', '11:00:00');
     $kedua = sessionFor($crew, '10:30:00', '11:30:00');
 
-    expect(BroadcastSession::findForTap($crew, today()->setTime(10, 20, 0))?->id)->toBe($kedua->id)
-        ->and(BroadcastSession::findForTap($crew, today()->setTime(10, 10, 0))?->id)->toBe($pertama->id);
+    expect(BroadcastSession::findForTap($crew, today()->setTime(10, 20, 0))?->id)->toBe($pertama->id)
+        ->and(BroadcastSession::findForTap($crew, today()->setTime(10, 40, 0))?->id)->toBe($kedua->id)
+        ->and(BroadcastSession::findForTap($crew, today()->setTime(11, 15, 0))?->id)->toBe($kedua->id);
 });
 
-test('statusAt: Hadir sampai jam mulai, Terlambat sesudahnya', function () {
+test('findForTap: sesi yang sedang berjalan mengalahkan sesi yang akan Terlambat', function () {
+    $crew = Crew::factory()->create();
+    $panjang = sessionFor($crew, '10:00:00', '12:00:00');
+    sessionFor($crew, '10:30:00', '10:45:00');
+
+    expect(BroadcastSession::findForTap($crew, today()->setTime(10, 50, 0))?->id)->toBe($panjang->id);
+});
+
+test('findForTap: dua sesi sama-sama Terlambat, pilih jam mulai terdekat', function () {
+    $crew = Crew::factory()->create();
+    sessionFor($crew, '10:00:00', '11:00:00');
+    $pendek = sessionFor($crew, '10:30:00', '10:45:00');
+
+    expect(BroadcastSession::findForTap($crew, today()->setTime(11, 30, 0))?->id)->toBe($pendek->id);
+});
+
+test('statusAt: Hadir sampai jam selesai, Terlambat sesudahnya', function () {
     $session = sessionFor(Crew::factory()->create());
 
     expect($session->statusAt(today()->setTime(10, 0, 0)))->toBe('Hadir')
-        ->and($session->statusAt(today()->setTime(10, 0, 1)))->toBe('Terlambat')
-        ->and($session->statusAt(today()->setTime(9, 30, 0)))->toBe('Hadir');
+        ->and($session->statusAt(today()->setTime(11, 0, 0)))->toBe('Hadir')
+        ->and($session->statusAt(today()->setTime(11, 0, 1)))->toBe('Terlambat');
 });
 
 test('hapus sesi menjadikan log tamu', function () {
@@ -81,11 +100,11 @@ test('hapus sesi menjadikan log tamu', function () {
         ->and($log->fresh()->session_id)->toBeNull();
 });
 
-test('findForTap: tap bermikrodetik tetap memilih sesi terdekat', function () {
+test('findForTap: tap bermikrodetik memilih sesi yang sudah mulai', function () {
     $crew = Crew::factory()->create();
     $pertama = sessionFor($crew, '10:00:00', '11:00:00');
-    $kedua = sessionFor($crew, '10:00:01', '11:00:00');
+    sessionFor($crew, '10:00:01', '11:00:00');
 
     expect(BroadcastSession::findForTap($crew, today()->setTime(10, 0, 0, 345678))?->id)->toBe($pertama->id)
-        ->and(BroadcastSession::findForTap($crew, today()->setTime(10, 0, 0, 600000))?->id)->toBe($kedua->id);
+        ->and(BroadcastSession::findForTap($crew, today()->setTime(10, 0, 0, 600000))?->id)->toBe($pertama->id);
 });
