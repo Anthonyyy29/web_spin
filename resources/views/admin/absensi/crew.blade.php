@@ -86,7 +86,8 @@
                     <!-- pilih crew -->
                     <div class="mb-3">
                         <label>Pilih Crew</label>
-                        <select name="crew_id" class="form-control" required>
+                        <input type="search" class="form-control mb-2 crew-search" data-target="tambah_crew" placeholder="Cari nama crew..." autocomplete="off">
+                        <select name="crew_id" id="tambah_crew" class="form-control" required>
                             <option value="">-- Pilih Crew --</option>
                             @foreach ($crew_list as $c)
                                 <option value="{{ $c['id'] }}">
@@ -172,6 +173,28 @@
                 input.value += e.key;
             }
         }
+    });
+
+    // cari crew: saring opsi select sambil mengetik, pilihan aktif tetap dipertahankan
+    function isiOpsiCrew(select, kata) {
+        let terpilih = select.value;
+        select.innerHTML = "";
+        select._semuaOpsi.forEach(opsi => {
+            if (opsi.value === "" || opsi.value === terpilih || opsi.text.toLowerCase().includes(kata)) {
+                select.appendChild(opsi);
+            }
+        });
+        select.value = terpilih;
+    }
+
+    document.querySelectorAll(".crew-search").forEach(input => {
+        let select = document.getElementById(input.dataset.target);
+        select._semuaOpsi = Array.from(select.options);
+        input.addEventListener("input", () => isiOpsiCrew(select, input.value.trim().toLowerCase()));
+        input.closest(".modal").addEventListener("hidden.bs.modal", () => {
+            input.value = "";
+            isiOpsiCrew(select, "");
+        });
     });
 
     // tombol edit
