@@ -5,15 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Models\AuditLog;
 use App\Models\BroadcastSession;
 use App\Models\Content;
-use App\Models\Crew;
 use App\Models\Episode;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class PodcastController extends ImageCrudController
@@ -37,29 +33,7 @@ class PodcastController extends ImageCrudController
             'description' => ['required'],
             'jam_mulai_default' => ['nullable', 'date_format:H:i', 'required_with:jam_selesai_default'],
             'jam_selesai_default' => ['nullable', 'date_format:H:i', 'required_with:jam_mulai_default', 'after:jam_mulai_default'],
-            'crew_ids' => ['array'],
-            'crew_ids.*' => ['integer', Rule::exists('crews', 'id')->where(
-                fn ($query) => $query->whereIn('role', Crew::SESSION_ROLES)->orWhereIn('extra_role', Crew::SESSION_ROLES)
-            )],
         ];
-    }
-
-    protected function prepare(array $data): array
-    {
-        return Arr::except($data, 'crew_ids');
-    }
-
-    /**
-     * Sinkronkan crew yang layak program (jabatan utama atau tambahan termasuk tiga jabatan program);
-     * crew yang tidak layak tetap dipertahankan. Id ganda dari dua dropdown disimpan sekali.
-     */
-    protected function afterSave(Model $model, Request $request): void
-    {
-        $dipertahankan = $model->crews()->whereNotIn('crews.id', Crew::canJoinSession()->select('crews.id'))->pluck('crews.id');
-
-        $crewIds = array_map('intval', array_values((array) $request->input('crew_ids', [])));
-
-        $model->crews()->sync($dipertahankan->merge($crewIds)->unique()->all());
     }
 
     /**
@@ -76,18 +50,12 @@ class PodcastController extends ImageCrudController
 
     public function index(): View
     {
-        $contents = Content::with('crews')->latest()->paginate(8, pageName: 'podcastpage');
-
-        $crewProgram = Crew::canJoinSession()->orderBy('name')->get();
-        $crewByRole = collect(Crew::SESSION_ROLES)->mapWithKeys(fn (string $role) => [
-            $role => $crewProgram->filter(fn (Crew $crew) => $crew->role === $role || $crew->extra_role === $role)->values(),
-        ]);
+        $contents = Content::latest()->paginate(8, pageName: 'podcastpage');
 
         return view('admin.podcast', [
             'navmenu' => 'Podcast',
             'contents' => $contents,
             'pager' => $contents,
-            'crewByRole' => $crewByRole,
         ]);
     }
 

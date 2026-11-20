@@ -52,11 +52,6 @@ abstract class ImageCrudController extends Controller
         return $data;
     }
 
-    /**
-     * Kait setelah model tersimpan, untuk relasi atau efek samping lain.
-     */
-    protected function afterSave(Model $model, Request $request): void {}
-
     public function save(Request $request): RedirectResponse
     {
         $id = $request->input('id');
@@ -85,7 +80,6 @@ abstract class ImageCrudController extends Controller
         }
 
         $model->fill($data)->save();
-        $this->afterSave($model, $request);
         AuditLog::record($this->auditName(), $id ? 'UPDATE' : 'CREATE');
 
         return back()->with('success', 'Data berhasil disimpan.');

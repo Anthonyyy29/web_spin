@@ -109,11 +109,10 @@ test('findForTap: tap bermikrodetik memilih sesi yang sudah mulai', function () 
         ->and(BroadcastSession::findForTap($crew, today()->setTime(10, 0, 0, 600000))?->id)->toBe($pertama->id);
 });
 
-test('findForTap: crew program yang sama tetapi tidak ditugaskan ke sesi tetap tamu', function () {
+test('findForTap: crew yang tidak ditugaskan ke sesi tetap tamu meski program sama', function () {
     $a = Crew::factory()->create();
     $b = Crew::factory()->create();
     $content = Content::factory()->create();
-    $content->crews()->attach([$a->id, $b->id]);
     $session = BroadcastSession::factory()->create([
         'content_id' => $content->id,
         'tanggal' => today()->toDateString(),

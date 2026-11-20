@@ -7,6 +7,8 @@ use App\Models\Crew;
 use App\Models\RfidCrew;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
 
@@ -262,4 +264,24 @@ test('modal sesi memuat dropdown crew dengan id kotak centang unik per modal', f
         ->assertSee('name="crew_ids[]"', false)
         ->assertSee("crew-tambah-announcer-{$crew->id}", false)
         ->assertSee("crew-edit-announcer-{$crew->id}", false);
+});
+
+test('tabel content_crew sudah dihapus dan broadcast_session_crew ada', function () {
+    expect(Schema::hasTable('content_crew'))->toBeFalse()
+        ->and(Schema::hasTable('broadcast_session_crew'))->toBeTrue();
+});
+
+test('menghapus sesi menghapus baris pivot crew miliknya tanpa menghapus crew', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $sesi = BroadcastSession::factory()->create();
+    $crew = Crew::factory()->create(['role' => 'Announcer']);
+    $sesi->crews()->attach($crew->id);
+
+    expect(DB::table('broadcast_session_crew')->count())->toBe(1);
+
+    $this->get('/dashboard/absensi/sesi/delete/'.$sesi->id)->assertSessionHas('success');
+
+    expect(BroadcastSession::count())->toBe(0)
+        ->and(DB::table('broadcast_session_crew')->count())->toBe(0)
+        ->and(Crew::whereKey($crew->id)->exists())->toBeTrue();
 });

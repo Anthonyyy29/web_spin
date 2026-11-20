@@ -86,12 +86,4 @@ class Crew extends Model
     {
         return $this->belongsToMany(BroadcastSession::class, 'broadcast_session_crew');
     }
-
-    /**
-     * @return BelongsToMany<Content, $this>
-     */
-    public function contents(): BelongsToMany
-    {
-        return $this->belongsToMany(Content::class, 'content_crew');
-    }
 }

@@ -47,31 +47,6 @@
                         <p class="text-secondary mt-1 mb-0" style="font-size: smaller">Dipakai tombol "Apply waktu default" di menu Sesi. Isi keduanya atau kosongkan keduanya.</p>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Crew program ini</label>
-                        <p class="text-secondary" style="font-size: smaller">Dipakai mencocokkan tap RFID ke sesi siaran. Hanya tiga jabatan (jabatan utama atau tambahan): Announcer, Sound Operator, dan Human Resource.</p>
-                        @foreach ($crewByRole as $role => $crews)
-                            <div class="mb-2">
-                                <label class="form-label mb-1">{{ $role }}</label>
-                                <div class="dropdown crew-dropdown" data-placeholder="Pilih {{ strtolower($role) }}">
-                                    <button type="button" class="form-select text-start d-flex flex-wrap align-items-center gap-1" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                        <span class="crew-chips d-flex flex-wrap gap-1"></span>
-                                    </button>
-                                    <div class="dropdown-menu w-100 p-2" style="max-height: 220px; overflow-y: auto;">
-                                        @forelse ($crews as $crew)
-                                            <div class="form-check">
-                                                <input type="checkbox" class="form-check-input crew-check" id="crew-{{ Str::slug($role) }}-{{ $crew->id }}" name="crew_ids[]" value="{{ $crew->id }}" data-name="{{ $crew->name }}">
-                                                <label class="form-check-label w-100" for="crew-{{ Str::slug($role) }}-{{ $crew->id }}">{{ $crew->name }}</label>
-                                            </div>
-                                        @empty
-                                            <span class="text-secondary small">Belum ada crew {{ $role }}.</span>
-                                        @endforelse
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-
                     <div class="modal-footer">
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
                         <button type="submit" class="btn btn-primary">Save changes</button>
@@ -100,7 +75,6 @@
                     <img class="card-img-top" src="/assets/uploads/{{ $podcast['image'] }}" style="object-fit: cover;" alt="Card image cap">
                     <div class="card-body">
                         <p class="card-text"><b>{{ $podcast['title'] }}</b></p>
-                        <span class="badge text-bg-secondary">{{ $podcast->crews->count() }} crew ditugaskan</span>
                     </div>
                     <div class="card-footer d-flex justify-content-center">
                     <div class="btn-group" role="group">
@@ -111,8 +85,7 @@
                                 data-description="{{ $podcast['description'] }}"
                                 data-image="{{ $podcast['image'] }}"
                                 data-jam-mulai="{{ $podcast->jam_mulai_default ? substr($podcast->jam_mulai_default, 0, 5) : '' }}"
-                                data-jam-selesai="{{ $podcast->jam_selesai_default ? substr($podcast->jam_selesai_default, 0, 5) : '' }}"
-                                data-crews="{{ $podcast->crews->pluck('id')->toJson() }}">
+                                data-jam-selesai="{{ $podcast->jam_selesai_default ? substr($podcast->jam_selesai_default, 0, 5) : '' }}">
                                 Edit
                             </button>
                             <button onclick="deleteConfirmation({{ $podcast['id'] }})" class="btn btn-danger">Delete</button>
@@ -141,7 +114,6 @@
 
                 let imageSrc = "/assets/uploads/" + targetButton.getAttribute("data-image");
                 document.getElementById("previewImage").src = imageSrc;
-                fillCrewChecks(JSON.parse(targetButton.getAttribute("data-crews") || "[]"));
 
                 let modal = new bootstrap.Modal(document.getElementById("editPodcastModal"));
                 modal.show();
@@ -160,16 +132,9 @@
 
                 let imageSrc = "/assets/uploads/" + this.getAttribute("data-image");
                 document.getElementById("previewImage").src = imageSrc;
-                fillCrewChecks(JSON.parse(this.getAttribute("data-crews") || "[]"));
 
                 let modal = new bootstrap.Modal(document.getElementById("editPodcastModal"));
                 modal.show();
-            });
-        });
-
-        document.querySelectorAll(".crew-check").forEach(box => {
-            box.addEventListener("change", function() {
-                setCrewChecked(box.value, box.checked);
             });
         });
 
@@ -196,7 +161,6 @@
         }
 
         if (isCreate) {
-            fillCrewChecks([]);
             document.getElementById("podcastJamMulai").value = "";
             document.getElementById("podcastJamSelesai").value = "";
         }
@@ -220,63 +184,6 @@
         }
     }
 
-
-    function syncCrewChips() {
-        document.querySelectorAll(".crew-dropdown").forEach(dropdown => {
-            let chips = dropdown.querySelector(".crew-chips");
-            chips.innerHTML = "";
-
-            let checked = dropdown.querySelectorAll(".crew-check:checked");
-
-            if (checked.length === 0) {
-                let placeholder = document.createElement("span");
-                placeholder.className = "text-secondary";
-                placeholder.textContent = dropdown.getAttribute("data-placeholder");
-                chips.appendChild(placeholder);
-                return;
-            }
-
-            checked.forEach(box => {
-                let chip = document.createElement("span");
-                chip.className = "badge rounded-pill text-bg-primary d-inline-flex align-items-center gap-1";
-                chip.appendChild(document.createTextNode(box.getAttribute("data-name")));
-
-                let remove = document.createElement("span");
-                remove.setAttribute("role", "button");
-                remove.setAttribute("aria-label", "Hapus " + box.getAttribute("data-name"));
-                remove.textContent = "\u00d7";
-                remove.addEventListener("click", function(event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    setCrewChecked(box.value, false);
-                });
-                chip.appendChild(remove);
-                chips.appendChild(chip);
-            });
-        });
-    }
-
-    function setCrewChecked(value, checked) {
-        document.querySelectorAll(".crew-check").forEach(other => {
-            if (other.value === String(value)) {
-                other.checked = checked;
-            }
-        });
-
-        syncCrewChips();
-    }
-
-    function fillCrewChecks(ids) {
-        let selected = ids.map(Number);
-
-        document.querySelectorAll(".crew-check").forEach(box => {
-            box.checked = selected.includes(Number(box.value));
-        });
-
-        syncCrewChips();
-    }
-
-    document.addEventListener("DOMContentLoaded", syncCrewChips);
 
     function deleteConfirmation(id) {
         let deleteUrl = "/dashboard/podcast/delete/" + id;
