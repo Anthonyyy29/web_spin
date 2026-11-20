@@ -189,7 +189,7 @@
         return perbarui;
     }
 
-    const perbaruiTambah = pasangWaktuDefault("tambah");
+    pasangWaktuDefault("tambah");
     const perbaruiEdit = pasangWaktuDefault("edit");
 
     document.querySelectorAll(".btn-edit").forEach(btn => {

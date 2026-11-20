@@ -100,8 +100,16 @@ test('halaman sesi memuat jam default tiap program dan tombol apply', function (
     Content::factory()->create(['title' => 'Program Polos', 'jam_mulai_default' => null, 'jam_selesai_default' => null]);
     $this->actingAs(User::factory()->role('hr')->create());
 
-    $this->get('/dashboard/absensi/sesi')->assertOk()
+    $berjam = Content::where('title', 'Program Berjam')->first();
+
+    $respons = $this->get('/dashboard/absensi/sesi')->assertOk();
+
+    expect($respons->getContent())
+        ->toMatch('/<option value="'.$berjam->id.'"\s+data-mulai="10:00"/');
+
+    $respons
         ->assertSee('data-mulai="10:00"', false)
+        ->assertSee('data-mulai=""', false)
         ->assertSee('data-selesai="11:00"', false)
         ->assertSee('Apply waktu default')
         ->assertSee('Program ini belum punya jam default');

@@ -37,7 +37,7 @@
 
                     <div class="row mb-3">
                         <div class="col-6">
-                            <label for="podcastJamMulai" class="form-label">Jam mulai default</label>
+                            <label for="podcastJamMulai" class="form-label">Jam mulai default (opsional)</label>
                             <input type="time" class="form-control" id="podcastJamMulai" name="jam_mulai_default">
                         </div>
                         <div class="col-6">

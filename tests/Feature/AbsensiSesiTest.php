@@ -128,7 +128,22 @@ test('tap sepersekian detik setelah jam selesai tetap dicatat di sesi', function
     siapkanSesiHariIni();
     $this->travelTo(today()->setTime(11, 0, 0, 400000));
 
-    $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])->assertJson(['jenis' => 'sesi']);
+    $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])->assertJson(['jenis' => 'sesi', 'status_absen' => 'Hadir', 'jam' => '11:00:00']);
+});
+
+test('tap sepersekian detik setelah batas terlambat tetap Terlambat di sesi', function () {
+    siapkanSesiHariIni();
+    $this->travelTo(today()->setTime(12, 0, 0, 400000));
+
+    $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
+        ->assertJson(['jenis' => 'sesi', 'status_absen' => 'Terlambat', 'jam' => '12:00:00']);
+});
+
+test('tap satu detik setelah batas terlambat dicatat sebagai tamu', function () {
+    siapkanSesiHariIni();
+    $this->travelTo(today()->setTime(12, 0, 1));
+
+    $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])->assertJson(['jenis' => 'tamu']);
 });
 
 test('tap sepersekian detik setelah jam mulai tidak dianggap terlambat', function () {
