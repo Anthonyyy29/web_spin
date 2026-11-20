@@ -86,15 +86,22 @@
                     <!-- pilih crew -->
                     <div class="mb-3">
                         <label>Pilih Crew</label>
-                        <input type="search" class="form-control mb-2 crew-search" data-target="tambah_crew" placeholder="Cari nama crew..." autocomplete="off">
-                        <select name="crew_id" id="tambah_crew" class="form-control" required>
-                            <option value="">-- Pilih Crew --</option>
-                            @foreach ($crew_list as $c)
-                                <option value="{{ $c['id'] }}">
-                                    {{ $c['name'] }} - {{ $c['role'] }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="dropdown" id="tambah_crew_dropdown">
+                            <input type="hidden" name="crew_id" id="tambah_crew">
+                            <button type="button" class="form-select text-start" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                                <span class="crew-label text-secondary">-- Pilih Crew --</span>
+                            </button>
+                            <div class="dropdown-menu w-100 p-2">
+                                <input type="search" class="form-control mb-2 crew-search" placeholder="Cari nama crew..." autocomplete="off">
+                                <div style="max-height: 220px; overflow-y: auto;">
+                                    @foreach ($crew_list as $c)
+                                        <button type="button" class="dropdown-item crew-item" data-id="{{ $c['id'] }}">{{ $c['name'] }} - {{ $c['role'] }}</button>
+                                    @endforeach
+                                    <span class="crew-kosong text-secondary small px-2 d-none">Crew tidak ditemukan.</span>
+                                </div>
+                            </div>
+                            <div class="text-danger small mt-1 d-none" id="tambah_crew_error">Pilih crew dulu.</div>
+                        </div>
                     </div>
 
                 </div>
@@ -175,27 +182,59 @@
         }
     });
 
-    // cari crew: saring opsi select sambil mengetik, pilihan aktif tetap dipertahankan
-    function isiOpsiCrew(select, kata) {
-        let terpilih = select.value;
-        select.innerHTML = "";
-        select._semuaOpsi.forEach(opsi => {
-            if (opsi.value === "" || opsi.value === terpilih || opsi.text.toLowerCase().includes(kata)) {
-                select.appendChild(opsi);
+    // dropdown crew di modal tambah: cari di dalam menu, pilihan disimpan di input tersembunyi
+    (function() {
+        let dropdown = document.getElementById("tambah_crew_dropdown");
+        let tombol = dropdown.querySelector("button[data-bs-toggle]");
+        let label = dropdown.querySelector(".crew-label");
+        let cari = dropdown.querySelector(".crew-search");
+        let kosong = dropdown.querySelector(".crew-kosong");
+        let pilihan = document.getElementById("tambah_crew");
+        let error = document.getElementById("tambah_crew_error");
+        let items = dropdown.querySelectorAll(".crew-item");
+
+        function reset() {
+            pilihan.value = "";
+            label.textContent = "-- Pilih Crew --";
+            label.classList.add("text-secondary");
+            cari.value = "";
+            items.forEach(item => item.classList.remove("d-none"));
+            kosong.classList.add("d-none");
+            error.classList.add("d-none");
+        }
+
+        cari.addEventListener("input", () => {
+            let kata = cari.value.trim().toLowerCase();
+            let ada = false;
+            items.forEach(item => {
+                let cocok = item.textContent.toLowerCase().includes(kata);
+                item.classList.toggle("d-none", !cocok);
+                ada = ada || cocok;
+            });
+            kosong.classList.toggle("d-none", ada);
+        });
+
+        dropdown.addEventListener("shown.bs.dropdown", () => cari.focus());
+
+        items.forEach(item => {
+            item.addEventListener("click", () => {
+                pilihan.value = item.dataset.id;
+                label.textContent = item.textContent;
+                label.classList.remove("text-secondary");
+                error.classList.add("d-none");
+                bootstrap.Dropdown.getOrCreateInstance(tombol).hide();
+            });
+        });
+
+        dropdown.closest("form").addEventListener("submit", e => {
+            if (!pilihan.value) {
+                e.preventDefault();
+                error.classList.remove("d-none");
             }
         });
-        select.value = terpilih;
-    }
 
-    document.querySelectorAll(".crew-search").forEach(input => {
-        let select = document.getElementById(input.dataset.target);
-        select._semuaOpsi = Array.from(select.options);
-        input.addEventListener("input", () => isiOpsiCrew(select, input.value.trim().toLowerCase()));
-        input.closest(".modal").addEventListener("hidden.bs.modal", () => {
-            input.value = "";
-            isiOpsiCrew(select, "");
-        });
-    });
+        modalTambah.addEventListener("hidden.bs.modal", reset);
+    })();
 
     // tombol edit
     document.querySelectorAll(".btn-edit").forEach(btn => {
