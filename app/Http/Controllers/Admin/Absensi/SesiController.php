@@ -22,17 +22,23 @@ class SesiController extends Controller
     {
         $isRiwayat = $request->query('tampil') === 'riwayat';
 
-        $sessions = BroadcastSession::with('content')
+        $sessions = BroadcastSession::with(['content', 'crews'])
             ->whereDate('tanggal', $isRiwayat ? '<' : '>=', today()->toDateString())
             ->orderBy('tanggal', $isRiwayat ? 'desc' : 'asc')
             ->orderBy('jam_mulai', $isRiwayat ? 'desc' : 'asc')
             ->get();
+
+        $crewSesi = Crew::canJoinSession()->orderBy('name')->get();
+        $crewByRole = collect(Crew::SESSION_ROLES)->mapWithKeys(fn (string $role) => [
+            $role => $crewSesi->filter(fn (Crew $crew) => $crew->role === $role || $crew->extra_role === $role)->values(),
+        ]);
 
         return view('admin.absensi.sesi', [
             'navmenu' => 'Sesi',
             'sessions' => $sessions,
             'isRiwayat' => $isRiwayat,
             'programs' => Content::orderBy('title')->get(),
+            'crewByRole' => $crewByRole,
         ]);
     }
 

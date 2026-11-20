@@ -27,6 +27,7 @@
                         <th>Program</th>
                         <th>Tanggal</th>
                         <th>Jam</th>
+                        <th>Crew</th>
                         <th width="140">Action</th>
                     </tr>
                 </thead>
@@ -38,6 +39,7 @@
                             <td>{{ $session->content?->title }}</td>
                             <td>{{ $session->tanggal->format('d-m-Y') }}</td>
                             <td>{{ substr($session->jam_mulai, 0, 5) }} - {{ substr($session->jam_selesai, 0, 5) }}</td>
+                            <td>{{ $session->crews->isEmpty() ? 'Belum ada crew' : $session->crews->pluck('name')->join(', ') }}</td>
                             <td>
                                 <button class="btn btn-sm btn-warning btn-edit"
                                     data-id="{{ $session->id }}"
@@ -45,6 +47,7 @@
                                     data-tanggal="{{ $session->tanggal->toDateString() }}"
                                     data-mulai="{{ substr($session->jam_mulai, 0, 5) }}"
                                     data-selesai="{{ substr($session->jam_selesai, 0, 5) }}"
+                                    data-crews="{{ $session->crews->pluck('id')->toJson() }}"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalEdit">
                                     Edit
@@ -59,7 +62,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">Belum ada sesi</td>
+                            <td colspan="6" class="text-center">Belum ada sesi</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -106,6 +109,7 @@
                         <label>Jam Selesai</label>
                         <input type="time" name="jam_selesai" id="tambah_selesai" class="form-control" required>
                     </div>
+                    @include('admin.absensi._crew-dropdowns', ['prefix' => 'tambah', 'crewByRole' => $crewByRole])
                 </div>
 
                 <div class="modal-footer">
@@ -155,6 +159,7 @@
                         <label>Jam Selesai</label>
                         <input type="time" name="jam_selesai" id="edit_selesai" class="form-control" required>
                     </div>
+                    @include('admin.absensi._crew-dropdowns', ['prefix' => 'edit', 'crewByRole' => $crewByRole])
                 </div>
 
                 <div class="modal-footer">
@@ -200,7 +205,82 @@
             document.getElementById("edit_mulai").value = this.dataset.mulai;
             document.getElementById("edit_selesai").value = this.dataset.selesai;
             perbaruiEdit();
+            isiCrewModal("edit", JSON.parse(this.dataset.crews || "[]"));
         });
+    });
+
+    document.querySelector('[data-bs-target="#modalTambah"]').addEventListener("click", function() {
+        isiCrewModal("tambah", []);
+    });
+
+    function crewBoxes(prefix) {
+        return document.querySelectorAll("#modal" + (prefix === "tambah" ? "Tambah" : "Edit") + " .crew-check");
+    }
+
+    function syncCrewChips(prefix) {
+        const modal = document.getElementById("modal" + (prefix === "tambah" ? "Tambah" : "Edit"));
+
+        modal.querySelectorAll(".crew-dropdown").forEach(dropdown => {
+            const chips = dropdown.querySelector(".crew-chips");
+            chips.innerHTML = "";
+
+            const checked = dropdown.querySelectorAll(".crew-check:checked");
+
+            if (checked.length === 0) {
+                const placeholder = document.createElement("span");
+                placeholder.className = "text-secondary";
+                placeholder.textContent = dropdown.dataset.placeholder;
+                chips.appendChild(placeholder);
+                return;
+            }
+
+            checked.forEach(box => {
+                const chip = document.createElement("span");
+                chip.className = "badge rounded-pill text-bg-primary d-inline-flex align-items-center gap-1";
+                chip.appendChild(document.createTextNode(box.dataset.name));
+
+                const remove = document.createElement("span");
+                remove.setAttribute("role", "button");
+                remove.setAttribute("aria-label", "Hapus " + box.dataset.name);
+                remove.textContent = "\u00d7";
+                remove.addEventListener("click", function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setCrewChecked(prefix, box.value, false);
+                });
+                chip.appendChild(remove);
+                chips.appendChild(chip);
+            });
+        });
+    }
+
+    function setCrewChecked(prefix, value, checked) {
+        crewBoxes(prefix).forEach(other => {
+            if (other.value === String(value)) {
+                other.checked = checked;
+            }
+        });
+
+        syncCrewChips(prefix);
+    }
+
+    function isiCrewModal(prefix, ids) {
+        const terpilih = ids.map(Number);
+
+        crewBoxes(prefix).forEach(box => {
+            box.checked = terpilih.includes(Number(box.value));
+        });
+
+        syncCrewChips(prefix);
+    }
+
+    ["tambah", "edit"].forEach(prefix => {
+        crewBoxes(prefix).forEach(box => {
+            box.addEventListener("change", function() {
+                setCrewChecked(prefix, box.value, box.checked);
+            });
+        });
+        syncCrewChips(prefix);
     });
 </script>
 

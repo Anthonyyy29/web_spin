@@ -221,3 +221,45 @@ test('sesi dibuat lewat form dengan crew_ids dipakai tap', function () {
     $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
         ->assertJson(['status' => 'success', 'jenis' => 'sesi']);
 });
+
+test('halaman sesi mengirim crewByRole terkelompok per jabatan sesi dan terurut nama', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    Crew::factory()->create(['name' => 'Web Dev', 'role' => 'Web Development']);
+    $bendahara = Crew::factory()->create(['name' => 'Bendi', 'role' => 'Bendahara', 'extra_role' => 'Sound Operator']);
+    $ganda = Crew::factory()->create(['name' => 'Anto', 'role' => 'Announcer', 'extra_role' => 'Sound Operator']);
+
+    $response = $this->get('/dashboard/absensi/sesi')->assertOk();
+    $crewByRole = $response->viewData('crewByRole');
+
+    expect($crewByRole->keys()->all())->toBe(Crew::SESSION_ROLES);
+    expect($crewByRole['Announcer']->pluck('id')->all())->toBe([$ganda->id]);
+    expect($crewByRole['Sound Operator']->pluck('id')->all())->toBe([$ganda->id, $bendahara->id]);
+    expect($crewByRole['Human Resource'])->toBeEmpty();
+    $response->assertDontSee('Web Dev');
+});
+
+test('tabel sesi menampilkan kolom crew, data-crews, dan teks kosong', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $a = Crew::factory()->create(['name' => 'Alfa Crew', 'role' => 'Announcer']);
+    $b = Crew::factory()->create(['name' => 'Beta Crew', 'role' => 'Sound Operator']);
+    $sesi = BroadcastSession::factory()->create(['tanggal' => today()->addDay()->toDateString()]);
+    $sesi->crews()->attach([$a->id, $b->id]);
+
+    $this->get('/dashboard/absensi/sesi')->assertOk()
+        ->assertSee('<th>Crew</th>', false)
+        ->assertSee('Alfa Crew, Beta Crew')
+        ->assertSee('data-crews="'.e($sesi->crews->pluck('id')->toJson()).'"', false);
+
+    $sesi->crews()->detach();
+    $this->get('/dashboard/absensi/sesi')->assertOk()->assertSee('Belum ada crew');
+});
+
+test('modal sesi memuat dropdown crew dengan id kotak centang unik per modal', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $crew = Crew::factory()->create(['role' => 'Announcer']);
+
+    $this->get('/dashboard/absensi/sesi')->assertOk()
+        ->assertSee('name="crew_ids[]"', false)
+        ->assertSee("crew-tambah-announcer-{$crew->id}", false)
+        ->assertSee("crew-edit-announcer-{$crew->id}", false);
+});
