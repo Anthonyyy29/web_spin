@@ -10,7 +10,8 @@ class CrewSeeder extends Seeder
     /**
      * Isi anggota Gen 7: nama, jabatan, dan nama berkas foto di
      * public/assets/uploads/crew. Kadiv disimpan dengan jabatan divisinya dan
-     * ditulis paling awal di divisi itu. Yang menjabat ganda memakai jabatan utamanya.
+     * ditulis paling awal di divisi itu. Yang menjabat ganda memakai jabatan utamanya;
+     * jabatan tambahannya (opsional) ditulis sebagai elemen keempat baris.
      */
     public function run(): void
     {
@@ -18,9 +19,9 @@ class CrewSeeder extends Seeder
             ['Nurul Afifah Azzahra', 'General Manager', 'nurul-afifah-azzahra.webp'],
             ['Fitria Attira', 'Vice General Manager', 'fitria-attira.webp'],
             ['Vitroh Maviroh', 'Sekretaris', 'vitroh-maviroh.webp'],
-            ['Syavirni Dwi Amalia', 'Sekretaris', 'syavirni-dwi-amalia.webp'],
-            ['Shafa Dhiya Raihanah', 'Bendahara', 'shafa-dhiya-raihanah.webp'],
-            ['Noval Rasyah Kurnia Putra', 'Bendahara', 'noval-rasyah-kurnia-putra.webp'],
+            ['Syavirni Dwi Amalia', 'Sekretaris', 'syavirni-dwi-amalia.webp', 'Sound Operator'],
+            ['Shafa Dhiya Raihanah', 'Bendahara', 'shafa-dhiya-raihanah.webp', 'Announcer'],
+            ['Noval Rasyah Kurnia Putra', 'Bendahara', 'noval-rasyah-kurnia-putra.webp', 'Announcer'],
             ['Allea De Chaelyn Tomo Lawa', 'Head of Podcast', 'allea-de-chaelyn-tomo-lawa.webp'],
             ['Ivanda Leona Putri Vabita', 'Announcer', 'ivanda-leona-putri-vabita.webp'],
             ['Ashfaa Atsqya Fernando', 'Announcer', 'ashfaa-atsqya-fernando.webp'],
@@ -96,10 +97,11 @@ class CrewSeeder extends Seeder
             ['Rayya Mahira', 'Web Development', 'rayya-mahira.webp'],
         ];
 
-        foreach ($anggota as [$nama, $jabatan, $foto]) {
-            Crew::updateOrCreate(['name' => $nama], [
-                'role' => $jabatan,
-                'image' => 'crew/'.$foto,
+        foreach ($anggota as $baris) {
+            Crew::updateOrCreate(['name' => $baris[0]], [
+                'role' => $baris[1],
+                'extra_role' => $baris[3] ?? null,
+                'image' => 'crew/'.$baris[2],
             ]);
         }
     }

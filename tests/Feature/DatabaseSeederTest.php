@@ -52,3 +52,22 @@ test('seeder crew memuat anggota Gen 7 dengan jabatan dan nama yang valid', func
         ->and(Crew::all()->every(fn (Crew $crew): bool => mb_strlen($crew->name) <= 30))->toBeTrue()
         ->and(Crew::sortedByRole()->first()->name)->toBe('Nurul Afifah Azzahra');
 });
+
+test('seeder mengisi jabatan tambahan tiga anggota berjabatan ganda', function () {
+    $this->seed();
+    $this->seed();
+
+    $nama = ['Syavirni Dwi Amalia', 'Noval Rasyah Kurnia Putra', 'Shafa Dhiya Raihanah'];
+
+    expect(Crew::whereNotNull('extra_role')->pluck('extra_role', 'name')->all())->toEqualCanonicalizing([
+        'Syavirni Dwi Amalia' => 'Sound Operator',
+        'Noval Rasyah Kurnia Putra' => 'Announcer',
+        'Shafa Dhiya Raihanah' => 'Announcer',
+    ])
+        ->and(Crew::canJoinProgram()->whereIn('name', $nama)->count())->toBe(3)
+        ->and(Crew::whereIn('name', $nama)->pluck('role', 'name')->all())->toEqualCanonicalizing([
+            'Syavirni Dwi Amalia' => 'Sekretaris',
+            'Noval Rasyah Kurnia Putra' => 'Bendahara',
+            'Shafa Dhiya Raihanah' => 'Bendahara',
+        ]);
+});

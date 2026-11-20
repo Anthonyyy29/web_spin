@@ -23,6 +23,8 @@ php artisan test --compact                          # suite penuh (jumlah tes be
 vendor/bin/pint --format agent
 ```
 
+`CrewSeeder` mengisi `extra_role` tiga orang: Syavirni Dwi Amalia (Sekretaris) = Sound Operator; Noval Rasyah Kurnia Putra dan Shafa Dhiya Raihanah (Bendahara) = Announcer; baris seeder boleh punya elemen keempat opsional untuk jabatan tambahan.
+
 Login: `admin`, `hr`, password `password` (ditulis langsung di `database/seeders/DatabaseSeeder.php`; ganti sebelum production).
 
 ## Peran dan akses
@@ -46,14 +48,14 @@ Seluruh grup `/dashboard` memakai `auth` + `actioncheck` (`PreventRapidPosts`: P
 ## Kode penting
 
 - `app/Http/Controllers/Controller.php`: basis untuk helper bersama: `storeUpload`/`deleteUpload` (ke `public/assets/uploads[/sub]`; nilai kolom `image` berupa path relatif, mis. `crew/abc.png`, `program/abc.png`; `ImageCrudController::$uploadFolder` menentukan subfolder tiap menu), `downloadExcel`, dan `encodeId`/`decodeId` (penyamar ID URL publik, **akan dihapus**, lihat `docs/catatan.md`).
-- `Admin/ImageCrudController`: dasar crew/news/sponsor/podcast (validasi gambar, simpan, hapus berkas, catat `AuditLog`). Subclass hanya mengisi `modelClass()`, `auditName()`, `fieldRules()`, `prepare()`, dan opsional hook `afterSave(Model, Request)` (dipakai `PodcastController` untuk sinkron `crew_ids[]`: hanya jabatan `Crew::PROGRAM_ROLES`; crew jabatan lain tetap; validasi menolak jabatan lain). `PodcastController::delete` menolak program yang masih punya sesi (`Program masih punya sesi siaran. Hapus sesinya dulu di menu Sesi.`). Form di `admin/podcast.blade.php` punya tiga dropdown crew (satu per jabatan) dengan chip.
+- `Admin/ImageCrudController`: dasar crew/news/sponsor/podcast (validasi gambar, simpan, hapus berkas, catat `AuditLog`). Subclass hanya mengisi `modelClass()`, `auditName()`, `fieldRules()`, `prepare()`, dan opsional hook `afterSave(Model, Request)` (dipakai `PodcastController` untuk sinkron `crew_ids[]`: hanya crew yang `Crew::canJoinProgram()`; crew terpasang yang tidak memenuhi syarat tetap saat simpan; validasi menolak crew lain, id ganda/bersarang ditolak). `PodcastController::delete` menolak program yang masih punya sesi (`Program masih punya sesi siaran. Hapus sesinya dulu di menu Sesi.`). Form di `admin/podcast.blade.php` punya tiga dropdown crew (satu per jabatan) dengan chip: crew masuk dropdown bila jabatan utama ATAU tambahannya itu jabatan dropdown (orang berdua jabatan muncul di dua dropdown; id dideduplikasi, centang dan chip saling mencerminkan). Form Crew admin punya "Jabatan tambahan (opsional)": satu per crew, anggota `Crew::ROLES`, tidak boleh sama dengan jabatan utama (`different:role`).
 - `AuthController`: batas 5 gagal / 60 detik per IP, catat `AdminHistory::recordLogin`, pesan kilat `login berhasil` / `login gagal` / `Terlalu banyak percobaan. Coba lagi nanti.` / `Anda telah logout.`.
 - Middleware: `role`, `actioncheck`, `api.token` (`VerifyApiToken`, header `Authorization` = `API_ACCESS_TOKEN`, kosong = tolak semua).
-- Model berguna: `Crew::ROLES` (jabatan berurut + warna grafik), `Crew::PROGRAM_ROLES` (Announcer, Sound Operator, Human Resource), `Crew::sortedByRole()`, `News::CATEGORIES`, `News::descriptionRows()`, `News::extractInstagramReelId()`, `Episode::extractSpotifyEpisodeId()`, trait `CountsByWeekday` (grafik mingguan), `AuditLog::record()`, `AbsensiLog::withCrew()`, `AbsensiLog::withSession()`, `BroadcastSession::findForTap()` (sesi hari ini untuk tap; null = tamu).
+- Model berguna: `Crew::ROLES` (jabatan berurut + warna grafik), `Crew::PROGRAM_ROLES` (Announcer, Sound Operator, Human Resource), `Crew::canJoinProgram()` (scope: `role` ATAU `extra_role` termasuk `PROGRAM_ROLES`), `Crew::sortedByRole()`, `News::CATEGORIES`, `News::descriptionRows()`, `News::extractInstagramReelId()`, `Episode::extractSpotifyEpisodeId()`, trait `CountsByWeekday` (grafik mingguan), `AuditLog::record()`, `AbsensiLog::withCrew()`, `AbsensiLog::withSession()`, `BroadcastSession::findForTap()` (sesi hari ini untuk tap; null = tamu).
 
 ## Tabel
 
-`users`, `sessions`, `admin_history`, `audit_logs`, `crews`, `contents` (segmen podcast), `episodes` (`id_content` → contents), `news`, `sponsors`, `rfid_crews` (PK `rfid_uid` string, `crew_id`), `absensi_logs` (`session_id` nullable, null = tamu, `nullOnDelete`; unik `rfid_uid`+`session_id`), `broadcast_sessions` (`content_id`, `tanggal`, `jam_mulai`, `jam_selesai`), `content_crew` (penugasan crew ke program). Tanpa soft delete (repo lama punya `deleted_at`, tidak dibawa).
+`users`, `sessions`, `admin_history`, `audit_logs`, `crews`, `contents` (segmen podcast), `episodes` (`id_content` → contents), `news`, `sponsors`, `rfid_crews` (PK `rfid_uid` string, `crew_id`), `absensi_logs` (`session_id` nullable, null = tamu, `nullOnDelete`; unik `rfid_uid`+`session_id`), `broadcast_sessions` (`content_id`, `tanggal`, `jam_mulai`, `jam_selesai`), `content_crew` (penugasan crew ke program). `crews.extra_role` nullable = jabatan tambahan, hanya dipakai untuk penugasan program; situs publik, grafik dashboard, absensi divisi, dan filter crew admin tetap memakai `role` (utama). Tanpa soft delete (repo lama punya `deleted_at`, tidak dibawa).
 
 ## View (`resources/views`)
 
