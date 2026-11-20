@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\AbsensiLog;
 use App\Models\BroadcastSession;
 use App\Models\Content;
+use App\Models\Crew;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SesiController extends Controller
@@ -35,7 +38,8 @@ class SesiController extends Controller
 
     public function simpan(Request $request): RedirectResponse
     {
-        BroadcastSession::create($this->validated($request));
+        $sesi = BroadcastSession::create($this->validated($request));
+        $sesi->syncCrews($this->crewIds($request));
 
         return redirect(self::LIST_URL)->with('success', 'Sesi berhasil ditambahkan');
     }
@@ -54,6 +58,7 @@ class SesiController extends Controller
         }
 
         $sesi->update($data);
+        $sesi->syncCrews($this->crewIds($request));
 
         return redirect(self::LIST_URL)->with('success', 'Sesi berhasil diperbarui');
     }
@@ -70,11 +75,26 @@ class SesiController extends Controller
      */
     private function validated(Request $request): array
     {
-        return $request->validate([
+        return Arr::except($request->validate([
             'content_id' => ['required', 'exists:contents,id'],
             'tanggal' => ['required', 'date'],
             'jam_mulai' => ['required', 'date_format:H:i'],
             'jam_selesai' => ['required', 'date_format:H:i', 'after:jam_mulai'],
-        ]);
+            'crew_ids' => ['array'],
+            'crew_ids.*' => [
+                'integer',
+                Rule::exists('crews', 'id')->where(fn ($query) => $query
+                    ->whereIn('role', Crew::SESSION_ROLES)
+                    ->orWhereIn('extra_role', Crew::SESSION_ROLES)),
+            ],
+        ]), 'crew_ids');
+    }
+
+    /**
+     * @return array<int, int|string>
+     */
+    private function crewIds(Request $request): array
+    {
+        return $request->input('crew_ids', []);
     }
 }

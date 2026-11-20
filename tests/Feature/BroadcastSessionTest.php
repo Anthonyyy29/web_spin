@@ -12,15 +12,15 @@ uses(RefreshDatabase::class);
 
 function sessionFor(Crew $crew, string $mulai = '10:00:00', string $selesai = '11:00:00', ?Carbon $tanggal = null): BroadcastSession
 {
-    $content = Content::factory()->create();
-    $content->crews()->attach($crew);
-
-    return BroadcastSession::factory()->create([
-        'content_id' => $content->id,
+    $session = BroadcastSession::factory()->create([
+        'content_id' => Content::factory()->create()->id,
         'tanggal' => ($tanggal ?? today())->toDateString(),
         'jam_mulai' => $mulai,
         'jam_selesai' => $selesai,
     ]);
+    $session->crews()->attach($crew);
+
+    return $session;
 }
 
 test('findForTap: cocok dari jam mulai sampai satu jam setelah selesai, batas inklusif', function () {
@@ -35,7 +35,7 @@ test('findForTap: cocok dari jam mulai sampai satu jam setelah selesai, batas in
         ->and(BroadcastSession::findForTap($crew, today()->setTime(12, 0, 1)))->toBeNull();
 });
 
-test('findForTap: tamu bila crew null atau di luar program atau hari lain', function () {
+test('findForTap: tamu bila crew null atau di luar sesi atau hari lain', function () {
     $crew = Crew::factory()->create();
     $at = today()->setTime(10, 0, 0);
     sessionFor($crew);
@@ -107,4 +107,61 @@ test('findForTap: tap bermikrodetik memilih sesi yang sudah mulai', function () 
 
     expect(BroadcastSession::findForTap($crew, today()->setTime(10, 0, 0, 345678))?->id)->toBe($pertama->id)
         ->and(BroadcastSession::findForTap($crew, today()->setTime(10, 0, 0, 600000))?->id)->toBe($pertama->id);
+});
+
+test('findForTap: crew program yang sama tetapi tidak ditugaskan ke sesi tetap tamu', function () {
+    $a = Crew::factory()->create();
+    $b = Crew::factory()->create();
+    $content = Content::factory()->create();
+    $content->crews()->attach([$a->id, $b->id]);
+    $session = BroadcastSession::factory()->create([
+        'content_id' => $content->id,
+        'tanggal' => today()->toDateString(),
+        'jam_mulai' => '10:00:00',
+        'jam_selesai' => '11:00:00',
+    ]);
+    $session->crews()->attach($a);
+
+    expect(BroadcastSession::findForTap($a, today()->setTime(10, 30))?->id)->toBe($session->id)
+        ->and(BroadcastSession::findForTap($b, today()->setTime(10, 30)))->toBeNull();
+});
+
+test('syncCrews menyimpan id terpilih dan menggantikan yang lama', function () {
+    $session = BroadcastSession::factory()->create();
+    $lama = Crew::factory()->create(['role' => 'Announcer']);
+    $baru = Crew::factory()->create(['role' => 'Sound Operator']);
+    $session->crews()->attach($lama);
+
+    $session->syncCrews([$baru->id]);
+
+    expect($session->crews()->pluck('crews.id')->all())->toBe([$baru->id]);
+});
+
+test('syncCrews menyimpan id ganda satu baris', function () {
+    $session = BroadcastSession::factory()->create();
+    $a = Crew::factory()->create(['role' => 'Announcer']);
+
+    $session->syncCrews([$a->id, $a->id]);
+
+    expect($session->crews()->pluck('crews.id')->all())->toBe([$a->id]);
+});
+
+test('syncCrews mempertahankan crew yang tak lagi berhak', function () {
+    $session = BroadcastSession::factory()->create();
+    $webdev = Crew::factory()->create(['role' => 'Web Development', 'extra_role' => null]);
+    $session->crews()->attach($webdev);
+
+    $session->syncCrews([]);
+
+    expect($session->crews()->pluck('crews.id')->all())->toBe([$webdev->id]);
+});
+
+test('syncCrews melepas crew berhak yang tidak dipilih', function () {
+    $session = BroadcastSession::factory()->create();
+    $announcer = Crew::factory()->create(['role' => 'Announcer']);
+    $session->crews()->attach($announcer);
+
+    $session->syncCrews([]);
+
+    expect($session->crews()->count())->toBe(0);
 });

@@ -14,15 +14,15 @@ function siapkanSesiHariIni(): BroadcastSession
 {
     $crew = Crew::factory()->create();
     RfidCrew::factory()->create(['rfid_uid' => 'AB12', 'crew_id' => $crew->id]);
-    $content = Content::factory()->create();
-    $content->crews()->attach($crew);
-
-    return BroadcastSession::factory()->create([
-        'content_id' => $content->id,
+    $sesi = BroadcastSession::factory()->create([
+        'content_id' => Content::factory()->create()->id,
         'tanggal' => today()->toDateString(),
         'jam_mulai' => '10:00:00',
         'jam_selesai' => '11:00:00',
     ]);
+    $sesi->crews()->attach($crew);
+
+    return $sesi;
 }
 
 test('tap di jendela sesi mencatat absen sesi', function () {

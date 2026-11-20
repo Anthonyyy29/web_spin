@@ -39,7 +39,7 @@ class PodcastController extends ImageCrudController
             'jam_selesai_default' => ['nullable', 'date_format:H:i', 'required_with:jam_mulai_default', 'after:jam_mulai_default'],
             'crew_ids' => ['array'],
             'crew_ids.*' => ['integer', Rule::exists('crews', 'id')->where(
-                fn ($query) => $query->whereIn('role', Crew::PROGRAM_ROLES)->orWhereIn('extra_role', Crew::PROGRAM_ROLES)
+                fn ($query) => $query->whereIn('role', Crew::SESSION_ROLES)->orWhereIn('extra_role', Crew::SESSION_ROLES)
             )],
         ];
     }
@@ -55,7 +55,7 @@ class PodcastController extends ImageCrudController
      */
     protected function afterSave(Model $model, Request $request): void
     {
-        $dipertahankan = $model->crews()->whereNotIn('crews.id', Crew::canJoinProgram()->select('crews.id'))->pluck('crews.id');
+        $dipertahankan = $model->crews()->whereNotIn('crews.id', Crew::canJoinSession()->select('crews.id'))->pluck('crews.id');
 
         $crewIds = array_map('intval', array_values((array) $request->input('crew_ids', [])));
 
@@ -78,8 +78,8 @@ class PodcastController extends ImageCrudController
     {
         $contents = Content::with('crews')->latest()->paginate(8, pageName: 'podcastpage');
 
-        $crewProgram = Crew::canJoinProgram()->orderBy('name')->get();
-        $crewByRole = collect(Crew::PROGRAM_ROLES)->mapWithKeys(fn (string $role) => [
+        $crewProgram = Crew::canJoinSession()->orderBy('name')->get();
+        $crewByRole = collect(Crew::SESSION_ROLES)->mapWithKeys(fn (string $role) => [
             $role => $crewProgram->filter(fn (Crew $crew) => $crew->role === $role || $crew->extra_role === $role)->values(),
         ]);
 

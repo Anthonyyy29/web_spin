@@ -39,11 +39,11 @@ class Crew extends Model
     ];
 
     /**
-     * Jabatan yang boleh ditugaskan ke program lewat form podcast.
+     * Jabatan yang boleh ditugaskan ke sesi siaran.
      *
      * @var list<string>
      */
-    public const array PROGRAM_ROLES = ['Announcer', 'Sound Operator', 'Human Resource'];
+    public const array SESSION_ROLES = ['Announcer', 'Sound Operator', 'Human Resource'];
 
     /**
      * @var list<string>
@@ -68,15 +68,23 @@ class Crew extends Model
     }
 
     /**
-     * Crew yang jabatan utama atau tambahannya boleh ditugaskan ke program.
+     * Crew yang jabatan utama atau tambahannya boleh ditugaskan ke sesi siaran.
      *
      * @param  Builder<self>  $query
      */
-    public function scopeCanJoinProgram(Builder $query): void
+    public function scopeCanJoinSession(Builder $query): void
     {
         $query->where(fn (Builder $query) => $query
-            ->whereIn('role', self::PROGRAM_ROLES)
-            ->orWhereIn('extra_role', self::PROGRAM_ROLES));
+            ->whereIn('role', self::SESSION_ROLES)
+            ->orWhereIn('extra_role', self::SESSION_ROLES));
+    }
+
+    /**
+     * @return BelongsToMany<BroadcastSession, $this>
+     */
+    public function broadcastSessions(): BelongsToMany
+    {
+        return $this->belongsToMany(BroadcastSession::class, 'broadcast_session_crew');
     }
 
     /**

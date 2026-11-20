@@ -99,13 +99,13 @@ test('kartu crew admin menampilkan jabatan tambahan', function () {
         ->assertSee('data-extrarole="Announcer"', false);
 });
 
-test('scope canJoinProgram memilih menurut jabatan utama atau tambahan', function () {
+test('scope canJoinSession memilih menurut jabatan utama atau tambahan', function () {
     $a = Crew::factory()->create(['role' => 'Announcer']);
     $b = Crew::factory()->create(['role' => 'Bendahara', 'extra_role' => 'Sound Operator']);
     Crew::factory()->create(['role' => 'Bendahara', 'extra_role' => null]);
     Crew::factory()->create(['role' => 'Creative', 'extra_role' => 'Creative']);
 
-    expect(Crew::canJoinProgram()->pluck('id')->all())->toEqualCanonicalizing([$a->id, $b->id]);
+    expect(Crew::canJoinSession()->pluck('id')->all())->toEqualCanonicalizing([$a->id, $b->id]);
 });
 
 test('news mengubah tautan reel jadi id dan podcast menyimpan episode dengan embed spotify', function () {

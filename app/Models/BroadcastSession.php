@@ -8,6 +8,7 @@ use Database\Factories\BroadcastSessionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class BroadcastSession extends Model
 {
@@ -40,6 +41,31 @@ class BroadcastSession extends Model
         return $this->belongsTo(Content::class);
     }
 
+    /**
+     * @return BelongsToMany<Crew, $this>
+     */
+    public function crews(): BelongsToMany
+    {
+        return $this->belongsToMany(Crew::class, 'broadcast_session_crew');
+    }
+
+    /**
+     * Menyimpan crew terpilih (id ganda disatukan). Crew yang sudah ditugaskan
+     * tetapi tak lagi berhak (canJoinSession) dipertahankan.
+     *
+     * @param  array<int, int|string>  $crewIds
+     */
+    public function syncCrews(array $crewIds): void
+    {
+        $dipertahankan = $this->crews()
+            ->whereNotIn('crews.id', Crew::canJoinSession()->select('crews.id'))
+            ->pluck('crews.id');
+
+        $this->crews()->sync(
+            collect($crewIds)->map(fn ($id): int => (int) $id)->merge($dipertahankan)->unique()->values()->all()
+        );
+    }
+
     public function startsAt(): CarbonImmutable
     {
         return CarbonImmutable::parse($this->tanggal->toDateString().' '.$this->jam_mulai);
@@ -59,7 +85,7 @@ class BroadcastSession extends Model
     }
 
     /**
-     * Sesi hari ini milik program crew yang jendela tap-nya mencakup $at:
+     * Sesi hari ini yang memuat crew dan yang jendela tap-nya mencakup $at:
      * dari jam mulai sampai LATE_WINDOW_MINUTES setelah jam selesai. Sebelum jam
      * mulai berarti tamu. Bila ada beberapa, sesi yang sedang berjalan (Hadir)
      * didahulukan atas yang akan Terlambat, lalu dipilih jam mulai terdekat.
@@ -73,7 +99,7 @@ class BroadcastSession extends Model
 
         return static::query()
             ->whereDate('tanggal', $at->toDateString())
-            ->whereIn('content_id', $crew->contents()->pluck('contents.id'))
+            ->whereHas('crews', fn ($query) => $query->whereKey($crew->getKey()))
             ->get()
             ->filter(fn (self $session): bool => $at->betweenIncluded(
                 $session->startsAt(),

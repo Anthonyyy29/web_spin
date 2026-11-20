@@ -4,7 +4,6 @@ use App\Models\AbsensiLog;
 use App\Models\BroadcastSession;
 use App\Models\Content;
 use App\Models\Crew;
-use App\Models\RfidCrew;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -111,32 +110,6 @@ test('crew di luar tiga jabatan, tak ada, atau bukan array ditolak', function (s
 
     expect($content->crews()->count())->toBe(0);
 })->with(['jabatan lain', 'tidak ada', 'bukan array', 'array bersarang']);
-
-test('tap memakai crew yang ditugaskan lewat form', function () {
-    $this->actingAs(User::factory()->role('hr')->create());
-    $announcer = Crew::factory()->create(['role' => 'Announcer']);
-    RfidCrew::factory()->create(['rfid_uid' => 'AB12', 'crew_id' => $announcer->id]);
-
-    $this->post('/dashboard/podcast/save', [
-        'title' => 'Program Baru',
-        'description' => 'Deskripsi',
-        'image' => UploadedFile::fake()->image('a.png'),
-        'crew_ids' => [$announcer->id],
-    ])->assertSessionHas('success');
-
-    $content = Content::firstOrFail();
-    BroadcastSession::factory()->create([
-        'content_id' => $content->id,
-        'tanggal' => today()->toDateString(),
-        'jam_mulai' => '10:00:00',
-        'jam_selesai' => '11:00:00',
-    ]);
-
-    $this->travelTo(today()->setTime(10, 30));
-
-    $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
-        ->assertJson(['status' => 'success', 'jenis' => 'sesi']);
-});
 
 test('program yang punya sesi tidak bisa dihapus', function () {
     $this->actingAs(User::factory()->role('hr')->create());

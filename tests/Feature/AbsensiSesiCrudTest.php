@@ -3,6 +3,8 @@
 use App\Models\AbsensiLog;
 use App\Models\BroadcastSession;
 use App\Models\Content;
+use App\Models\Crew;
+use App\Models\RfidCrew;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -113,4 +115,109 @@ test('halaman sesi memuat jam default tiap program dan tombol apply', function (
         ->assertSee('data-selesai="11:00"', false)
         ->assertSee('Apply waktu default')
         ->assertSee('Program ini belum punya jam default');
+});
+
+test('simpan sesi dengan crew_ids menyimpan crew tiga jabatan', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $content = Content::factory()->create();
+    $ids = collect(['Announcer', 'Sound Operator', 'Human Resource'])
+        ->map(fn (string $role) => Crew::factory()->create(['role' => $role])->id)->all();
+
+    $this->post('/dashboard/absensi/sesi/simpan', [
+        'content_id' => $content->id, 'tanggal' => today()->toDateString(), 'jam_mulai' => '10:00', 'jam_selesai' => '11:00', 'crew_ids' => $ids,
+    ])->assertSessionHas('success');
+
+    expect(BroadcastSession::firstOrFail()->crews()->pluck('crews.id')->all())->toEqualCanonicalizing($ids);
+});
+
+test('update sesi menambah dan melepas crew', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $sesi = BroadcastSession::factory()->create(['tanggal' => today()->toDateString(), 'jam_mulai' => '10:00:00', 'jam_selesai' => '11:00:00']);
+    $lama = Crew::factory()->create(['role' => 'Announcer']);
+    $baru = Crew::factory()->create(['role' => 'Sound Operator']);
+    $sesi->crews()->attach($lama);
+
+    $this->post('/dashboard/absensi/sesi/update', [
+        'id' => $sesi->id, 'content_id' => $sesi->content_id, 'tanggal' => today()->toDateString(), 'jam_mulai' => '10:00', 'jam_selesai' => '11:00', 'crew_ids' => [$baru->id],
+    ])->assertSessionHas('success');
+
+    expect($sesi->crews()->pluck('crews.id')->all())->toBe([$baru->id]);
+});
+
+test('update sesi tanpa crew_ids melepas crew berhak dan mempertahankan crew tak berhak', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $sesi = BroadcastSession::factory()->create(['tanggal' => today()->toDateString(), 'jam_mulai' => '10:00:00', 'jam_selesai' => '11:00:00']);
+    $berhak = Crew::factory()->create(['role' => 'Announcer']);
+    $tidakBerhak = Crew::factory()->create(['role' => 'Web Development', 'extra_role' => null]);
+    $sesi->crews()->attach([$berhak->id, $tidakBerhak->id]);
+
+    $this->post('/dashboard/absensi/sesi/update', [
+        'id' => $sesi->id, 'content_id' => $sesi->content_id, 'tanggal' => today()->toDateString(), 'jam_mulai' => '10:00', 'jam_selesai' => '11:00',
+    ])->assertSessionHas('success');
+
+    expect($sesi->crews()->pluck('crews.id')->all())->toBe([$tidakBerhak->id]);
+});
+
+test('crew_ids tidak valid ditolak', function (string $kasus, string $kunci) {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $content = Content::factory()->create();
+
+    $crewIds = match ($kasus) {
+        'jabatan lain' => [Crew::factory()->create(['role' => 'Web Development'])->id],
+        'tidak ada' => [9999],
+        'bukan array' => 'abc',
+        'array bersarang' => [[Crew::factory()->create(['role' => 'Announcer'])->id]],
+    };
+
+    $this->post('/dashboard/absensi/sesi/simpan', [
+        'content_id' => $content->id, 'tanggal' => today()->toDateString(), 'jam_mulai' => '10:00', 'jam_selesai' => '11:00', 'crew_ids' => $crewIds,
+    ])->assertSessionHasErrors($kunci);
+
+    expect(BroadcastSession::count())->toBe(0);
+})->with([
+    ['jabatan lain', 'crew_ids.0'],
+    ['tidak ada', 'crew_ids.0'],
+    ['bukan array', 'crew_ids'],
+    ['array bersarang', 'crew_ids.0'],
+]);
+
+test('crew jabatan utama lain dengan extra_role berhak diterima', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $content = Content::factory()->create();
+    $crew = Crew::factory()->create(['role' => 'Bendahara', 'extra_role' => 'Announcer']);
+
+    $this->post('/dashboard/absensi/sesi/simpan', [
+        'content_id' => $content->id, 'tanggal' => today()->toDateString(), 'jam_mulai' => '10:00', 'jam_selesai' => '11:00', 'crew_ids' => [$crew->id],
+    ])->assertSessionHas('success');
+
+    expect(BroadcastSession::firstOrFail()->crews()->pluck('crews.id')->all())->toBe([$crew->id]);
+});
+
+test('tanggal sesi yang punya absensi tetap terkunci saat crew_ids dikirim', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $sesi = BroadcastSession::factory()->create(['tanggal' => today()->toDateString(), 'jam_mulai' => '10:00:00', 'jam_selesai' => '11:00:00']);
+    AbsensiLog::factory()->create(['session_id' => $sesi->id]);
+    $crew = Crew::factory()->create(['role' => 'Announcer']);
+
+    $this->post('/dashboard/absensi/sesi/update', [
+        'id' => $sesi->id, 'content_id' => $sesi->content_id, 'tanggal' => today()->addWeek()->toDateString(), 'jam_mulai' => '10:00', 'jam_selesai' => '11:00', 'crew_ids' => [$crew->id],
+    ])->assertSessionHas('error');
+
+    expect($sesi->fresh()->tanggal->toDateString())->toBe(today()->toDateString());
+});
+
+test('sesi dibuat lewat form dengan crew_ids dipakai tap', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $content = Content::factory()->create();
+    $announcer = Crew::factory()->create(['role' => 'Announcer']);
+    RfidCrew::factory()->create(['rfid_uid' => 'AB12', 'crew_id' => $announcer->id]);
+
+    $this->post('/dashboard/absensi/sesi/simpan', [
+        'content_id' => $content->id, 'tanggal' => today()->toDateString(), 'jam_mulai' => '10:00', 'jam_selesai' => '11:00', 'crew_ids' => [$announcer->id],
+    ])->assertSessionHas('success');
+
+    $this->travelTo(today()->setTime(10, 30));
+
+    $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
+        ->assertJson(['status' => 'success', 'jenis' => 'sesi']);
 });

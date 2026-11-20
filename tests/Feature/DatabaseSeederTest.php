@@ -64,7 +64,7 @@ test('seeder mengisi jabatan tambahan tiga anggota berjabatan ganda', function (
         'Noval Rasyah Kurnia Putra' => 'Announcer',
         'Shafa Dhiya Raihanah' => 'Announcer',
     ])
-        ->and(Crew::canJoinProgram()->whereIn('name', $nama)->count())->toBe(3)
+        ->and(Crew::canJoinSession()->whereIn('name', $nama)->count())->toBe(3)
         ->and(Crew::whereIn('name', $nama)->pluck('role', 'name')->all())->toEqualCanonicalizing([
             'Syavirni Dwi Amalia' => 'Sekretaris',
             'Noval Rasyah Kurnia Putra' => 'Bendahara',
