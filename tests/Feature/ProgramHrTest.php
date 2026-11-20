@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AbsensiLog;
 use App\Models\BroadcastSession;
 use App\Models\Content;
 use App\Models\Crew;
@@ -7,6 +8,7 @@ use App\Models\RfidCrew;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -133,4 +135,29 @@ test('tap memakai crew yang ditugaskan lewat form', function () {
 
     $this->postJson('/tap-absen', ['rfid_uid' => 'AB12'])
         ->assertJson(['status' => 'success', 'jenis' => 'sesi']);
+});
+
+test('program yang punya sesi tidak bisa dihapus', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $content = Content::factory()->create();
+    $sesi = BroadcastSession::factory()->create(['content_id' => $content->id]);
+    AbsensiLog::factory()->create(['session_id' => $sesi->id]);
+
+    $this->get('/dashboard/podcast/delete/'.$content->id)
+        ->assertSessionHas('error', 'Program masih punya sesi siaran. Hapus sesinya dulu di menu Sesi.');
+
+    expect(Content::count())->toBe(1)
+        ->and(BroadcastSession::count())->toBe(1)
+        ->and(AbsensiLog::whereNotNull('session_id')->count())->toBe(1);
+});
+
+test('program tanpa sesi bisa dihapus beserta penugasan crew-nya', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $content = Content::factory()->create();
+    $content->crews()->attach(Crew::factory()->create(['role' => 'Announcer'])->id);
+
+    $this->get('/dashboard/podcast/delete/'.$content->id)->assertSessionHas('success');
+
+    expect(Content::count())->toBe(0)
+        ->and(DB::table('content_crew')->count())->toBe(0);
 });

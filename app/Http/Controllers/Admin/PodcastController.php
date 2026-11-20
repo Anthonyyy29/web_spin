@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\AuditLog;
+use App\Models\BroadcastSession;
 use App\Models\Content;
 use App\Models\Crew;
 use App\Models\Episode;
@@ -52,6 +53,18 @@ class PodcastController extends ImageCrudController
         $dipertahankan = $model->crews()->whereNotIn('role', Crew::PROGRAM_ROLES)->pluck('crews.id');
 
         $model->crews()->sync($dipertahankan->merge($request->input('crew_ids', []))->unique()->all());
+    }
+
+    /**
+     * Tolak hapus program yang masih punya sesi, karena sesi ikut terhapus dan absensinya kehilangan rujukan.
+     */
+    public function delete(int $id): RedirectResponse
+    {
+        if (BroadcastSession::where('content_id', $id)->exists()) {
+            return back()->with('error', 'Program masih punya sesi siaran. Hapus sesinya dulu di menu Sesi.');
+        }
+
+        return parent::delete($id);
     }
 
     public function index(): View
