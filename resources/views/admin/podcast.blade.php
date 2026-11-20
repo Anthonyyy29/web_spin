@@ -48,8 +48,8 @@
                                     <div class="dropdown-menu w-100 p-2" style="max-height: 220px; overflow-y: auto;">
                                         @forelse ($crews as $crew)
                                             <div class="form-check">
-                                                <input type="checkbox" class="form-check-input crew-check" id="crew-{{ $crew->id }}" name="crew_ids[]" value="{{ $crew->id }}" data-name="{{ $crew->name }}">
-                                                <label class="form-check-label w-100" for="crew-{{ $crew->id }}">{{ $crew->name }}</label>
+                                                <input type="checkbox" class="form-check-input crew-check" id="crew-{{ Str::slug($role) }}-{{ $crew->id }}" name="crew_ids[]" value="{{ $crew->id }}" data-name="{{ $crew->name }}">
+                                                <label class="form-check-label w-100" for="crew-{{ Str::slug($role) }}-{{ $crew->id }}">{{ $crew->name }}</label>
                                             </div>
                                         @empty
                                             <span class="text-secondary small">Belum ada crew {{ $role }}.</span>
@@ -150,7 +150,15 @@
         });
 
         document.querySelectorAll(".crew-check").forEach(box => {
-            box.addEventListener("change", syncCrewChips);
+            box.addEventListener("change", function() {
+                document.querySelectorAll(".crew-check").forEach(other => {
+                    if (other !== box && other.value === box.value) {
+                        other.checked = box.checked;
+                    }
+                });
+
+                syncCrewChips();
+            });
         });
 
         document.getElementById("podcastImage").addEventListener("change", function(event) {

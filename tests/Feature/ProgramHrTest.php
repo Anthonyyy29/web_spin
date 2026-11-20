@@ -103,11 +103,6 @@ test('crew di luar tiga jabatan, tak ada, atau bukan array ditolak', function (s
         'tidak ada' => [9999],
         'bukan array' => 'abc',
         'array bersarang' => [[Crew::factory()->create(['role' => 'Announcer'])->id]],
-        'id ganda' => (function (): array {
-            $id = Crew::factory()->create(['role' => 'Announcer'])->id;
-
-            return [$id, $id];
-        })(),
     };
 
     $this->post('/dashboard/podcast/save', [
@@ -115,7 +110,7 @@ test('crew di luar tiga jabatan, tak ada, atau bukan array ditolak', function (s
     ])->assertSessionHas('error');
 
     expect($content->crews()->count())->toBe(0);
-})->with(['jabatan lain', 'tidak ada', 'bukan array', 'array bersarang', 'id ganda']);
+})->with(['jabatan lain', 'tidak ada', 'bukan array', 'array bersarang']);
 
 test('tap memakai crew yang ditugaskan lewat form', function () {
     $this->actingAs(User::factory()->role('hr')->create());
@@ -190,4 +185,69 @@ test('kartu program memuat jumlah crew dan id crew untuk modal ubah', function (
         ->assertOk()
         ->assertSee('2 crew ditugaskan')
         ->assertSee('data-crews', false);
+});
+
+test('crew berjabatan tambahan muncul di dropdown jabatan itu dan bisa ditugaskan', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $sari = Crew::factory()->create(['name' => 'Sari', 'role' => 'Sekretaris', 'extra_role' => 'Sound Operator']);
+
+    $response = $this->get('/dashboard/podcast')->assertOk()->assertSee('Sari');
+    $crewByRole = $response->viewData('crewByRole');
+
+    expect($crewByRole['Sound Operator']->pluck('id')->all())->toBe([$sari->id])
+        ->and($crewByRole['Announcer']->pluck('id')->all())->toBe([]);
+
+    $this->post('/dashboard/podcast/save', [
+        'title' => 'Program Baru',
+        'description' => 'Deskripsi',
+        'image' => UploadedFile::fake()->image('a.png'),
+        'crew_ids' => [$sari->id],
+    ])->assertSessionHas('success');
+
+    expect(Content::firstOrFail()->crews()->pluck('crews.id')->all())->toBe([$sari->id]);
+});
+
+test('crew dengan jabatan utama dan tambahan program muncul di dua dropdown dan tersimpan sekali', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $dani = Crew::factory()->create(['name' => 'Dani', 'role' => 'Announcer', 'extra_role' => 'Sound Operator']);
+
+    $crewByRole = $this->get('/dashboard/podcast')->viewData('crewByRole');
+
+    expect($crewByRole['Announcer']->pluck('id')->all())->toBe([$dani->id])
+        ->and($crewByRole['Sound Operator']->pluck('id')->all())->toBe([$dani->id]);
+
+    $this->post('/dashboard/podcast/save', [
+        'title' => 'Program Baru',
+        'description' => 'Deskripsi',
+        'image' => UploadedFile::fake()->image('a.png'),
+        'crew_ids' => [$dani->id, $dani->id],
+    ])->assertSessionHas('success');
+
+    expect(Content::firstOrFail()->crews()->count())->toBe(1);
+});
+
+test('penugasan crew yang kehilangan kelayakan dipertahankan saat program disimpan', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $content = Content::factory()->create();
+    $sari = Crew::factory()->create(['role' => 'Sekretaris', 'extra_role' => 'Sound Operator']);
+    $content->crews()->attach($sari->id);
+    $sari->update(['extra_role' => null]);
+
+    $this->post('/dashboard/podcast/save', [
+        'id' => $content->id, 'title' => 'Judul', 'description' => 'Deskripsi', 'crew_ids' => [],
+    ])->assertSessionHas('success');
+
+    expect($content->crews()->pluck('crews.id')->all())->toBe([$sari->id]);
+});
+
+test('jabatan tambahan di luar tiga jabatan tidak membuat crew layak', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $content = Content::factory()->create();
+    $crew = Crew::factory()->create(['role' => 'Bendahara', 'extra_role' => 'Creative']);
+
+    $this->post('/dashboard/podcast/save', [
+        'id' => $content->id, 'title' => 'Judul', 'description' => 'Deskripsi', 'crew_ids' => [$crew->id],
+    ])->assertSessionHas('error');
+
+    expect($content->crews()->count())->toBe(0);
 });

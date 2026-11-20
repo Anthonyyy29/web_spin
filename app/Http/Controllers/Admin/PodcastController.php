@@ -36,7 +36,9 @@ class PodcastController extends ImageCrudController
             'title' => ['required', 'max:255'],
             'description' => ['required'],
             'crew_ids' => ['array'],
-            'crew_ids.*' => ['integer', 'distinct', Rule::exists('crews', 'id')->whereIn('role', Crew::PROGRAM_ROLES)],
+            'crew_ids.*' => ['integer', Rule::exists('crews', 'id')->where(
+                fn ($query) => $query->whereIn('role', Crew::PROGRAM_ROLES)->orWhereIn('extra_role', Crew::PROGRAM_ROLES)
+            )],
         ];
     }
 
@@ -46,11 +48,12 @@ class PodcastController extends ImageCrudController
     }
 
     /**
-     * Sinkronkan crew tiga jabatan program; crew berjabatan lain tetap dipertahankan.
+     * Sinkronkan crew yang layak program (jabatan utama atau tambahan termasuk tiga jabatan program);
+     * crew yang tidak layak tetap dipertahankan. Id ganda dari dua dropdown disimpan sekali.
      */
     protected function afterSave(Model $model, Request $request): void
     {
-        $dipertahankan = $model->crews()->whereNotIn('role', Crew::PROGRAM_ROLES)->pluck('crews.id');
+        $dipertahankan = $model->crews()->whereNotIn('crews.id', Crew::canJoinProgram()->select('crews.id'))->pluck('crews.id');
 
         $crewIds = array_map('intval', array_values((array) $request->input('crew_ids', [])));
 
@@ -73,9 +76,10 @@ class PodcastController extends ImageCrudController
     {
         $contents = Content::with('crews')->latest()->paginate(8, pageName: 'podcastpage');
 
-        $crewPerJabatan = Crew::whereIn('role', Crew::PROGRAM_ROLES)->orderBy('name')->get()->groupBy('role');
-        $crewByRole = collect(Crew::PROGRAM_ROLES)
-            ->mapWithKeys(fn (string $role) => [$role => $crewPerJabatan->get($role, collect())]);
+        $crewProgram = Crew::canJoinProgram()->orderBy('name')->get();
+        $crewByRole = collect(Crew::PROGRAM_ROLES)->mapWithKeys(fn (string $role) => [
+            $role => $crewProgram->filter(fn (Crew $crew) => $crew->role === $role || $crew->extra_role === $role)->values(),
+        ]);
 
         return view('admin.podcast', [
             'navmenu' => 'Podcast',
