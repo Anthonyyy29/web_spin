@@ -36,7 +36,7 @@ class PodcastController extends ImageCrudController
             'title' => ['required', 'max:255'],
             'description' => ['required'],
             'crew_ids' => ['array'],
-            'crew_ids.*' => [Rule::exists('crews', 'id')->whereIn('role', Crew::PROGRAM_ROLES)],
+            'crew_ids.*' => ['integer', 'distinct', Rule::exists('crews', 'id')->whereIn('role', Crew::PROGRAM_ROLES)],
         ];
     }
 
@@ -52,7 +52,9 @@ class PodcastController extends ImageCrudController
     {
         $dipertahankan = $model->crews()->whereNotIn('role', Crew::PROGRAM_ROLES)->pluck('crews.id');
 
-        $model->crews()->sync($dipertahankan->merge($request->input('crew_ids', []))->unique()->all());
+        $crewIds = array_map('intval', array_values((array) $request->input('crew_ids', [])));
+
+        $model->crews()->sync($dipertahankan->merge($crewIds)->unique()->all());
     }
 
     /**

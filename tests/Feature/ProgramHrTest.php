@@ -102,6 +102,12 @@ test('crew di luar tiga jabatan, tak ada, atau bukan array ditolak', function (s
         'jabatan lain' => [Crew::factory()->create(['role' => 'Web Development'])->id],
         'tidak ada' => [9999],
         'bukan array' => 'abc',
+        'array bersarang' => [[Crew::factory()->create(['role' => 'Announcer'])->id]],
+        'id ganda' => (function (): array {
+            $id = Crew::factory()->create(['role' => 'Announcer'])->id;
+
+            return [$id, $id];
+        })(),
     };
 
     $this->post('/dashboard/podcast/save', [
@@ -109,7 +115,7 @@ test('crew di luar tiga jabatan, tak ada, atau bukan array ditolak', function (s
     ])->assertSessionHas('error');
 
     expect($content->crews()->count())->toBe(0);
-})->with(['jabatan lain', 'tidak ada', 'bukan array']);
+})->with(['jabatan lain', 'tidak ada', 'bukan array', 'array bersarang', 'id ganda']);
 
 test('tap memakai crew yang ditugaskan lewat form', function () {
     $this->actingAs(User::factory()->role('hr')->create());
