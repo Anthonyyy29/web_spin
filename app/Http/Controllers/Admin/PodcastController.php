@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\AuditLog;
 use App\Models\Content;
+use App\Models\Crew;
 use App\Models\Episode;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class PodcastController extends ImageCrudController
@@ -27,7 +31,27 @@ class PodcastController extends ImageCrudController
 
     protected function fieldRules(): array
     {
-        return ['title' => ['required', 'max:255'], 'description' => ['required']];
+        return [
+            'title' => ['required', 'max:255'],
+            'description' => ['required'],
+            'crew_ids' => ['array'],
+            'crew_ids.*' => [Rule::exists('crews', 'id')->whereIn('role', Crew::PROGRAM_ROLES)],
+        ];
+    }
+
+    protected function prepare(array $data): array
+    {
+        return Arr::except($data, 'crew_ids');
+    }
+
+    /**
+     * Sinkronkan crew tiga jabatan program; crew berjabatan lain tetap dipertahankan.
+     */
+    protected function afterSave(Model $model, Request $request): void
+    {
+        $dipertahankan = $model->crews()->whereNotIn('role', Crew::PROGRAM_ROLES)->pluck('crews.id');
+
+        $model->crews()->sync($dipertahankan->merge($request->input('crew_ids', []))->unique()->all());
     }
 
     public function index(): View

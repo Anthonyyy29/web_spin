@@ -38,6 +38,13 @@ class Crew extends Model
     ];
 
     /**
+     * Jabatan yang boleh ditugaskan ke program lewat form podcast.
+     *
+     * @var list<string>
+     */
+    public const array PROGRAM_ROLES = ['Announcer', 'Sound Operator', 'Human Resource'];
+
+    /**
      * @var list<string>
      */
     protected $fillable = ['name', 'image', 'role', 'about', 'linkedin_link', 'instagram_link'];
