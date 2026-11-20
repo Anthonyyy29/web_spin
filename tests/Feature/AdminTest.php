@@ -95,7 +95,7 @@ test('kartu crew admin menampilkan jabatan tambahan', function () {
     Crew::factory()->create(['role' => 'Bendahara', 'extra_role' => 'Announcer']);
 
     $this->get('/dashboard/crew')->assertOk()
-        ->assertSee('Announcer')
+        ->assertSee('+ Announcer')
         ->assertSee('data-extrarole="Announcer"', false);
 });
 

@@ -37,7 +37,7 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Crew program ini</label>
-                        <p class="text-secondary" style="font-size: smaller">Dipakai mencocokkan tap RFID ke sesi siaran. Hanya tiga jabatan: Announcer, Sound Operator, dan Human Resource.</p>
+                        <p class="text-secondary" style="font-size: smaller">Dipakai mencocokkan tap RFID ke sesi siaran. Hanya tiga jabatan (jabatan utama atau tambahan): Announcer, Sound Operator, dan Human Resource.</p>
                         @foreach ($crewByRole as $role => $crews)
                             <div class="mb-2">
                                 <label class="form-label mb-1">{{ $role }}</label>
