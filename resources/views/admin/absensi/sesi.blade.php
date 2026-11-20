@@ -82,9 +82,11 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label>Program</label>
-                        <select name="content_id" class="form-control" required>
+                        <select name="content_id" id="tambah_content" class="form-control" required>
                             @foreach ($programs as $program)
-                                <option value="{{ $program->id }}">{{ $program->title }}</option>
+                                <option value="{{ $program->id }}"
+                                    data-mulai="{{ $program->jam_mulai_default ? substr($program->jam_mulai_default, 0, 5) : '' }}"
+                                    data-selesai="{{ $program->jam_selesai_default ? substr($program->jam_selesai_default, 0, 5) : '' }}">{{ $program->title }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -93,12 +95,16 @@
                         <input type="date" name="tanggal" class="form-control" required>
                     </div>
                     <div class="mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="tambah_apply">Apply waktu default</button>
+                        <small class="text-muted d-none" id="tambah_hint">Program ini belum punya jam default</small>
+                    </div>
+                    <div class="mb-3">
                         <label>Jam Mulai</label>
-                        <input type="time" name="jam_mulai" class="form-control" required>
+                        <input type="time" name="jam_mulai" id="tambah_mulai" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label>Jam Selesai</label>
-                        <input type="time" name="jam_selesai" class="form-control" required>
+                        <input type="time" name="jam_selesai" id="tambah_selesai" class="form-control" required>
                     </div>
                 </div>
 
@@ -127,13 +133,19 @@
                         <label>Program</label>
                         <select name="content_id" id="edit_content" class="form-control" required>
                             @foreach ($programs as $program)
-                                <option value="{{ $program->id }}">{{ $program->title }}</option>
+                                <option value="{{ $program->id }}"
+                                    data-mulai="{{ $program->jam_mulai_default ? substr($program->jam_mulai_default, 0, 5) : '' }}"
+                                    data-selesai="{{ $program->jam_selesai_default ? substr($program->jam_selesai_default, 0, 5) : '' }}">{{ $program->title }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="mb-3">
                         <label>Tanggal</label>
                         <input type="date" name="tanggal" id="edit_tanggal" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="edit_apply">Apply waktu default</button>
+                        <small class="text-muted d-none" id="edit_hint">Program ini belum punya jam default</small>
                     </div>
                     <div class="mb-3">
                         <label>Jam Mulai</label>
@@ -154,6 +166,32 @@
 </div>
 
 <script>
+    function pasangWaktuDefault(prefix) {
+        const select = document.getElementById(prefix + "_content");
+        const tombol = document.getElementById(prefix + "_apply");
+        const hint = document.getElementById(prefix + "_hint");
+
+        function perbarui() {
+            const opsi = select.options[select.selectedIndex];
+            const adaDefault = !!opsi && !!opsi.dataset.mulai && !!opsi.dataset.selesai;
+            tombol.disabled = !adaDefault;
+            hint.classList.toggle("d-none", adaDefault);
+        }
+
+        select.addEventListener("change", perbarui);
+        tombol.addEventListener("click", function() {
+            const opsi = select.options[select.selectedIndex];
+            document.getElementById(prefix + "_mulai").value = opsi.dataset.mulai;
+            document.getElementById(prefix + "_selesai").value = opsi.dataset.selesai;
+        });
+        perbarui();
+
+        return perbarui;
+    }
+
+    const perbaruiTambah = pasangWaktuDefault("tambah");
+    const perbaruiEdit = pasangWaktuDefault("edit");
+
     document.querySelectorAll(".btn-edit").forEach(btn => {
         btn.addEventListener("click", function() {
             document.getElementById("edit_id").value = this.dataset.id;
@@ -161,6 +199,7 @@
             document.getElementById("edit_tanggal").value = this.dataset.tanggal;
             document.getElementById("edit_mulai").value = this.dataset.mulai;
             document.getElementById("edit_selesai").value = this.dataset.selesai;
+            perbaruiEdit();
         });
     });
 </script>

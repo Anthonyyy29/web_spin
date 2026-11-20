@@ -94,3 +94,15 @@ test('sesi yang sudah ada absensi tetap bisa diubah jamnya bila tanggal sama', f
 
     expect(substr($sesi->fresh()->jam_selesai, 0, 5))->toBe('12:00');
 });
+
+test('halaman sesi memuat jam default tiap program dan tombol apply', function () {
+    Content::factory()->create(['title' => 'Program Berjam', 'jam_mulai_default' => '10:00', 'jam_selesai_default' => '11:00']);
+    Content::factory()->create(['title' => 'Program Polos', 'jam_mulai_default' => null, 'jam_selesai_default' => null]);
+    $this->actingAs(User::factory()->role('hr')->create());
+
+    $this->get('/dashboard/absensi/sesi')->assertOk()
+        ->assertSee('data-mulai="10:00"', false)
+        ->assertSee('data-selesai="11:00"', false)
+        ->assertSee('Apply waktu default')
+        ->assertSee('Program ini belum punya jam default');
+});
