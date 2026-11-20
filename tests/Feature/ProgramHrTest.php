@@ -223,7 +223,7 @@ test('crew dengan jabatan utama dan tambahan program muncul di dua dropdown dan 
         'crew_ids' => [$dani->id, $dani->id],
     ])->assertSessionHas('success');
 
-    expect(Content::firstOrFail()->crews()->count())->toBe(1);
+    expect(Content::firstOrFail()->crews()->pluck('crews.id')->all())->toBe([$dani->id]);
 });
 
 test('penugasan crew yang kehilangan kelayakan dipertahankan saat program disimpan', function () {

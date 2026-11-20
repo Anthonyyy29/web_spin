@@ -151,13 +151,7 @@
 
         document.querySelectorAll(".crew-check").forEach(box => {
             box.addEventListener("change", function() {
-                document.querySelectorAll(".crew-check").forEach(other => {
-                    if (other !== box && other.value === box.value) {
-                        other.checked = box.checked;
-                    }
-                });
-
-                syncCrewChips();
+                setCrewChecked(box.value, box.checked);
             });
         });
 
@@ -234,13 +228,22 @@
                 remove.addEventListener("click", function(event) {
                     event.preventDefault();
                     event.stopPropagation();
-                    box.checked = false;
-                    syncCrewChips();
+                    setCrewChecked(box.value, false);
                 });
                 chip.appendChild(remove);
                 chips.appendChild(chip);
             });
         });
+    }
+
+    function setCrewChecked(value, checked) {
+        document.querySelectorAll(".crew-check").forEach(other => {
+            if (other.value === String(value)) {
+                other.checked = checked;
+            }
+        });
+
+        syncCrewChips();
     }
 
     function fillCrewChecks(ids) {
