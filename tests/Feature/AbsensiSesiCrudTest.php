@@ -243,15 +243,15 @@ test('tabel sesi menampilkan kolom crew, data-crews, dan teks kosong', function 
     $a = Crew::factory()->create(['name' => 'Alfa Crew', 'role' => 'Announcer']);
     $b = Crew::factory()->create(['name' => 'Beta Crew', 'role' => 'Sound Operator']);
     $sesi = BroadcastSession::factory()->create(['tanggal' => today()->addDay()->toDateString()]);
-    $sesi->crews()->attach([$a->id, $b->id]);
+    $sesi->crews()->attach([$b->id, $a->id]);
 
     $this->get('/dashboard/absensi/sesi')->assertOk()
         ->assertSee('<th>Crew</th>', false)
-        ->assertSee('Alfa Crew, Beta Crew')
+        ->assertSee('<td>Alfa Crew, Beta Crew</td>', false)
         ->assertSee('data-crews="'.e($sesi->crews->pluck('id')->toJson()).'"', false);
 
     $sesi->crews()->detach();
-    $this->get('/dashboard/absensi/sesi')->assertOk()->assertSee('Belum ada crew');
+    $this->get('/dashboard/absensi/sesi')->assertOk()->assertSee('<td>Belum ada crew</td>', false);
 });
 
 test('modal sesi memuat dropdown crew dengan id kotak centang unik per modal', function () {

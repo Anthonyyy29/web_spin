@@ -39,7 +39,7 @@
                             <td>{{ $session->content?->title }}</td>
                             <td>{{ $session->tanggal->format('d-m-Y') }}</td>
                             <td>{{ substr($session->jam_mulai, 0, 5) }} - {{ substr($session->jam_selesai, 0, 5) }}</td>
-                            <td>{{ $session->crews->isEmpty() ? 'Belum ada crew' : $session->crews->pluck('name')->join(', ') }}</td>
+                            <td>{{ $session->crews->isEmpty() ? 'Belum ada crew' : $session->crews->sortBy('name')->pluck('name')->join(', ') }}</td>
                             <td>
                                 <button class="btn btn-sm btn-warning btn-edit"
                                     data-id="{{ $session->id }}"
