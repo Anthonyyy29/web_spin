@@ -161,3 +161,27 @@ test('program tanpa sesi bisa dihapus beserta penugasan crew-nya', function () {
     expect(Content::count())->toBe(0)
         ->and(DB::table('content_crew')->count())->toBe(0);
 });
+
+test('form program menampilkan dropdown per jabatan hanya berisi crew jabatan itu', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    Crew::factory()->create(['name' => 'Anya', 'role' => 'Announcer']);
+    Crew::factory()->create(['name' => 'Soni', 'role' => 'Sound Operator']);
+    Crew::factory()->create(['name' => 'Hari', 'role' => 'Human Resource']);
+    Crew::factory()->create(['name' => 'Wawan', 'role' => 'Web Development']);
+
+    $this->get('/dashboard/podcast')
+        ->assertOk()
+        ->assertSeeInOrder(['Announcer', 'Anya', 'Sound Operator', 'Soni', 'Human Resource', 'Hari'])
+        ->assertDontSee('Wawan');
+});
+
+test('kartu program memuat jumlah crew dan id crew untuk modal ubah', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $content = Content::factory()->create();
+    $content->crews()->attach(Crew::factory()->count(2)->create(['role' => 'Announcer']));
+
+    $this->get('/dashboard/podcast')
+        ->assertOk()
+        ->assertSee('2 crew ditugaskan')
+        ->assertSee('data-crews', false);
+});

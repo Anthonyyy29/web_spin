@@ -69,9 +69,18 @@ class PodcastController extends ImageCrudController
 
     public function index(): View
     {
-        $contents = Content::latest()->paginate(8, pageName: 'podcastpage');
+        $contents = Content::with('crews')->latest()->paginate(8, pageName: 'podcastpage');
 
-        return view('admin.podcast', ['navmenu' => 'Podcast', 'contents' => $contents, 'pager' => $contents]);
+        $crewPerJabatan = Crew::whereIn('role', Crew::PROGRAM_ROLES)->orderBy('name')->get()->groupBy('role');
+        $crewByRole = collect(Crew::PROGRAM_ROLES)
+            ->mapWithKeys(fn (string $role) => [$role => $crewPerJabatan->get($role, collect())]);
+
+        return view('admin.podcast', [
+            'navmenu' => 'Podcast',
+            'contents' => $contents,
+            'pager' => $contents,
+            'crewByRole' => $crewByRole,
+        ]);
     }
 
     public function openPodcast(int $contentId): RedirectResponse
