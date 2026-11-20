@@ -183,6 +183,32 @@ test('crew_ids tidak valid ditolak', function (string $kasus, string $kunci) {
     ['array bersarang', 'crew_ids.0'],
 ]);
 
+test('update sesi menolak crew_ids tidak valid dan tidak mengubah sesi', function (string $kasus, string $kunci) {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $sesi = BroadcastSession::factory()->create(['tanggal' => today()->toDateString(), 'jam_mulai' => '10:00:00', 'jam_selesai' => '11:00:00']);
+    $valid = Crew::factory()->create(['role' => 'Announcer']);
+    $sesi->crews()->attach($valid);
+
+    $crewIds = match ($kasus) {
+        'jabatan lain' => [Crew::factory()->create(['role' => 'Web Development'])->id],
+        'tidak ada' => [9999],
+        'bukan array' => 'abc',
+        'array bersarang' => [[$valid->id]],
+    };
+
+    $this->post('/dashboard/absensi/sesi/update', [
+        'id' => $sesi->id, 'content_id' => $sesi->content_id, 'tanggal' => today()->toDateString(), 'jam_mulai' => '12:00', 'jam_selesai' => '13:00', 'crew_ids' => $crewIds,
+    ])->assertSessionHasErrors($kunci);
+
+    expect($sesi->crews()->pluck('crews.id')->all())->toBe([$valid->id]);
+    expect($sesi->fresh()->jam_mulai)->toBe('10:00:00');
+})->with([
+    ['jabatan lain', 'crew_ids.0'],
+    ['tidak ada', 'crew_ids.0'],
+    ['bukan array', 'crew_ids'],
+    ['array bersarang', 'crew_ids.0'],
+]);
+
 test('crew jabatan utama lain dengan extra_role berhak diterima', function () {
     $this->actingAs(User::factory()->role('hr')->create());
     $content = Content::factory()->create();
@@ -199,6 +225,8 @@ test('tanggal sesi yang punya absensi tetap terkunci saat crew_ids dikirim', fun
     $this->actingAs(User::factory()->role('hr')->create());
     $sesi = BroadcastSession::factory()->create(['tanggal' => today()->toDateString(), 'jam_mulai' => '10:00:00', 'jam_selesai' => '11:00:00']);
     AbsensiLog::factory()->create(['session_id' => $sesi->id]);
+    $lama = Crew::factory()->create(['role' => 'Sound Operator']);
+    $sesi->crews()->attach($lama);
     $crew = Crew::factory()->create(['role' => 'Announcer']);
 
     $this->post('/dashboard/absensi/sesi/update', [
@@ -206,6 +234,24 @@ test('tanggal sesi yang punya absensi tetap terkunci saat crew_ids dikirim', fun
     ])->assertSessionHas('error');
 
     expect($sesi->fresh()->tanggal->toDateString())->toBe(today()->toDateString());
+    expect($sesi->crews()->pluck('crews.id')->all())->toBe([$lama->id]);
+});
+
+test('crew boleh diubah di sesi yang punya absensi selama tanggal tidak berubah', function () {
+    $this->actingAs(User::factory()->role('hr')->create());
+    $sesi = BroadcastSession::factory()->create(['tanggal' => today()->toDateString(), 'jam_mulai' => '10:00:00', 'jam_selesai' => '11:00:00']);
+    $log = AbsensiLog::factory()->create(['session_id' => $sesi->id]);
+    $lama = Crew::factory()->create(['role' => 'Announcer']);
+    $baru = Crew::factory()->create(['role' => 'Human Resource']);
+    $sesi->crews()->attach($lama);
+
+    $this->post('/dashboard/absensi/sesi/update', [
+        'id' => $sesi->id, 'content_id' => $sesi->content_id, 'tanggal' => today()->toDateString(), 'jam_mulai' => '10:00', 'jam_selesai' => '11:00', 'crew_ids' => [$baru->id],
+    ])->assertSessionHas('success');
+
+    expect($sesi->crews()->pluck('crews.id')->all())->toBe([$baru->id]);
+    expect(AbsensiLog::count())->toBe(1);
+    expect($log->fresh()->session_id)->toBe($sesi->id);
 });
 
 test('sesi dibuat lewat form dengan crew_ids dipakai tap', function () {
