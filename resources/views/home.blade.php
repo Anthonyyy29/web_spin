@@ -1,105 +1,143 @@
-<!DOCTYPE html>
-<html lang="en">
+<x-public.layout active="home" title="Spin The Radio FM — Universitas Esa Unggul">
+    {{-- Hero Section --}}
+    <section class="spin-hero">
+        <div class="spin-container spin-hero__inner">
+            <div class="spin-hero__grid">
+                <div class="spin-hero__copy">
+                    <span class="spin-hero__eyebrow">
+                        <span class="spin-hero__dot"></span>
+                        The Best Radio Campus &middot; UEU Bekasi
+                    </span>
 
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>STRFM Esa Unggul</title>
-  <link rel="icon" type="image/png" href="/assets/img/logo-strfm.jpg">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.carousel.min.css'>
-  <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+                    <div class="spin-hero__title">
+                        <x-public.sticker text="SPIN THE RADIO FM" tone="yellow" size="xl" tag="h1" />
+                    </div>
 
-  <link rel="stylesheet" href="/assets/css/index.css">
-</head>
+                    <p class="spin-hero__tagline">&ldquo;Voice, Inspire, Action!&rdquo;</p>
 
-<body>
-  @include('layouts.navbar')
+                    <p class="spin-hero__desc">
+                        Dengarkan siaran langsung, podcast kampus pilihan, berita hangat mahasiswa, dan kenal lebih dekat kru kreatif Spin The Radio FM Universitas Esa Unggul Kampus Bekasi.
+                    </p>
 
-  <!-- Header -->
-  <header class="text-center my-0">
-    <div class="d-flex flex-column align-items-center justify-content-center">
-      <h1>
-        SPIN THE RADIO FM
-      </h1>
-      <h3>
-        "Voice, Inspire, Action!"
-      </h3>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <div class="container">
-    <!-- Our Podcast -->
-    <section class="text-center my-5">
-      <h3 class="mb-4 fw-bold text-primary text-uppercase">Our Podcast</h3>
-      <div class="container">
-        <div class="row" id="podcast-gallery">
-          @foreach ($content as $podcast)
-            <div class="col-md-3 mb-3">
-              <a href="/listen/content/{{ $podcast['id'] }}">
-                <img src="/assets/uploads/{{ $podcast['image'] }}" class="img-fluid rounded-4" alt="Podcast 1">
-              </a>
-            </div>
-          @endforeach
-        </div>
-        <a href="/listen" class="btn btn-custom mt-3">View More</a>
-      </div>
-    </section>
-
-    <!-- Our Crew -->
-    <section class="text-center my-5">
-      <h3 class="fw-bold text-primary text-uppercase">Our Crew</h3>
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-11">
-            <div id="crew-slider" class="owl-carousel">
-              @foreach ($crew as $anggota)
-                <div class="post-slide">
-                  <div class="post-img">
-                    <img src="/assets/uploads/{{ $anggota['image'] }}" alt="">
-                    <a href="{{ $anggota['instagram_link'] }}" class="over-layer"><i class="fa fa-link"></i></a>
-                  </div>
+                    <div class="spin-hero__actions">
+                        <x-public.pill tone="yellow" size="l" href="/listen">
+                            Dengarkan Podcast
+                        </x-public.pill>
+                        <x-public.pill tone="pink" size="l" href="/news">
+                            Baca Berita
+                        </x-public.pill>
+                    </div>
                 </div>
-              @endforeach
+
+                {{-- Kartu Visual Logo & Live On Air --}}
+                <div class="spin-hero__visual">
+                    <div class="spin-onair-card">
+                        <div class="spin-onair-card__top">
+                            <span class="spin-onair-badge">
+                                <span class="spin-onair-badge__dot"></span>
+                                ON AIR
+                            </span>
+                            <span style="font-size: 0.75rem; font-weight: 800; letter-spacing: 0.06em; color: var(--spin-maroon);">STRFM</span>
+                        </div>
+
+                        <div class="spin-onair-card__logo">
+                            <img src="{{ asset('assets/ui/logo-spin.png') }}" alt="Logo Spin The Radio FM" />
+                        </div>
+
+                        <p class="spin-onair-card__caption">Good Looking Tidak Perlu, Suara Nomor Satu!</p>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-        <a href="/crew" class="btn btn-custom mt-3">View More</a>
-    </section>
-    <section>
-        <!-- Floating hint before click -->
-        <div class="radio_hint" id="radioHint">
-          <span class="hint-text">Play Radio Now!!!</span>
-          <span class="hint-arrow">↓</span>
         </div>
 
-        <!-- Radio Button -->
-        <a class="radio_btn" href="#" id="playButton">
-          <div class="icon-circle">
-            <i class="fa-solid fa-play" id="playIcon"></i>
-          </div>
-          <span class="radio-label" id="radioLabel">Playing...</span>
-          <div class="wave" id="waveAnim">
-            <span></span><span></span><span></span><span></span><span></span>
-          </div>
-        </a>
-
-        <!-- Audio -->
-        <audio id="radioAudio" src="https://radio.spintheradiofm.site/listen/radio-strfm/radio.mp3"></audio>
+        {{-- Gelombang transisi ke krem --}}
+        <div class="spin-hero__wave" aria-hidden="true">
+            <svg viewBox="0 0 1440 72" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                <path d="M0 36C240 0 480 72 720 36C960 0 1200 72 1440 28V72H0V36Z" fill="#FFF8D6" />
+            </svg>
+        </div>
     </section>
-  </div>
 
-  @include('layouts.footer')
+    {{-- Film Strip Divider (Papan 1) --}}
+    <x-public.film-strip />
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src='https://code.jquery.com/jquery-1.12.0.min.js'></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.carousel.min.js'></script>
-  <script src="/assets/js/index.js"></script>
-  <script src="/assets/js/searchpodcast.js"></script>
-</body>
+    {{-- Section: Our Podcast --}}
+    <section class="spin-section">
+        <div class="spin-container">
+            <div class="spin-section__header">
+                <div>
+                    <x-public.sticker text="OUR PODCAST" tone="yellow" size="l" tag="h2" />
+                    <p class="spin-section__subtitle">Segmen podcast pilihan dari studio Spin The Radio FM.</p>
+                </div>
+                <x-public.pill tone="maroon" size="m" href="/listen">
+                    Lihat Semua &rarr;
+                </x-public.pill>
+            </div>
 
-</html>
+            @if ($content->isNotEmpty())
+                <div id="podcast-gallery" class="spin-grid-programs">
+                    @foreach ($content as $podcast)
+                        <x-public.program-card :content="$podcast" :index="$loop->index" />
+                    @endforeach
+                </div>
+            @else
+                <div class="spin-empty-card">Belum ada segmen podcast yang tersedia.</div>
+            @endif
+        </div>
+    </section>
+
+    {{-- Section: Our Crew --}}
+    <section class="spin-section spin-section--tinted">
+        <div class="spin-container">
+            <div class="spin-section__header">
+                <div>
+                    <x-public.sticker text="OUR CREW" tone="sky" size="l" tag="h2" />
+                    <p class="spin-section__subtitle">Orang-orang di balik suara dan karya Spin The Radio FM.</p>
+                </div>
+                <x-public.pill tone="yellow" size="m" href="/crew">
+                    Lihat Semua Crew &rarr;
+                </x-public.pill>
+            </div>
+
+            @if ($crew->isNotEmpty())
+                <div data-carousel>
+                    <div id="crew-slider" data-carousel-track class="spin-carousel__track">
+                        @foreach ($crew as $anggota)
+                            <div class="spin-carousel__slide">
+                                <x-public.crew-card :crew="$anggota" :index="$loop->index" />
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <x-public.carousel-controls :dots="min(max($crew->count(), 1), 5)" />
+                </div>
+            @else
+                <div class="spin-empty-card">Belum ada data crew.</div>
+            @endif
+        </div>
+    </section>
+
+    {{-- Floating Live Radio Player --}}
+    <div class="spin-radio-float">
+        <div id="radioHint" class="spin-radio-float__hint">Play Radio Now! &darr;</div>
+
+        <button type="button" id="playButton" class="spin-radio-float__btn">
+            <span class="spin-radio-float__circle">
+                <svg id="playIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M8 5v14l11-7z" />
+                </svg>
+                <svg id="pauseIcon" class="is-hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M6 5h4v14H6zm8 0h4v14h-4z" />
+                </svg>
+            </span>
+
+            <span id="radioLabel">Dengarkan Live Radio</span>
+
+            <span id="waveAnim" class="spin-radio-wave is-hidden" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+            </span>
+        </button>
+
+        <audio id="radioAudio" src="https://radio.spintheradiofm.site/listen/radio-strfm/radio.mp3" preload="none"></audio>
+    </div>
+</x-public.layout>

@@ -12,7 +12,7 @@ class HomeController extends Controller
     {
         return view('home', [
             'crew' => Crew::sortedByRole(10),
-            'content' => Content::limit(4)->get(),
+            'content' => Content::withCount('episodes')->limit(4)->get(),
         ]);
     }
 }

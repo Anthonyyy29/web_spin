@@ -1,0 +1,2226 @@
+/* ==========================================================================
+   Spin The Radio FM — Public UI Design System (Pure CSS)
+   Acuan: UI Spin Web NEW (Fondasi & Komponen Papan 1–6)
+   ========================================================================== */
+
+:root {
+    /* Palet Warna Fondasi */
+    --spin-maroon: #9A134B;
+    --spin-yellow: #FEEA71;
+    --spin-sky: #97D7FF;
+    --spin-green: #A7E268;
+    --spin-pink: #FF7CBB;
+    --spin-orange: #FE6900;
+    --spin-lavender: #BCA4F5;
+    --spin-ink: #2A1740;
+    --spin-cream: #FFF8D6;
+    --spin-white: #FFFFFF;
+
+    /* Tipografi */
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-display: 'Shrikhand', cursive;
+
+    /* Bayangan Keras */
+    --shadow-03: 0 3px 0 var(--spin-ink);
+    --shadow-05: 0 5px 0 var(--spin-ink);
+    --shadow-33: 3px 3px 0 var(--spin-ink);
+    --shadow-44: 4px 4px 0 var(--spin-ink);
+    --shadow-66: 6px 6px 0 var(--spin-ink);
+
+    /* Layout */
+    --container-max: 1280px;
+    --container-narrow: 1120px;
+}
+
+/* ==========================================================================
+   Base & Reset
+   ========================================================================== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--spin-cream);
+    color: var(--spin-ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+body ::selection {
+    background-color: var(--spin-yellow);
+    color: var(--spin-ink);
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input,
+textarea {
+    font-family: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+.spin-main {
+    flex: 1 1 auto;
+}
+
+.spin-container {
+    width: 100%;
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: 1rem;
+}
+
+.spin-container--narrow {
+    max-width: var(--container-narrow);
+}
+
+@media (min-width: 640px) {
+    .spin-container {
+        padding-inline: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .spin-container {
+        padding-inline: 2rem;
+    }
+}
+
+.is-hidden {
+    display: none !important;
+}
+
+/* ==========================================================================
+   Komponen/Stiker (Papan 1)
+   ========================================================================== */
+.spin-sticker {
+    position: relative;
+    display: inline-block;
+    margin: 0;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    isolation: isolate;
+    paint-order: stroke fill;
+    -webkit-text-stroke-color: var(--spin-orange);
+    -webkit-text-stroke-linejoin: round;
+}
+
+.spin-sticker::before {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    color: var(--spin-cream);
+    paint-order: stroke fill;
+    -webkit-text-stroke-color: var(--spin-cream);
+    filter: drop-shadow(0 0 2px var(--spin-ink))
+        drop-shadow(2px 4px 0 var(--spin-ink));
+    pointer-events: none;
+    user-select: none;
+}
+
+.spin-sticker--yellow {
+    color: var(--spin-yellow);
+}
+
+.spin-sticker--sky {
+    color: var(--spin-sky);
+}
+
+.spin-sticker--xl {
+    font-size: clamp(2.5rem, 6vw, 4.75rem);
+    -webkit-text-stroke-width: 7px;
+}
+.spin-sticker--xl::before {
+    -webkit-text-stroke-width: 17px;
+}
+
+.spin-sticker--l {
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    -webkit-text-stroke-width: 6px;
+}
+.spin-sticker--l::before {
+    -webkit-text-stroke-width: 15px;
+}
+
+.spin-sticker--m {
+    font-size: clamp(1.5rem, 3vw, 2.375rem);
+    -webkit-text-stroke-width: 5px;
+}
+.spin-sticker--m::before {
+    -webkit-text-stroke-width: 12px;
+}
+
+.spin-sticker--s {
+    font-size: clamp(1.25rem, 2.4vw, 1.875rem);
+    -webkit-text-stroke-width: 4px;
+}
+.spin-sticker--s::before {
+    -webkit-text-stroke-width: 10px;
+}
+
+/* ==========================================================================
+   Komponen/Pil (Papan 1)
+   ========================================================================== */
+.spin-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 2px solid var(--spin-ink);
+    border-radius: 9999px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    box-shadow: var(--shadow-05);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.spin-pill:hover {
+    transform: translateY(-2px);
+}
+
+.spin-pill:active {
+    transform: translateY(2px);
+    box-shadow: none;
+}
+
+.spin-pill--m {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.8125rem;
+}
+
+.spin-pill--l {
+    padding: 0.75rem 1.75rem;
+    font-size: 0.9375rem;
+}
+
+.spin-pill--yellow {
+    background-color: var(--spin-yellow);
+    color: var(--spin-ink);
+}
+
+.spin-pill--maroon {
+    background-color: var(--spin-maroon);
+    color: var(--spin-cream);
+}
+
+.spin-pill--pink {
+    background-color: var(--spin-pink);
+    color: var(--spin-ink);
+}
+
+.spin-pill--sky {
+    background-color: var(--spin-sky);
+    color: var(--spin-ink);
+}
+
+.spin-pill--full-mobile {
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .spin-pill--full-mobile {
+        width: auto;
+    }
+}
+
+/* ==========================================================================
+   Komponen/Film strip (Papan 1)
+   ========================================================================== */
+.spin-film-strip {
+    position: relative;
+    background-color: var(--spin-ink);
+    border-top: 2px solid var(--spin-ink);
+    border-bottom: 2px solid var(--spin-ink);
+    padding: 1rem 0;
+    overflow: hidden;
+    user-select: none;
+}
+
+.spin-film-strip::before,
+.spin-film-strip::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 7px;
+    background-image: repeating-linear-gradient(
+        90deg,
+        var(--spin-cream) 0 12px,
+        transparent 12px 24px
+    );
+}
+
+.spin-film-strip::before {
+    top: 6px;
+}
+
+.spin-film-strip::after {
+    bottom: 6px;
+}
+
+.spin-film-strip__track {
+    display: flex;
+    width: max-content;
+    animation: spin-film-marquee 26s linear infinite;
+}
+
+.spin-film-strip:hover .spin-film-strip__track {
+    animation-play-state: paused;
+}
+
+.spin-film-strip__item {
+    margin: 0 1.5rem;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    color: var(--spin-yellow);
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+@keyframes spin-film-marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* ==========================================================================
+   Komponen/Navbar & Search (Papan 3)
+   ========================================================================== */
+.spin-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background-color: var(--spin-maroon);
+    border-bottom: 2px solid var(--spin-ink);
+}
+
+.spin-navbar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.spin-navbar__brand {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    padding: 0.25rem;
+    background-color: var(--spin-white);
+    border: 2px solid var(--spin-ink);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-03);
+    transition: transform 0.15s ease;
+}
+
+.spin-navbar__brand:hover {
+    transform: translateY(-2px);
+}
+
+.spin-navbar__brand img {
+    height: 2.5rem;
+    width: auto;
+    border-radius: 0.5rem;
+    object-fit: contain;
+}
+
+.spin-navbar__links {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spin-navbar__link {
+    padding: 0.4rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--spin-cream);
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.spin-navbar__link:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: var(--spin-yellow);
+}
+
+.spin-navbar__link.is-active {
+    padding: 0.4rem 1.25rem;
+    background-color: var(--spin-yellow);
+    color: var(--spin-ink);
+    border: 2px solid var(--spin-ink);
+    box-shadow: var(--shadow-03);
+}
+
+.spin-navbar__search-desktop {
+    display: none;
+    width: 17rem;
+}
+
+.spin-navbar__mobile-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.spin-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    border: 2px solid var(--spin-ink);
+    background-color: var(--spin-sky);
+    color: var(--spin-ink);
+    box-shadow: var(--shadow-03);
+    padding: 0;
+}
+
+.spin-icon-btn:active {
+    transform: translateY(2px);
+    box-shadow: none;
+}
+
+.spin-navbar__drawer {
+    border-top: 2px solid var(--spin-ink);
+    background-color: var(--spin-maroon);
+    padding: 0.75rem 1rem 1.25rem;
+}
+
+.spin-navbar__drawer-search {
+    margin-bottom: 1rem;
+}
+
+.spin-navbar__drawer-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+@media (min-width: 1024px) {
+    .spin-navbar__brand img {
+        height: 2.75rem;
+    }
+
+    .spin-navbar__links {
+        display: flex;
+    }
+
+    .spin-navbar__search-desktop {
+        display: block;
+    }
+
+    .spin-navbar__mobile-actions,
+    .spin-navbar__drawer {
+        display: none !important;
+    }
+}
+
+/* Search Box */
+.spin-search {
+    position: relative;
+    width: 100%;
+}
+
+.spin-search__form {
+    position: relative;
+}
+
+.spin-search__icon {
+    position: absolute;
+    inset-block: 0;
+    left: 0.875rem;
+    display: flex;
+    align-items: center;
+    color: var(--spin-ink);
+    pointer-events: none;
+}
+
+.spin-search__input {
+    width: 100%;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    border: 2px solid var(--spin-ink);
+    border-radius: 9999px;
+    background-color: var(--spin-cream);
+    color: var(--spin-ink);
+    font-size: 0.875rem;
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.spin-search__input::placeholder {
+    color: rgba(42, 23, 64, 0.55);
+}
+
+.spin-search__input:focus {
+    border-color: var(--spin-maroon);
+    box-shadow: var(--shadow-03);
+}
+
+.spin-search__suggestions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    margin-top: 0.5rem;
+    max-height: 18rem;
+    overflow-y: auto;
+    border: 2px solid var(--spin-ink);
+    border-radius: 1rem;
+    background-color: var(--spin-cream);
+    padding-bottom: 0.5rem;
+    box-shadow: var(--shadow-66);
+}
+
+.spin-search__group-label {
+    padding: 0.75rem 1rem 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--spin-maroon);
+}
+
+.spin-search__item {
+    display: block;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--spin-ink);
+    transition: background-color 0.15s ease;
+}
+
+.spin-search__item:hover {
+    background-color: rgba(254, 234, 113, 0.65);
+}
+
+.spin-search__empty {
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(42, 23, 64, 0.6);
+}
+
+/* ==========================================================================
+   Komponen/Page Header (Papan 4)
+   ========================================================================== */
+.spin-page-header {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--spin-yellow);
+    border-bottom: 2px solid var(--spin-ink);
+}
+
+.spin-page-header__wave {
+    width: 100%;
+    line-height: 0;
+    pointer-events: none;
+}
+
+.spin-page-header__wave svg {
+    display: block;
+    width: 100%;
+    height: 2.5rem;
+}
+
+@media (min-width: 640px) {
+    .spin-page-header__wave svg {
+        height: 3.5rem;
+    }
+}
+
+.spin-page-header__body {
+    padding-top: 0.75rem;
+    padding-bottom: 2rem;
+}
+
+@media (min-width: 640px) {
+    .spin-page-header__body {
+        padding-bottom: 2.5rem;
+    }
+}
+
+.spin-breadcrumb {
+    margin-top: 1rem;
+}
+
+.spin-breadcrumb__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.spin-breadcrumb__sep {
+    color: rgba(154, 19, 75, 0.65);
+}
+
+.spin-breadcrumb__link:hover {
+    color: var(--spin-maroon);
+    text-decoration: underline;
+}
+
+.spin-breadcrumb__current {
+    font-weight: 800;
+    color: var(--spin-maroon);
+}
+
+/* ==========================================================================
+   Komponen/Footer (Papan 4)
+   ========================================================================== */
+.spin-footer {
+    background-color: var(--spin-maroon);
+    border-top: 2px solid var(--spin-ink);
+    color: var(--spin-cream);
+}
+
+.spin-footer__inner {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
+.spin-footer__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+}
+
+@media (min-width: 768px) {
+    .spin-footer__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .spin-footer__grid {
+        grid-template-columns: 4fr 2fr 3fr 3fr;
+    }
+}
+
+.spin-footer__brand {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: var(--spin-white);
+    border: 2px solid var(--spin-ink);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-03);
+}
+
+.spin-footer__brand img {
+    height: 3.5rem;
+    width: auto;
+    border-radius: 0.75rem;
+    object-fit: contain;
+}
+
+.spin-footer__tagline {
+    margin: 1rem 0 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.spin-footer__sub {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: rgba(255, 248, 214, 0.85);
+}
+
+.spin-footer__heading {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--spin-yellow);
+    text-transform: uppercase;
+}
+
+.spin-footer__list {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.spin-footer__list a:hover {
+    color: var(--spin-yellow);
+}
+
+.spin-footer__social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.spin-footer__social-link img {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.375rem;
+    object-fit: contain;
+}
+
+.spin-footer__copy {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 248, 214, 0.35);
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 248, 214, 0.85);
+}
+
+/* ==========================================================================
+   Komponen/Kartu Program (Papan 2)
+   ========================================================================== */
+.spin-program-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 2px solid var(--spin-ink);
+    background-color: var(--spin-cream);
+    box-shadow: var(--shadow-66);
+    transition: transform 0.15s ease;
+}
+
+.spin-program-card:hover {
+    transform: translateY(-4px);
+}
+
+.spin-program-card__body {
+    display: flex;
+    flex: 1 1 auto;
+}
+
+.spin-program-card__spine {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 2rem;
+    flex-shrink: 0;
+    border-right: 2px solid var(--spin-ink);
+    background-color: var(--spin-maroon);
+    color: var(--spin-cream);
+    padding: 0.75rem 0;
+    font-size: 0.625rem;
+    font-weight: 800;
+    line-height: 1;
+    user-select: none;
+}
+
+@media (min-width: 640px) {
+    .spin-program-card__spine {
+        width: 2.25rem;
+        font-size: 0.6875rem;
+    }
+}
+
+.spin-program-card__content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.625rem;
+}
+
+@media (min-width: 640px) {
+    .spin-program-card__content {
+        padding: 0.75rem;
+    }
+}
+
+.spin-program-card__thumb {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    overflow: hidden;
+    border: 2px solid var(--spin-ink);
+}
+
+.spin-program-card__thumb--pink { background-color: var(--spin-pink); }
+.spin-program-card__thumb--lavender { background-color: var(--spin-lavender); }
+.spin-program-card__thumb--green { background-color: var(--spin-green); }
+.spin-program-card__thumb--orange { background-color: var(--spin-orange); }
+
+.spin-program-card__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.spin-program-card:hover .spin-program-card__thumb img {
+    transform: scale(1.05);
+}
+
+.spin-program-card__meta {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.spin-program-card__text {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.spin-program-card__title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 800;
+    line-height: 1.25;
+    text-transform: uppercase;
+    color: var(--spin-ink);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+@media (min-width: 640px) {
+    .spin-program-card__title {
+        font-size: 1rem;
+    }
+}
+
+.spin-program-card__sub {
+    margin: 0.25rem 0 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(42, 23, 64, 0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spin-program-card__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    border: 2px solid var(--spin-ink);
+    background-color: var(--spin-maroon);
+    color: var(--spin-yellow);
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+/* ==========================================================================
+   Komponen/Kartu Crew (Papan 2)
+   ========================================================================== */
+.spin-crew-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 2px solid var(--spin-ink);
+    background-color: var(--spin-cream);
+    box-shadow: var(--shadow-66);
+    transition: transform 0.15s ease;
+}
+
+.spin-crew-card:hover {
+    transform: translateY(-4px);
+}
+
+.spin-crew-card__media {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    overflow: hidden;
+    background: linear-gradient(180deg, #97D7FF 0%, #BCA4F5 52%, #FF7CBB 100%);
+}
+
+.spin-crew-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    transition: transform 0.3s ease;
+}
+
+.spin-crew-card:hover .spin-crew-card__media img {
+    transform: scale(1.05);
+}
+
+.spin-crew-card__role-wrap {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(180deg, rgba(42, 23, 64, 0.32) 0%, rgba(42, 23, 64, 0.08) 65%, transparent 100%);
+    pointer-events: none;
+}
+
+.spin-crew-card__role {
+    display: block;
+    font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+    font-weight: 900;
+    font-style: italic;
+    line-height: 1.05;
+    paint-order: stroke fill;
+    -webkit-text-stroke: 4px var(--spin-ink);
+    text-shadow: 2px 3px 0 var(--spin-ink);
+}
+
+.spin-crew-card__role--yellow { color: var(--spin-yellow); }
+.spin-crew-card__role--green { color: var(--spin-green); }
+.spin-crew-card__role--sky { color: var(--spin-sky); }
+.spin-crew-card__role--orange { color: var(--spin-orange); }
+
+.spin-crew-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-top: 2px solid var(--spin-ink);
+    background-color: var(--spin-cream);
+    padding: 0.625rem 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .spin-crew-card__footer {
+        padding: 0.75rem 1rem;
+    }
+}
+
+.spin-crew-card__info {
+    min-width: 0;
+}
+
+.spin-crew-card__name {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: var(--spin-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spin-crew-card__about {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(42, 23, 64, 0.65);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spin-crew-card__socials {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.spin-crew-card__social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid rgba(154, 19, 75, 0.45);
+    color: var(--spin-maroon);
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.spin-crew-card__social-btn:hover {
+    background-color: var(--spin-maroon);
+    color: var(--spin-cream);
+}
+
+/* ==========================================================================
+   Komponen/Carousel Kontrol (Papan 5)
+   ========================================================================== */
+.spin-carousel__track {
+    display: flex;
+    gap: 1.25rem;
+    overflow-x: auto;
+    padding-bottom: 0.75rem;
+    scroll-snap-type: x mandatory;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.spin-carousel__track::-webkit-scrollbar {
+    display: none;
+}
+
+.spin-carousel__slide {
+    width: 14rem;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+}
+
+@media (min-width: 640px) {
+    .spin-carousel__slide {
+        width: 16rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .spin-carousel__slide {
+        width: 18rem;
+    }
+}
+
+.spin-carousel__controls {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spin-carousel__row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.spin-carousel__arrow {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    border: 2px solid var(--spin-ink);
+    background-color: var(--spin-yellow);
+    color: var(--spin-ink);
+    box-shadow: var(--shadow-03);
+    transition: transform 0.15s ease;
+}
+
+.spin-carousel__arrow:hover {
+    transform: translateY(-2px);
+}
+
+.spin-carousel__arrow:active {
+    transform: translateY(2px);
+    box-shadow: none;
+}
+
+@media (min-width: 640px) {
+    .spin-carousel__arrow {
+        display: inline-flex;
+    }
+}
+
+.spin-carousel__dots {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spin-carousel__dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    padding: 0;
+    border-radius: 9999px;
+    border: 2px solid var(--spin-ink);
+    background-color: var(--spin-cream);
+    transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.spin-carousel__dot.is-active {
+    width: 1.75rem;
+    background-color: var(--spin-maroon);
+}
+
+.spin-carousel__hint {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(42, 23, 64, 0.7);
+}
+
+@media (min-width: 640px) {
+    .spin-carousel__hint {
+        display: none;
+    }
+}
+
+/* ==========================================================================
+   Komponen/Toast (Papan 5)
+   ========================================================================== */
+.spin-toast-stack {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 24rem;
+}
+
+.spin-toast {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--spin-ink);
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--spin-ink);
+    box-shadow: var(--shadow-44);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.spin-toast.is-dismissed {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.spin-toast--success {
+    background-color: var(--spin-green);
+}
+
+.spin-toast--error {
+    background-color: var(--spin-orange);
+}
+
+.spin-toast__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background-color: var(--spin-ink);
+    color: var(--spin-cream);
+}
+
+.spin-toast__text {
+    flex: 1 1 auto;
+}
+
+.spin-toast__close {
+    border: 0;
+    background: transparent;
+    color: var(--spin-ink);
+    font-size: 1.25rem;
+    line-height: 1;
+    opacity: 0.75;
+}
+
+.spin-toast__close:hover {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   Komponen/Pil Kategori (Papan 6)
+   ========================================================================== */
+.spin-cat-bar {
+    border-bottom: 2px solid var(--spin-ink);
+    background-color: rgba(255, 248, 214, 0.92);
+}
+
+.spin-cat-bar__nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.spin-cat-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 1.25rem;
+    border: 2px solid var(--spin-ink);
+    border-radius: 9999px;
+    background-color: var(--spin-cream);
+    color: var(--spin-maroon);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    box-shadow: var(--shadow-03);
+    transition: background-color 0.15s ease;
+}
+
+.spin-cat-pill:hover {
+    background-color: rgba(254, 234, 113, 0.55);
+}
+
+.spin-cat-pill.is-active {
+    background-color: var(--spin-maroon);
+    color: var(--spin-yellow);
+}
+
+/* ==========================================================================
+   Komponen/Input (Papan 5)
+   ========================================================================== */
+.spin-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.spin-field__label {
+    margin-bottom: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: var(--spin-ink);
+}
+
+.spin-field__control {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    border: 2px solid var(--spin-ink);
+    border-radius: 0.75rem;
+    background-color: var(--spin-cream);
+    color: var(--spin-ink);
+    font-size: 0.875rem;
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.spin-field__control::placeholder {
+    color: rgba(42, 23, 64, 0.5);
+}
+
+.spin-field__control:focus {
+    border-color: var(--spin-maroon);
+    box-shadow: var(--shadow-03);
+}
+
+.spin-field__control.is-invalid {
+    border-color: var(--spin-orange);
+}
+
+.spin-field__error {
+    margin: 0.375rem 0 0;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--spin-maroon);
+}
+
+/* ==========================================================================
+   Page Sections & Shared Layouts
+   ========================================================================== */
+.spin-section {
+    padding-top: 3rem;
+    padding-bottom: 3.5rem;
+}
+
+@media (min-width: 640px) {
+    .spin-section {
+        padding-top: 4rem;
+        padding-bottom: 4.5rem;
+    }
+}
+
+.spin-section--tinted {
+    border-top: 2px solid var(--spin-ink);
+    background-color: rgba(254, 234, 113, 0.4);
+}
+
+.spin-section--divided {
+    margin-top: 3.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid rgba(42, 23, 64, 0.15);
+}
+
+.spin-section__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    text-align: center;
+    margin-bottom: 2.25rem;
+}
+
+@media (min-width: 640px) {
+    .spin-section__header {
+        flex-direction: row;
+        align-items: flex-end;
+        text-align: left;
+    }
+}
+
+.spin-section__subtitle {
+    margin: 0.5rem 0 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: rgba(42, 23, 64, 0.75);
+}
+
+.spin-empty-card {
+    border: 2px solid var(--spin-ink);
+    border-radius: 1rem;
+    background-color: var(--spin-white);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    box-shadow: var(--shadow-44);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: rgba(42, 23, 64, 0.7);
+}
+
+/* Grids */
+.spin-grid-programs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .spin-grid-programs {
+        gap: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .spin-grid-programs {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.spin-grid-crew {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .spin-grid-crew {
+        gap: 1.5rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .spin-grid-crew {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .spin-grid-crew {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.spin-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .spin-grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .spin-grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ==========================================================================
+   Home Hero & Live Radio Player
+   ========================================================================== */
+.spin-hero {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--spin-maroon);
+    color: var(--spin-cream);
+}
+
+.spin-hero__inner {
+    padding-top: 3rem;
+    padding-bottom: 4rem;
+}
+
+@media (min-width: 640px) {
+    .spin-hero__inner {
+        padding-top: 4rem;
+        padding-bottom: 5.5rem;
+    }
+}
+
+.spin-hero__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+    .spin-hero__grid {
+        grid-template-columns: 8fr 4fr;
+    }
+}
+
+.spin-hero__copy {
+    text-align: center;
+}
+
+@media (min-width: 1024px) {
+    .spin-hero__copy {
+        text-align: left;
+    }
+}
+
+.spin-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 1rem;
+    border-radius: 9999px;
+    border: 2px solid var(--spin-ink);
+    background-color: var(--spin-sky);
+    color: var(--spin-ink);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    box-shadow: var(--shadow-03);
+}
+
+.spin-hero__dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 9999px;
+    background-color: var(--spin-maroon);
+}
+
+.spin-hero__title {
+    margin-top: 1.5rem;
+}
+
+.spin-hero__tagline {
+    margin: 1rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    color: var(--spin-yellow);
+    letter-spacing: 0.02em;
+}
+
+.spin-hero__desc {
+    margin: 1rem auto 0;
+    max-width: 40rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.65;
+    color: rgba(255, 248, 214, 0.92);
+}
+
+@media (min-width: 1024px) {
+    .spin-hero__desc {
+        margin-left: 0;
+    }
+}
+
+.spin-hero__actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+    .spin-hero__actions {
+        justify-content: flex-start;
+    }
+}
+
+.spin-hero__visual {
+    display: flex;
+    justify-content: center;
+}
+
+@media (min-width: 1024px) {
+    .spin-hero__visual {
+        justify-content: flex-end;
+    }
+}
+
+.spin-onair-card {
+    width: 100%;
+    max-width: 20rem;
+    transform: rotate(1deg);
+    border: 2px solid var(--spin-ink);
+    border-radius: 1.5rem;
+    background-color: var(--spin-cream);
+    color: var(--spin-ink);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-66);
+}
+
+.spin-onair-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--spin-ink);
+}
+
+.spin-onair-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.15rem 0.75rem;
+    border-radius: 9999px;
+    border: 2px solid var(--spin-ink);
+    background-color: var(--spin-green);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.spin-onair-badge__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background-color: var(--spin-ink);
+}
+
+.spin-onair-card__logo {
+    margin: 1rem 0;
+    padding: 1rem;
+    border: 2px solid var(--spin-ink);
+    border-radius: 1rem;
+    background-color: var(--spin-white);
+}
+
+.spin-onair-card__logo img {
+    margin-inline: auto;
+    width: 10rem;
+    height: 10rem;
+    object-fit: contain;
+}
+
+.spin-onair-card__caption {
+    margin: 0;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgba(42, 23, 64, 0.8);
+}
+
+.spin-hero__wave {
+    width: 100%;
+    line-height: 0;
+    pointer-events: none;
+}
+
+.spin-hero__wave svg {
+    display: block;
+    width: 100%;
+    height: 2.5rem;
+}
+
+@media (min-width: 640px) {
+    .spin-hero__wave svg {
+        height: 3.5rem;
+    }
+}
+
+/* Floating Radio Player */
+.spin-radio-float {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+    .spin-radio-float {
+        right: 1.5rem;
+        bottom: 1.5rem;
+    }
+}
+
+.spin-radio-float__hint {
+    padding: 0.25rem 0.875rem;
+    border-radius: 9999px;
+    border: 2px solid var(--spin-ink);
+    background-color: var(--spin-yellow);
+    color: var(--spin-ink);
+    font-size: 0.75rem;
+    font-weight: 800;
+    box-shadow: var(--shadow-03);
+}
+
+.spin-radio-float__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem 0.5rem 0.625rem;
+    border-radius: 9999px;
+    border: 2px solid var(--spin-ink);
+    background-color: var(--spin-orange);
+    color: var(--spin-ink);
+    font-size: 0.875rem;
+    font-weight: 800;
+    box-shadow: var(--shadow-44);
+    transition: transform 0.15s ease;
+}
+
+.spin-radio-float__btn:hover {
+    transform: translateY(-2px);
+}
+
+.spin-radio-float__circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    border: 2px solid var(--spin-ink);
+    background-color: var(--spin-yellow);
+    color: var(--spin-ink);
+}
+
+.spin-radio-wave {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding-right: 0.25rem;
+}
+
+.spin-radio-wave span {
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    border-radius: 9999px;
+    background-color: var(--spin-ink);
+    animation: spin-wave-bounce 0.8s ease-in-out infinite;
+}
+
+.spin-radio-wave span:nth-child(2) { animation-delay: 0.15s; }
+.spin-radio-wave span:nth-child(3) { animation-delay: 0.3s; }
+.spin-radio-wave span:nth-child(4) { animation-delay: 0.45s; }
+
+@keyframes spin-wave-bounce {
+    0%, 100% { transform: scaleY(0.35); }
+    50% { transform: scaleY(1); }
+}
+
+/* ==========================================================================
+   Listen & Episode Cards
+   ========================================================================== */
+.spin-episode-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 2px solid var(--spin-ink);
+    border-radius: 1rem;
+    background-color: var(--spin-white);
+    padding: 1rem;
+    box-shadow: var(--shadow-66);
+}
+
+.spin-episode-card__embed {
+    overflow: hidden;
+    border: 2px solid var(--spin-ink);
+    border-radius: 0.75rem;
+    background-color: var(--spin-ink);
+}
+
+.spin-episode-card__embed iframe {
+    display: block;
+    width: 100%;
+    height: 152px;
+    border: 0;
+}
+
+.spin-episode-card__body {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
+.spin-tag {
+    display: inline-flex;
+    width: fit-content;
+    padding: 0.15rem 0.75rem;
+    border-radius: 9999px;
+    border: 2px solid var(--spin-ink);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.spin-tag--yellow { background-color: var(--spin-yellow); color: var(--spin-ink); }
+.spin-tag--maroon { background-color: var(--spin-maroon); color: var(--spin-yellow); }
+.spin-tag--sky { background-color: var(--spin-sky); color: var(--spin-ink); }
+
+.spin-episode-card__title {
+    margin: 0.5rem 0 0;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.spin-episode-card__desc {
+    margin: 0.5rem 0 0;
+    flex: 1 1 auto;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.6;
+    color: rgba(42, 23, 64, 0.75);
+}
+
+.spin-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.spin-text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.75rem;
+    width: fit-content;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--spin-maroon);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.spin-text-link:hover {
+    color: var(--spin-orange);
+}
+
+/* Segment Hero Card */
+.spin-feature-card {
+    overflow: hidden;
+    border: 2px solid var(--spin-ink);
+    border-radius: 1.5rem;
+    background-color: var(--spin-white);
+    box-shadow: var(--shadow-66);
+}
+
+.spin-feature-card__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+    .spin-feature-card__grid {
+        grid-template-columns: 4fr 8fr;
+    }
+}
+
+.spin-feature-card__media {
+    padding: 1.25rem;
+    border-bottom: 2px solid var(--spin-ink);
+    background-color: var(--spin-lavender);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spin-feature-card__media--pink {
+    background-color: rgba(255, 124, 187, 0.35);
+}
+
+.spin-feature-card__media--yellow {
+    background-color: rgba(254, 234, 113, 0.3);
+    align-items: flex-start;
+}
+
+@media (min-width: 768px) {
+    .spin-feature-card__media {
+        border-bottom: 0;
+        border-right: 2px solid var(--spin-ink);
+    }
+}
+
+.spin-feature-card__img-frame {
+    width: 100%;
+    max-width: 22rem;
+    overflow: hidden;
+    border: 2px solid var(--spin-ink);
+    border-radius: 1rem;
+    background-color: var(--spin-cream);
+    box-shadow: var(--shadow-44);
+}
+
+.spin-feature-card__img-frame--square {
+    aspect-ratio: 1 / 1;
+}
+
+.spin-feature-card__img-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.spin-feature-card__body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+@media (min-width: 640px) {
+    .spin-feature-card__body {
+        padding: 2rem;
+    }
+}
+
+/* ==========================================================================
+   News Pages
+   ========================================================================== */
+.spin-news-hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .spin-news-hero {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.spin-news-featured {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 21rem;
+    overflow: hidden;
+    border: 2px solid var(--spin-ink);
+    border-radius: 1.5rem;
+    background-color: var(--spin-ink);
+    box-shadow: var(--shadow-66);
+    transition: transform 0.15s ease;
+}
+
+@media (min-width: 1024px) {
+    .spin-news-featured {
+        min-height: 27.5rem;
+    }
+}
+
+.spin-news-featured:hover,
+.spin-news-mini:hover,
+.spin-news-card:hover {
+    transform: translateY(-4px);
+}
+
+.spin-news-featured__img,
+.spin-news-mini__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.spin-news-featured:hover .spin-news-featured__img,
+.spin-news-mini:hover .spin-news-mini__img,
+.spin-news-card:hover .spin-news-card__thumb img {
+    transform: scale(1.05);
+}
+
+.spin-news-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, var(--spin-ink) 0%, rgba(42, 23, 64, 0.5) 55%, transparent 100%);
+}
+
+.spin-news-featured__content {
+    position: relative;
+    z-index: 1;
+    padding: 1.5rem;
+}
+
+.spin-news-featured__title {
+    margin: 0.75rem 0 0;
+    font-size: clamp(1.25rem, 2.2vw, 1.625rem);
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--spin-cream);
+}
+
+.spin-news-featured:hover .spin-news-featured__title,
+.spin-news-mini:hover .spin-news-mini__title {
+    color: var(--spin-yellow);
+}
+
+.spin-news-secondary {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+    .spin-news-secondary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.spin-news-mini {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 12.75rem;
+    overflow: hidden;
+    border: 2px solid var(--spin-ink);
+    border-radius: 1rem;
+    background-color: var(--spin-ink);
+    box-shadow: var(--shadow-44);
+    transition: transform 0.15s ease;
+}
+
+.spin-news-mini__content {
+    position: relative;
+    z-index: 1;
+    padding: 1rem;
+}
+
+.spin-news-mini__date {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--spin-yellow);
+}
+
+.spin-news-mini__title {
+    margin: 0.25rem 0 0;
+    font-size: 0.9375rem;
+    font-weight: 800;
+    line-height: 1.35;
+    color: var(--spin-cream);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.spin-cat-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.spin-cat-heading__bar {
+    width: 0.625rem;
+    height: 1.75rem;
+    border-radius: 9999px;
+    border: 2px solid var(--spin-ink);
+}
+
+.spin-cat-heading__bar--0 { background-color: var(--spin-pink); }
+.spin-cat-heading__bar--1 { background-color: var(--spin-lavender); }
+.spin-cat-heading__bar--2 { background-color: var(--spin-green); }
+.spin-cat-heading__bar--3 { background-color: var(--spin-sky); }
+
+.spin-news-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 2px solid var(--spin-ink);
+    border-radius: 1rem;
+    background-color: var(--spin-white);
+    box-shadow: var(--shadow-66);
+    transition: transform 0.15s ease;
+}
+
+.spin-news-card__thumb {
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-bottom: 2px solid var(--spin-ink);
+    background-color: var(--spin-cream);
+}
+
+.spin-news-card__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.spin-news-card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    padding: 1.25rem;
+}
+
+.spin-news-card__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--spin-maroon);
+}
+
+.spin-news-card__date {
+    color: rgba(42, 23, 64, 0.6);
+}
+
+.spin-news-card__title {
+    margin: 0.5rem 0 0;
+    font-size: 1.0625rem;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.spin-news-card__title a:hover {
+    color: var(--spin-maroon);
+}
+
+.spin-news-card__excerpt {
+    margin-top: 0.625rem;
+    flex: 1 1 auto;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.6;
+    color: rgba(42, 23, 64, 0.75);
+}
+
+.spin-news-card__excerpt p {
+    margin: 0 0 0.375rem;
+}
+
+.spin-article-prose {
+    margin-top: 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.75;
+    color: rgba(42, 23, 64, 0.88);
+}
+
+.spin-article-prose p {
+    margin: 0 0 1rem;
+}
+
+/* ==========================================================================
+   About Us Page (Visi/Misi, Map, Contact, Sponsors)
+   ========================================================================== */
+.spin-visi-misi {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+    .spin-visi-misi {
+        grid-template-columns: 5fr 7fr;
+    }
+}
+
+.spin-info-box {
+    border: 2px solid var(--spin-ink);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    box-shadow: var(--shadow-33);
+}
+
+.spin-info-box--yellow {
+    background-color: rgba(254, 234, 113, 0.45);
+}
+
+.spin-info-box--sky {
+    background-color: rgba(151, 215, 255, 0.35);
+}
+
+.spin-info-box h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--spin-maroon);
+    text-transform: uppercase;
+}
+
+.spin-info-box p,
+.spin-info-box ol {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.65;
+}
+
+.spin-info-box ol {
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.spin-contact-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .spin-contact-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.spin-map-card {
+    overflow: hidden;
+    border: 2px solid var(--spin-ink);
+    border-radius: 1.5rem;
+    background-color: var(--spin-white);
+    box-shadow: var(--shadow-66);
+}
+
+.spin-map-card iframe {
+    display: block;
+    width: 100%;
+    height: 20rem;
+    border: 0;
+}
+
+@media (min-width: 1024px) {
+    .spin-map-card iframe {
+        height: 100%;
+        min-height: 29rem;
+    }
+}
+
+.spin-form-card {
+    border: 2px solid var(--spin-ink);
+    border-radius: 1.5rem;
+    background-color: var(--spin-white);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-66);
+}
+
+@media (min-width: 640px) {
+    .spin-form-card {
+        padding: 2rem;
+    }
+}
+
+.spin-form-stack {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.spin-sponsors-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .spin-sponsors-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .spin-sponsors-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .spin-sponsors-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+.spin-sponsor-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 3 / 2;
+    padding: 1rem;
+    border: 2px solid var(--spin-ink);
+    border-radius: 1rem;
+    background-color: var(--spin-white);
+    box-shadow: var(--shadow-44);
+}
+
+.spin-sponsor-card img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}

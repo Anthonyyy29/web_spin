@@ -1,83 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
+<x-public.layout active="listen" title="Listen — Spin The Radio FM">
+    <x-public.page-header
+        title="OUR PODCAST"
+        :breadcrumbs="[['label' => 'Home', 'url' => '/home'], ['label' => 'Listen']]" />
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>STRFM Esa Unggul</title>
-  <link rel="icon" type="image/png" href="/assets/img/logo-strfm.jpg">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.carousel.min.css'>
-  <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/index.css">
-</head>
+    <div class="spin-container spin-section">
+        @if ($search_mode !== 'podcast')
+            {{-- Segmen Podcast --}}
+            <section>
+                <div class="spin-section__header">
+                    <div>
+                        <x-public.sticker text="OUR SEGMENT PODCAST" tone="yellow" size="m" tag="h2" />
+                        <p class="spin-section__subtitle">Pilih segmen favoritmu untuk melihat seluruh episode yang tersedia.</p>
+                    </div>
+                </div>
 
-<body>
-  @include('layouts.navbar')
+                @if ($contents->isNotEmpty())
+                    <div id="podcast-gallery-listen" class="spin-grid-programs">
+                        @foreach ($contents as $content)
+                            <x-public.program-card :content="$content" :index="$loop->index" />
+                        @endforeach
+                    </div>
+                @else
+                    <div class="spin-empty-card">Belum ada segmen podcast.</div>
+                @endif
+            </section>
+        @endif
 
-  @if (session('error'))
-    <div class="alert alert-danger">
-      {{ session('error') }}
-    </div>
-  @endif
+        {{-- Episode Terbaru / Hasil Pencarian --}}
+        <section class="{{ $search_mode !== 'podcast' ? 'spin-section--divided' : '' }}">
+            <div class="spin-section__header">
+                <div>
+                    <x-public.sticker
+                        :text="$search_mode !== '' ? 'Result Podcast' : 'LATEST PODCAST'"
+                        tone="sky"
+                        size="m"
+                        tag="h2" />
+                    @if ($search_mode !== '')
+                        <p class="spin-section__subtitle">
+                            Menampilkan hasil pencarian untuk <strong style="color: var(--spin-maroon);">&ldquo;{{ request('query') }}&rdquo;</strong>.
+                        </p>
+                    @endif
+                </div>
 
-    <!-- Breadcrumb Start -->
-  <div class="breadcrumb-wrap">
-    <div class="container-fluid">
-      <ul class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/home">Home</a></li>
-        <li class="breadcrumb-item active">Listen</li>
-      </ul>
-    </div>
-  </div>
-  <!-- Breadcrumb End -->
-
-  <!-- Main Content -->
-  <div class="container">
-    @if ($search_mode !== 'podcast')
-      <!-- Our Podcast -->
-      <section class="text-center my-5">
-        <h3 class="mb-4 fw-bold text-primary text-uppercase title">Our Segment Podcast</h3>
-        <div class="container">
-          <div class="row" id="podcast-gallery-listen">
-            @foreach ($contents as $content)
-              <div class="col-md-3 mb-3">
-                <a href="/listen/content/{{ $content['id'] }}">
-                  <img src="/assets/uploads/{{ $content['image'] }}" class="img-fluid rounded-4" alt="Podcast 1">
-                </a>
-              </div>
-            @endforeach
-          </div>
-        </div>
-      </section>
-    @endif
-
-    <section class="text-center my-5">
-      <h3 class="mt-3 mb-2 fw-bold text-primary text-uppercase title">{{ $search_mode !=''? 'Result Podcast' : 'last Podcast' }}</h3>
-      <div class="podcast-container">
-        @foreach ($last_episodes as $episode)
-          <div class="podcast-card">
-            <div class="podcast-content">
-              <iframe src="{{ $episode['audio'] }}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
-              <h3>Deskripsi</h3>
-              <p>{{ $episode['description'] }}</p>
-              <button class="read-more">Lihat Selengkapnya</button>
+                @if ($search_mode !== '')
+                    <x-public.pill tone="yellow" size="m" href="/listen">
+                        &larr; Kembali ke Semua Podcast
+                    </x-public.pill>
+                @endif
             </div>
-          </div>
-        @endforeach
-      </div>
-    </section>
-  </div>
 
-  @include('layouts.footer')
+            @if ($last_episodes->isNotEmpty())
+                <div class="spin-grid-3">
+                    @foreach ($last_episodes as $episode)
+                        <article class="spin-episode-card">
+                            <div class="spin-episode-card__embed">
+                                <iframe
+                                    src="{{ $episode['audio'] }}"
+                                    loading="lazy"
+                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+                                </iframe>
+                            </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src='https://code.jquery.com/jquery-1.12.0.min.js'></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.carousel.min.js'></script>
-  <script src="/assets/js/index.js"></script>
-  <script src="/assets/js/searchpodcast.js"></script>
-</body>
-
-</html>
+                            <div class="spin-episode-card__body">
+                                <span class="spin-tag spin-tag--yellow">Episode</span>
+                                <h3 class="spin-episode-card__title">{{ $episode['title'] }}</h3>
+                                <p data-read-more-text class="spin-episode-card__desc spin-clamp-3">
+                                    {{ $episode['description'] }}
+                                </p>
+                                <button type="button" data-read-more-btn class="spin-text-link">
+                                    Lihat Selengkapnya
+                                </button>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <div class="spin-empty-card">Belum ada episode podcast yang tersedia.</div>
+            @endif
+        </section>
+    </div>
+</x-public.layout>

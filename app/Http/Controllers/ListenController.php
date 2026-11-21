@@ -14,7 +14,7 @@ class ListenController extends Controller
 {
     public function index(): View
     {
-        return $this->listing(Content::all(), Episode::latest()->limit(3)->get(), '');
+        return $this->listing(Content::withCount('episodes')->get(), Episode::latest()->limit(3)->get(), '');
     }
 
     /**

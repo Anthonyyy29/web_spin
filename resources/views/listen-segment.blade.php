@@ -1,66 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
+<x-public.layout active="listen" :title="$content['title'].' — Spin The Radio FM'">
+    <x-public.page-header
+        :title="$content['title']"
+        :breadcrumbs="[
+            ['label' => 'Home', 'url' => '/home'],
+            ['label' => 'Listen', 'url' => '/listen'],
+            ['label' => $content['title']],
+        ]" />
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>STRFM Esa Unggul</title>
-  <link rel="icon" type="image/png" href="assets/img/logo-strfm.jpg">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.carousel.min.css'>
-  <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/index.css">
-</head>
+    <div class="spin-container spin-section">
+        {{-- Kartu Cover Segmen --}}
+        <section class="spin-feature-card">
+            <div class="spin-feature-card__grid">
+                <div class="spin-feature-card__media">
+                    <div class="spin-feature-card__img-frame spin-feature-card__img-frame--square">
+                        <img src="/assets/uploads/{{ $content['image'] }}" alt="{{ $content['title'] }}" />
+                    </div>
+                </div>
 
-<body>
-  @include('layouts.navbar')
-  <!-- Breadcrumb Start -->
-  <div class="breadcrumb-wrap">
-    <div class="container-fluid">
-      <ul class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/home">Home</a></li>
-        <li class="breadcrumb-item"><a href="/listen">Listen</a></li>
-        <li class="breadcrumb-item active">{{ $content['title'] }}</li>
-      </ul>
+                <div class="spin-feature-card__body">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <span class="spin-tag spin-tag--maroon">Segmen Podcast</span>
+                        <span class="spin-tag spin-tag--yellow">{{ $episodes->count() }} Episode</span>
+                    </div>
+
+                    <h2 style="margin: 1rem 0 0; font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 800;">
+                        {{ $content['title'] }}
+                    </h2>
+
+                    <p style="margin: 0.75rem 0 0; font-size: 0.9375rem; font-weight: 500; line-height: 1.7; color: rgba(42, 23, 64, 0.8);">
+                        {{ $content['description'] ?: 'Discover deep conversations and insightful stories in our latest podcast series.' }}
+                    </p>
+
+                    <div style="margin-top: 1.5rem;">
+                        <x-public.pill tone="sky" size="m" href="/listen">
+                            &larr; Semua Segmen
+                        </x-public.pill>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- Daftar Episode --}}
+        <section class="spin-section--divided">
+            <div class="spin-section__header">
+                <x-public.sticker text="DAFTAR EPISODE" tone="yellow" size="m" tag="h2" />
+            </div>
+
+            @if ($episodes->isNotEmpty())
+                <div class="spin-grid-3">
+                    @foreach ($episodes as $episode)
+                        <article class="spin-episode-card">
+                            <div class="spin-episode-card__embed">
+                                <iframe
+                                    src="{{ $episode['audio'] }}"
+                                    loading="lazy"
+                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+                                </iframe>
+                            </div>
+
+                            <div class="spin-episode-card__body">
+                                <h3 class="spin-episode-card__title">{{ $episode['title'] }}</h3>
+                                <p data-read-more-text class="spin-episode-card__desc spin-clamp-3">
+                                    {{ $episode['description'] }}
+                                </p>
+                                <button type="button" data-read-more-btn class="spin-text-link">
+                                    Lihat Selengkapnya
+                                </button>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <div class="spin-empty-card">Belum ada episode untuk segmen ini.</div>
+            @endif
+        </section>
     </div>
-  </div>
-  <!-- Breadcrumb End -->
-
-  <!-- Main Content -->
-  <section class="podcast-section">
-    <!-- Cover Segment -->
-    <div class="segment-cover">
-      <img src="/assets/uploads/{{ $content['image'] }}" alt="Podcast Cover">
-      <div class="segment-info">
-        <h2>🎙️ {{ $content['title'] }}</h2>
-        <p>Discover deep conversations and insightful stories in our latest podcast series.</p>
-      </div>
-    </div>
-
-    <!-- Episode List -->
-    <div class="podcast-container">
-      @foreach ($episodes as $episode)
-        <div class="podcast-card">
-          <div class="podcast-content">
-            <iframe src="{{ $episode['audio'] }}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
-            <h3>Deskripsi</h3>
-            <p>{{ $episode['description'] }}</p>
-            <button class="read-more">Lihat Selengkapnya</button>
-          </div>
-        </div>
-      @endforeach
-    </div>
-  </section>
-
-  @include('layouts.footer')
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src='https://code.jquery.com/jquery-1.12.0.min.js'></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.carousel.min.js'></script>
-  <script src="/assets/js/searchpodcast.js"></script>
-  <script src="/assets/js/index.js"></script>
-</body>
-
-</html>
+</x-public.layout>
