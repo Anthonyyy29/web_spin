@@ -6,7 +6,7 @@
 .phpactor.json
 .phpunit.result.cache
 .agent
-.UI-Spin-Web-NEW
+/UI-Spin-Web-NEW
 /.codex
 /.cursor/
 /.idea
